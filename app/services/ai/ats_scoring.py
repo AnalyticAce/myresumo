@@ -9,8 +9,8 @@ import os
 import re
 from typing import List, Optional
 
-from langchain.output_parsers import PydanticOutputParser
-from langchain.prompts import PromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 
 from app.utils.token_tracker import TokenTracker
@@ -59,14 +59,16 @@ class ATSScorerLLM:
             ValueError: If required credentials are missing after falling back to environment variables.
         """
         self.api_key = api_key or os.getenv("API_KEY")
-        self.api_base = api_base or os.getenv("API_BASE")
+        self.api_base = api_base or os.getenv(
+            "API_BASE") or os.getenv("OLLAMA_BASE_URL")
         self.model_name = model_name or os.getenv("MODEL_NAME")
         self.user_id = user_id
 
-        if not self.api_key:
-            raise ValueError(
-                "An LLM API key is required. Provide it or set API_KEY environment variable."
-            )
+        # API key not required for local Ollama models
+        # if not self.api_key:
+        #     raise ValueError(
+        #         "An LLM API key is required. Provide it or set API_KEY environment variable."
+        #     )
 
         if not self.api_base:
             raise ValueError(
@@ -99,50 +101,39 @@ class ATSScorerLLM:
         # Prompt for extracting skills from resume
         self.resume_prompt = PromptTemplate(
             template="""You are an expert ATS (Applicant Tracking System) analyzer.
-            Extract ALL skills, experience, and qualifications from the following resume text.
-            Be comprehensive and generous in your extraction, including:
-            - Technical skills (programming languages, tools, frameworks, etc.)
-            - Soft skills (communication, leadership, etc.)
-            - Domain knowledge and industry experience
-            - Implied skills based on work descriptions
-            - Educational qualifications and certifications
-            - Transferable skills from different contexts
+            Extract relevant information from the resume text below into a JSON object.
             
-            Be inclusive rather than restrictive - capture everything that could potentially match a job requirement.
-            
+            Return a JSON object with the following keys:
+            - "skills": List of strings (technical skills, tools, soft skills)
+            - "experience_years": Integer (approximate years, or null if not found)
+            - "key_requirements": List of strings (qualifications found)
+            - "domains": List of strings (industries mentioned)
+
             RESUME TEXT:
             {resume_text}
             
-            {format_instructions}
+            Output ONLY valid JSON. Do not include markdown formatting or explanations.
             """,
-            input_variables=["resume_text"],
-            partial_variables={
-                "format_instructions": self.parser.get_format_instructions()
-            },
+            input_variables=["resume_text"]
         )
 
         # Prompt for extracting requirements from job description
         self.job_prompt = PromptTemplate(
             template="""You are an expert job analyzer.
-            Extract ALL skills, experience requirements, and qualifications from the following job description.
-            Be comprehensive, including both required and preferred qualifications.
+            Extract relevant requirements from the job description below into a JSON object.
             
-            Include:
-            - Technical skills and tools mentioned
-            - Experience and education requirements
-            - Soft skills and personal qualities
-            - Domain knowledge and industry expertise
-            - Any other attributes that would make a candidate suitable
-            
+            Return a JSON object with the following keys:
+            - "skills": List of strings (required technical and soft skills)
+            - "experience_years": Integer (years required, or null)
+            - "key_requirements": List of strings (main job requirements)
+            - "domains": List of strings (industries involved)
+
             JOB DESCRIPTION:
             {job_text}
             
-            {format_instructions}
+            Output ONLY valid JSON. Do not include markdown formatting or explanations.
             """,
-            input_variables=["job_text"],
-            partial_variables={
-                "format_instructions": self.parser.get_format_instructions()
-            },
+            input_variables=["job_text"]
         )
 
         # More optimistic and explicit scoring prompt with rationale
@@ -187,33 +178,83 @@ class ATSScorerLLM:
 
     def setup_chains(self):
         """Set up the LangChain runnable chains for each task."""
-        self.resume_chain = self.resume_prompt | self.llm 
-        
+        self.resume_chain = self.resume_prompt | self.llm
+
         self.job_chain = self.job_prompt | self.llm
-        
+
         self.matching_chain = self.matching_prompt | self.llm
+
+    def _extract_json_from_result(self, result_content: str, default_key: str = "skills"):
+        """Helper to safely extract JSON from LLM output."""
+        try:
+            # 1. Try to find JSON block in markdown
+            json_match = re.search(
+                r"```json\s*(\{.*?\})\s*```", result_content, re.DOTALL)
+            if json_match:
+                return json.loads(json_match.group(1))
+
+            # 2. Try to find raw JSON object
+            json_match = re.search(r"\{.*\}", result_content, re.DOTALL)
+            if json_match:
+                return json.loads(json_match.group(0))
+
+            # 3. Fallback: Return empty structure
+            print(
+                f"Warning: Could not extract JSON from content: {result_content[:100]}...")
+            return {
+                "skills": [],
+                "experience_years": None,
+                "key_requirements": [],
+                "domains": []
+            }
+        except Exception as e:
+            print(f"Error parsing JSON from LLM: {e}")
+            return {
+                "skills": [],
+                "experience_years": None,
+                "key_requirements": [],
+                "domains": []
+            }
 
     def extract_resume_info(self, resume_text):
         """Extract skills and qualifications from resume using LLM."""
+        result = self.resume_chain.invoke({"resume_text": resume_text})
+        data = self._extract_json_from_result(result.content)
+        # Convert dictionary to Pydantic model for consistency if needed,
+        # or just return the dict since parse_obj creates the model instance expected downstream?
+        # The downstream code `analyze_match` expects a Pydantic model or handles dicts converted to strings.
+        # Let's inspect analyze_match: line 216: resume_analysis.model_dump().
+        # So it EXPECTS an object with .model_dump().
+        # We should instantiate the Pydantic model manually.
         try:
-            result = self.resume_chain.invoke({"resume_text": resume_text})
-            parsed_result = self.parser.parse(result.content)
-            return parsed_result
-        except Exception as e:
-            print(f"Error extracting resume info: {e}")
-            result = self.resume_chain.invoke({"resume_text": resume_text})
-            return result
+            return SkillsExtraction(**data)
+        except Exception:
+            # Fallback if data doesn't match schema (e.g. lists are strings)
+            # Ensure lists are lists
+            if isinstance(data.get("skills"), str):
+                data["skills"] = [data["skills"]]
+            if isinstance(data.get("domains"), str):
+                data["domains"] = [data["domains"]]
+            if isinstance(data.get("key_requirements"), str):
+                data["key_requirements"] = [data["key_requirements"]]
+            # Ensure fields exist
+            data.setdefault("skills", [])
+            data.setdefault("domains", [])
+            data.setdefault("key_requirements", [])
+            return SkillsExtraction(**data)
 
     def extract_job_info(self, job_text):
         """Extract requirements from job description using LLM."""
+        result = self.job_chain.invoke({"job_text": job_text})
+        data = self._extract_json_from_result(result.content)
         try:
-            result = self.job_chain.invoke({"job_text": job_text})
-            parsed_result = self.parser.parse(result.content)
-            return parsed_result
-        except Exception as e:
-            print(f"Error extracting job info: {e}")
-            result = self.job_chain.invoke({"job_text": job_text})
-            return result
+            return SkillsExtraction(**data)
+        except Exception:
+            # Minimal robustness
+            data.setdefault("skills", [])
+            data.setdefault("domains", [])
+            data.setdefault("key_requirements", [])
+            return SkillsExtraction(**data)
 
     def calculate_keyword_overlap(self, resume_skills, job_skills):
         """[DEPRECATED] No longer used. All matching is now LLM-based for domain-agnostic optimization."""
@@ -228,7 +269,7 @@ class ATSScorerLLM:
                 job_analysis = str(job_analysis.model_dump())
 
             result = self.matching_chain.invoke({
-                "resume_skills": resume_analysis, 
+                "resume_skills": resume_analysis,
                 "job_requirements": job_analysis
             })
 
@@ -256,7 +297,8 @@ class ATSScorerLLM:
             matching_skills = []
             if matching_section:
                 skills_text = matching_section.group(1)
-                matching_skills = re.findall(r'["\']([^"\']+)["\']', skills_text)
+                matching_skills = re.findall(
+                    r'["\']([^"\']+)["\']', skills_text)
 
             missing_section = re.search(
                 r'["\']?missing_skills["\']?\s*:\s*\[(.*?)\]', result.content, re.DOTALL
@@ -264,7 +306,8 @@ class ATSScorerLLM:
             missing_skills = []
             if missing_section:
                 skills_text = missing_section.group(1)
-                missing_skills = re.findall(r'["\']([^"\']+)["\']', skills_text)
+                missing_skills = re.findall(
+                    r'["\']([^"\']+)["\']', skills_text)
 
             # Extract recommendation
             rec_match = re.search(
@@ -321,8 +364,10 @@ class ATSScorerLLM:
 
         # Get LLM analysis of match (all scoring, matching, and rationale)
         match_analysis = self.analyze_match(resume_analysis, job_analysis)
-        llm_score = match_analysis.get("score", 50) / 100  # Convert to 0-1 scale
-        llm_score = max(llm_score, 0.45)  # Set a floor of 0.45 (45%) for LLM score
+        llm_score = match_analysis.get(
+            "score", 50) / 100  # Convert to 0-1 scale
+        # Set a floor of 0.45 (45%) for LLM score
+        llm_score = max(llm_score, 0.45)
         final_score = llm_score  # 100% LLM-based
 
         # Optionally apply a gentle boost for very low scores (for user experience)
@@ -348,13 +393,14 @@ class ATSScorerLLM:
 def demo_ats_scorer_llm():
     """Demo function to showcase the ATSScorerLLM functionality."""
     from dotenv import load_dotenv
-    
-    load_dotenv()
-    api_key = os.getenv("API_KEY")
-    model_name = os.getenv("API_MODEL_NAME", "gpt-4-turbo")
-    api_base = os.getenv("API_BASE", "https://api.openai.com/v1")
 
-    scorer = ATSScorerLLM(api_key=api_key, model_name=model_name, api_base=api_base)
+    load_dotenv()
+    api_key = os.getenv("CEREBRASAI_API_KEY")
+    model_name = os.getenv("API_MODEL_NAME", "gpt-oss-120b")
+    api_base = os.getenv("API_BASE", "https://api.cerebras.ai/v1")
+
+    scorer = ATSScorerLLM(
+        api_key=api_key, model_name=model_name, api_base=api_base)
 
     resume = """
     """

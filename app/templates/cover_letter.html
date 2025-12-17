@@ -1,0 +1,594 @@
+{% extends "base.html" %}
+
+{% block title %}Cover Letter Composer - MyResumo{% endblock %}
+
+{% block head %}
+<style>
+    .fade-in {
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .loading-spinner {
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #0ea5e9;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .editor-field {
+        transition: all 0.2s ease;
+    }
+    
+    .editor-field:focus {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .preview-content {
+        white-space: pre-wrap;
+        font-family: 'Georgia', serif;
+        line-height: 1.6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div x-data="coverLetterComposer()" x-init="init()" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Cover Letter Composer</h1>
+                <p class="mt-2 text-gray-600">Create professional cover letters tailored to your job applications</p>
+            </div>
+            <div class="flex space-x-3">
+                <button @click="showHelp = !showHelp" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Help
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div x-show="showHelp" x-cloak class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click.self="showHelp = false">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white fade-in">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">How to Use Cover Letter Composer</h3>
+                <div class="space-y-3 text-sm text-gray-600">
+                    <div class="flex items-start">
+                        <span class="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-xs font-medium mr-3">1</span>
+                        <p>Fill in your personal information and the job details you're applying for.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-xs font-medium mr-3">2</span>
+                        <p>Optionally link a resume to pull relevant information and experience.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-xs font-medium mr-3">3</span>
+                        <p>Write your cover letter content in the structured sections provided.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-xs font-medium mr-3">4</span>
+                        <p>Generate the final cover letter and download it as a PDF.</p>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button @click="showHelp = false" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        Got it
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Form Section -->
+        <div class="space-y-6">
+            <!-- Basic Information -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cover Letter Title</label>
+                        <input type="text" x-model="formData.title" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="e.g., Software Engineer Application">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Target Company</label>
+                            <input type="text" x-model="formData.target_company" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Company name">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Target Position</label>
+                            <input type="text" x-model="formData.target_role" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Job title">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Job Description</label>
+                        <textarea x-model="formData.job_description" rows="4" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Paste the job description here to help tailor your cover letter..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Information -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Your Information</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                        <input type="text" x-model="formData.sender_name" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="John Doe">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" x-model="formData.sender_email" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="john@example.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                            <input type="tel" x-model="formData.sender_phone" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="+1 (555) 123-4567">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                        <input type="text" x-model="formData.sender_location" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="New York, NY">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recipient Information -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Recipient Information (Optional)</h2>
+                
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Hiring Manager Name</label>
+                            <input type="text" x-model="formData.recipient_name" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Jane Smith">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Job Reference</label>
+                            <input type="text" x-model="formData.job_reference" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Ref #12345">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Company Address</label>
+                        <input type="text" x-model="formData.company_address" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="123 Business St, City, State 12345">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resume Selection -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Link Resume (Optional)</h2>
+                
+                <div x-show="loadingResumes" class="text-center py-4">
+                    <div class="loading-spinner mx-auto"></div>
+                    <p class="text-sm text-gray-500 mt-2">Loading resumes...</p>
+                </div>
+                
+                <div x-show="!loadingResumes" class="space-y-4">
+                    <select x-model="formData.resume_id" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <option value="">Select a resume (optional)</option>
+                        <template x-for="resume in resumes" :key="resume.id">
+                            <option :value="resume.id" x-text="`${resume.title} - ${resume.target_company || 'No company'}`"></option>
+                        </template>
+                    </select>
+                    
+                    <div x-show="formData.resume_id" class="text-sm text-gray-600">
+                        <p>Selected resume will help tailor the cover letter content.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Editor Section -->
+        <div class="space-y-6">
+            <!-- Cover Letter Content -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Cover Letter Content</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Introduction</label>
+                        <textarea x-model="contentData.introduction" rows="3" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Start with a strong opening that states the position you're applying for and why you're interested..."></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Body Paragraphs</label>
+                        <div class="space-y-2">
+                            <template x-for="(paragraph, index) in contentData.body_paragraphs" :key="index">
+                                <div class="flex items-start space-x-2">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-xs font-medium mt-2" x-text="index + 1"></span>
+                                    <textarea x-model="contentData.body_paragraphs[index]" rows="2" class="editor-field flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" :placeholder="`Paragraph ${index + 1}: Highlight relevant skills and experience...`"></textarea>
+                                    <button x-show="contentData.body_paragraphs.length > 1" @click="removeParagraph(index)" class="flex-shrink-0 p-2 text-red-500 hover:bg-red-50 rounded-md">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                        <button x-show="contentData.body_paragraphs.length < 4" @click="addParagraph()" class="mt-2 px-3 py-1 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                            + Add Paragraph
+                        </button>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Closing</label>
+                        <textarea x-model="contentData.closing" rows="2" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Express enthusiasm for the role and include a call to action..."></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Signature</label>
+                        <input type="text" x-model="contentData.signature" class="editor-field w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Sincerely, John Doe">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Template Selection -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Template</h2>
+                
+                <div class="grid grid-cols-1 gap-3">
+                    <template x-for="template in templates" :key="template.name">
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50" :class="formData.template_name === template.name ? 'border-primary-500 bg-primary-50' : 'border-gray-300'">
+                            <input type="radio" :value="template.name" x-model="formData.template_name" class="mr-3">
+                            <div>
+                                <div class="font-medium text-gray-900" x-text="template.display_name"></div>
+                                <div class="text-sm text-gray-500" x-text="template.description"></div>
+                            </div>
+                        </label>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                    <button @click="saveCoverLetter()" :disabled="loading" class="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span x-show="!loading">Save Cover Letter</span>
+                        <span x-show="loading" class="flex items-center justify-center">
+                            <div class="loading-spinner mr-2"></div>
+                            Saving...
+                        </span>
+                    </button>
+                    
+                    <button @click="generateCoverLetter()" :disabled="loading || !currentCoverLetterId" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span x-show="!loading">Generate PDF</span>
+                        <span x-show="loading" class="flex items-center justify-center">
+                            <div class="loading-spinner mr-2"></div>
+                            Generating...
+                        </span>
+                    </button>
+                    
+                    <button @click="previewMode = !previewMode" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                        Preview
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div x-show="previewMode" x-cloak class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click.self="previewMode = false">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white fade-in max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b pb-4 mb-4 flex justify-between items-center">
+                <h3 class="text-lg font-medium text-gray-900">Cover Letter Preview</h3>
+                <button @click="previewMode = false" class="text-gray-400 hover:text-gray-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="preview-content text-gray-800">
+                <div x-html="previewContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div x-show="message.show" x-cloak class="fixed bottom-4 right-4 z-50">
+        <div :class="message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-100' : 'bg-red-50 text-red-800 border border-red-100'" class="p-4 rounded-md shadow-md fade-in">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg x-show="message.type === 'success'" class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <svg x-show="message.type === 'error'" class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm" x-text="message.text"></p>
+                </div>
+                <div class="ml-auto pl-3">
+                    <button @click="message.show = false" class="inline-flex rounded-md p-1.5" :class="message.type === 'success' ? 'text-green-500 hover:bg-green-100' : 'text-red-500 hover:bg-red-100'">
+                        <span class="sr-only">Dismiss</span>
+                        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function coverLetterComposer() {
+    return {
+        loading: false,
+        loadingResumes: false,
+        showHelp: false,
+        previewMode: false,
+        currentCoverLetterId: null,
+        previewContent: '',
+        
+        formData: {
+            title: '',
+            target_company: '',
+            target_role: '',
+            job_description: '',
+            sender_name: '',
+            sender_email: '',
+            sender_phone: '',
+            sender_location: '',
+            recipient_name: '',
+            company_address: '',
+            job_reference: '',
+            resume_id: '',
+            template_name: 'professional_template'
+        },
+        
+        contentData: {
+            introduction: '',
+            body_paragraphs: [''],
+            closing: '',
+            signature: 'Sincerely,'
+        },
+        
+        resumes: [],
+        templates: [
+            {
+                name: 'professional_template',
+                display_name: 'Professional',
+                description: 'Classic professional template suitable for most applications'
+            },
+            {
+                name: 'modern_template',
+                display_name: 'Modern',
+                description: 'Contemporary design with clean layout'
+            },
+            {
+                name: 'creative_template',
+                display_name: 'Creative',
+                description: 'More expressive template for creative industries'
+            }
+        ],
+        
+        message: {
+            show: false,
+            type: 'success',
+            text: ''
+        },
+        
+        async init() {
+            await this.loadResumes();
+            this.updateSignature();
+        },
+        
+        async loadResumes() {
+            this.loadingResumes = true;
+            try {
+                const response = await fetch('/api/resume/user/local-user');
+                if (response.ok) {
+                    this.resumes = await response.json();
+                }
+            } catch (error) {
+                console.error('Error loading resumes:', error);
+            } finally {
+                this.loadingResumes = false;
+            }
+        },
+        
+        addParagraph() {
+            if (this.contentData.body_paragraphs.length < 4) {
+                this.contentData.body_paragraphs.push('');
+            }
+        },
+        
+        removeParagraph(index) {
+            if (this.contentData.body_paragraphs.length > 1) {
+                this.contentData.body_paragraphs.splice(index, 1);
+            }
+        },
+        
+        updateSignature() {
+            this.$watch('formData.sender_name', (value) => {
+                if (value && !this.contentData.signature.includes(value)) {
+                    this.contentData.signature = `Sincerely,\n${value}`;
+                }
+            });
+        },
+        
+        async saveCoverLetter() {
+            if (!this.validateForm()) return;
+            
+            this.loading = true;
+            try {
+                const payload = {
+                    ...this.formData,
+                    user_id: 'local-user'
+                };
+                
+                const response = await fetch('/api/cover-letter/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    this.currentCoverLetterId = result.id;
+                    this.showMessage('Cover letter saved successfully!', 'success');
+                } else {
+                    const error = await response.json();
+                    this.showMessage(error.detail || 'Failed to save cover letter', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving cover letter:', error);
+                this.showMessage('Error saving cover letter', 'error');
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        async generateCoverLetter() {
+            if (!this.currentCoverLetterId) {
+                this.showMessage('Please save the cover letter first', 'error');
+                return;
+            }
+            
+            if (!this.validateContent()) return;
+            
+            this.loading = true;
+            try {
+                const payload = {
+                    introduction: this.contentData.introduction,
+                    body_paragraphs: this.contentData.body_paragraphs.filter(p => p.trim()),
+                    closing: this.contentData.closing,
+                    signature: this.contentData.signature
+                };
+                
+                const response = await fetch(`/api/cover-letter/${this.currentCoverLetterId}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    this.previewContent = result.content.replace(/\n/g, '<br>');
+                    this.previewMode = true;
+                    this.showMessage('Cover letter generated successfully!', 'success');
+                } else {
+                    const error = await response.json();
+                    this.showMessage(error.detail || 'Failed to generate cover letter', 'error');
+                }
+            } catch (error) {
+                console.error('Error generating cover letter:', error);
+                this.showMessage('Error generating cover letter', 'error');
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        async downloadPDF() {
+            if (!this.currentCoverLetterId) return;
+            
+            try {
+                const response = await fetch(`/api/cover-letter/${this.currentCoverLetterId}/download`);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `cover_letter_${this.formData.title.replace(/\s+/g, '_')}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    const error = await response.json();
+                    this.showMessage(error.detail || 'Failed to download PDF', 'error');
+                }
+            } catch (error) {
+                console.error('Error downloading PDF:', error);
+                this.showMessage('Error downloading PDF', 'error');
+            }
+        },
+        
+        validateForm() {
+            if (!this.formData.title.trim()) {
+                this.showMessage('Please enter a cover letter title', 'error');
+                return false;
+            }
+            if (!this.formData.target_company.trim()) {
+                this.showMessage('Please enter the target company', 'error');
+                return false;
+            }
+            if (!this.formData.target_role.trim()) {
+                this.showMessage('Please enter the target position', 'error');
+                return false;
+            }
+            if (!this.formData.sender_name.trim()) {
+                this.showMessage('Please enter your name', 'error');
+                return false;
+            }
+            if (!this.formData.sender_email.trim()) {
+                this.showMessage('Please enter your email', 'error');
+                return false;
+            }
+            return true;
+        },
+        
+        validateContent() {
+            if (!this.contentData.introduction.trim()) {
+                this.showMessage('Please write an introduction', 'error');
+                return false;
+            }
+            if (!this.contentData.body_paragraphs.some(p => p.trim())) {
+                this.showMessage('Please write at least one body paragraph', 'error');
+                return false;
+            }
+            if (!this.contentData.closing.trim()) {
+                this.showMessage('Please write a closing paragraph', 'error');
+                return false;
+            }
+            return true;
+        },
+        
+        showMessage(text, type) {
+            this.message = {
+                show: true,
+                type: type,
+                text: text
+            };
+            setTimeout(() => {
+                this.message.show = false;
+            }, 5000);
+        }
+    }
+}
+</script>
+{% endblock %}

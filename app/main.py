@@ -5,6 +5,13 @@ and handles application startup and shutdown events. It serves as the central
 coordination point for the entire application.
 """
 
+from app.web.dashboard import web_router
+from app.web.core import core_web_router
+from app.database.connector import MongoConnectionManager
+from app.api.routers.token_usage import router as token_usage_router
+from app.api.routers.resume import resume_router
+from app.api.routers.cover_letter import cover_letter_router
+from app.api.routers.comprehensive_optimizer import comprehensive_router
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,12 +19,12 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from dotenv import load_dotenv
+import os
 
-from app.api.routers.resume import resume_router
-from app.api.routers.token_usage import router as token_usage_router
-from app.database.connector import MongoConnectionManager
-from app.web.core import core_web_router
-from app.web.dashboard import web_router
+# Load environment variables from .env file
+load_dotenv(override=True)
+
 
 # Initialize Jinja2 templates for HTML rendering
 templates = Jinja2Templates(directory="app/templates")
@@ -36,7 +43,7 @@ async def startup_logic(app: FastAPI) -> None:
         Exception: If any startup operation fails
     """
     try:
-        connection_manager = MongoConnectionManager()
+        connection_manager = MongoConnectionManager.get_instance()
         app.state.mongo = connection_manager
     except Exception as e:
         print(f"Error during startup: {e}")
@@ -66,7 +73,8 @@ app = FastAPI(
     description=""" 
     MyResumo is an AI-backed resume generator designed to tailor your resume and skills based on a given job description. This innovative tool leverages the latest advancements in AI technology to provide you with a customized resume that stands out.
     """,
-    license_info={"name": "MIT License", "url": "https://opensource.org/licenses/MIT"},
+    license_info={"name": "MIT License",
+                  "url": "https://opensource.org/licenses/MIT"},
     version="2.0.0",
     docs_url=None,
 )
@@ -108,7 +116,8 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     # For other errors on web routes, show a simple error page
     return templates.TemplateResponse(
         "404.html",
-        {"request": request, "status_code": exc.status_code, "detail": str(exc.detail)},
+        {"request": request, "status_code": exc.status_code,
+            "detail": str(exc.detail)},
         status_code=exc.status_code,
     )
 
@@ -216,13 +225,18 @@ async def health_check():
         JSONResponse: Status information about the application.
     """
     return JSONResponse(
-        content={"status": "healthy", "version": app.version, "service": "myresumo"}
+        content={"status": "healthy",
+                 "version": app.version, "service": "myresumo"}
     )
 
 
 # Include routers - These must come BEFORE the catch-all route
 app.include_router(resume_router)
-app.include_router(token_usage_router)  # Add token usage tracking API endpoints
+app.include_router(cover_letter_router)
+# Add token usage tracking API endpoints
+app.include_router(token_usage_router)
+# Add comprehensive optimizer API endpoints
+app.include_router(comprehensive_router)
 app.include_router(core_web_router)
 app.include_router(web_router)
 

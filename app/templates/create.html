@@ -47,73 +47,102 @@
         <div x-show="currentStep === 1" class="fade-in">
             <!-- Upload Section Redesign -->
             <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-lg mb-8">
-                <h2 class="text-xl font-semibold text-gray-800 mb-6">Upload Your Resume</h2>
-                
-                <div class="flex flex-col md:flex-row gap-8">
-                    <!-- Left: Resume Upload -->
-                    <div class="flex-1">
-                        <div 
-                            class="border-2 border-dashed border-gray-300 rounded-lg px-6 pt-10 pb-10 cursor-pointer bg-white transition-all duration-300 hover:border-blue-400 hover:bg-blue-50"
-                            :class="{'border-blue-500 bg-blue-50': isDraggingResume, 'border-green-500 bg-green-50': resumeFile}"
-                            @dragover.prevent="isDraggingResume = true"
-                            @dragleave.prevent="isDraggingResume = false"
-                            @drop.prevent="handleResumeDrop($event)">
-                            
-                            <div class="space-y-3 text-center">
-                                <template x-if="!resumeFile">
-                                    <div>
-                                        <svg class="mx-auto h-16 w-16 text-blue-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                        </svg>
-                                        <p class="mt-4 text-md text-gray-700 font-medium">
-                                            Drag and drop your resume here
-                                        </p>
-                                        <p class="mt-2 text-sm text-gray-500">
-                                            or
-                                            <label for="resume-file" class="text-blue-600 hover:underline cursor-pointer">browse files</label>
-                                        </p>
-                                        <p class="mt-1 text-xs text-gray-500">PDF only (max 5MB)</p>
-                                    </div>
-                                </template>
-                                <template x-if="resumeFile">
-                                    <div class="text-center">
-                                        <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <p class="mt-4 text-md font-medium text-gray-800" x-text="resumeFile.name"></p>
-                                        <p class="mt-1 text-sm text-gray-500" x-text="'Size: ' + (resumeFile.size / 1024).toFixed(2) + ' KB'"></p>
-                                        <button type="button" @click.prevent="resumeFile = null; resumeContent = ''" 
-                                          class="mt-3 px-3 py-1 text-sm text-white bg-red-500 hover:bg-red-600 rounded-md shadow-sm transition-colors duration-200">
-                                            Remove file
-                                        </button>
-                                    </div>
-                                </template>
-                            </div>
-                            <input id="resume-file" type="file" accept=".pdf" class="hidden" @change="handleResumeFileChange">
-                        </div>
-                    </div>
-                    
-                    <!-- Right: Resume Preview -->
-                    <div class="flex-1">
-                        <div class="bg-white border border-gray-200 rounded-lg h-full p-4">
-                            <h3 class="text-md font-medium text-gray-700 mb-3 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                <!-- Show master CV info when using master CV -->
+                <template x-if="isUsingMasterCV && masterCVDetails">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800 mb-6">Using Master CV</h2>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                            <div class="flex items-center mb-4">
+                                <svg class="h-6 w-6 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                Resume Preview
-                            </h3>
-                            
-                            <div class="h-48 overflow-y-auto bg-gray-50 border border-gray-200 rounded-md p-3" x-show="resumeContent !== ''">
-                                <p class="text-xs text-gray-700" x-text="resumeContent"></p>
+                                <span class="text-green-800 font-medium">Master CV Selected</span>
                             </div>
-                            
-                            <div class="h-48 flex items-center justify-center text-gray-400" x-show="resumeContent === ''">
-                                <p class="text-sm">Upload a resume to see preview</p>
+                            <div class="space-y-2">
+                                <p class="text-gray-700"><strong>Title:</strong> <span x-text="masterCVDetails.title"></span></p>
+                                <p class="text-gray-700"><strong>Filename:</strong> <span x-text="masterCVDetails.master_filename || 'N/A'"></span></p>
+                                <p class="text-gray-700"><strong>File Type:</strong> <span x-text="masterCVDetails.master_file_type || 'N/A'"></span></p>
+                                <p class="text-gray-700"><strong>Last Updated:</strong> <span x-text="new Date(masterCVDetails.master_updated_at).toLocaleDateString()"></span></p>
+                            </div>
+                            <div class="mt-4 p-3 bg-blue-50 rounded-md">
+                                <p class="text-sm text-blue-800">
+                                    <strong>Note:</strong> This resume will be optimized based on the job description you provide below.
+                                </p>
                             </div>
                         </div>
                     </div>
-                </div>
+                </template>
+                
+                <!-- Show regular upload interface when not using master CV -->
+                <template x-if="!isUsingMasterCV">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800 mb-6">Upload Your Resume</h2>
+                        
+                        <div class="flex flex-col md:flex-row gap-8">
+                            <!-- Left: Resume Upload -->
+                            <div class="flex-1">
+                                <div 
+                                    class="border-2 border-dashed border-gray-300 rounded-lg px-6 pt-10 pb-10 cursor-pointer bg-white transition-all duration-300 hover:border-blue-400 hover:bg-blue-50"
+                                    :class="{'border-blue-500 bg-blue-50': isDraggingResume, 'border-green-500 bg-green-50': resumeFile}"
+                                    @dragover.prevent="isDraggingResume = true"
+                                    @dragleave.prevent="isDraggingResume = false"
+                                    @drop.prevent="handleResumeDrop($event)">
+                                    
+                                    <div class="space-y-3 text-center">
+                                        <template x-if="!resumeFile">
+                                            <div>
+                                                <svg class="mx-auto h-16 w-16 text-blue-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                </svg>
+                                                <p class="mt-4 text-md text-gray-700 font-medium">
+                                                    Drag and drop your resume here
+                                                </p>
+                                                <p class="mt-2 text-sm text-gray-500">
+                                                    or
+                                                    <label for="resume-file" class="text-blue-600 hover:underline cursor-pointer">browse files</label>
+                                                </p>
+                                                <p class="mt-1 text-xs text-gray-500">PDF, DOCX, MD, TXT (max 5MB)</p>
+                                            </div>
+                                        </template>
+                                        <template x-if="resumeFile">
+                                            <div class="text-center">
+                                                <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                <p class="mt-4 text-md font-medium text-gray-800" x-text="resumeFile.name"></p>
+                                                <p class="mt-1 text-sm text-gray-500" x-text="'Size: ' + (resumeFile.size / 1024).toFixed(2) + ' KB'"></p>
+                                                <button type="button" @click.prevent="resumeFile = null; resumeContent = ''" 
+                                                  class="mt-3 px-3 py-1 text-sm text-white bg-red-500 hover:bg-red-600 rounded-md shadow-sm transition-colors duration-200">
+                                                    Remove file
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <input id="resume-file" type="file" accept=".pdf,.docx,.md,.markdown,.txt" class="hidden" @change="handleResumeFileChange">
+                                </div>
+                            </div>
+                            
+                            <!-- Right: Resume Preview -->
+                            <div class="flex-1">
+                                <div class="bg-white border border-gray-200 rounded-lg h-full p-4">
+                                    <h3 class="text-md font-medium text-gray-700 mb-3 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        Resume Preview
+                                    </h3>
+                                    <div class="text-sm text-gray-500 text-center py-8">
+                                        <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Upload your resume to see a preview
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
             </div>
             
             <!-- Job Description Section -->
@@ -121,6 +150,29 @@
                 <h2 class="text-xl font-semibold text-gray-800 mb-6">Job Description</h2>
                 
                 <div class="bg-white border border-gray-200 rounded-lg p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="target-company" class="block text-md font-medium text-gray-700 mb-2">Target Company</label>
+                            <input
+                                type="text"
+                                id="target-company"
+                                class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-200"
+                                placeholder="e.g. Carbon Robotics"
+                                x-model="targetCompany"
+                            >
+                        </div>
+                        <div>
+                            <label for="target-role" class="block text-md font-medium text-gray-700 mb-2">Position / Role</label>
+                            <input
+                                type="text"
+                                id="target-role"
+                                class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-200"
+                                placeholder="e.g. Manufacturing Technician"
+                                x-model="targetRole"
+                            >
+                        </div>
+                    </div>
+
                     <div class="mb-6">
                         <label for="job-title" class="block text-md font-medium text-gray-700 mb-2">
                             Job Title
@@ -555,6 +607,8 @@
             resumeId: null,
             jobTitle: '',
             jobDescription: '',
+            targetCompany: '',
+            targetRole: '',
             isDraggingResume: false,
             isUploading: false,
             isAnalyzing: false,
@@ -570,10 +624,23 @@
             resumePreviewType: 'pdf', // Can be 'pdf' or 'structured'
             resumePreviewUrl: '',
             previewData: null,
+            // Master CV properties
+            masterCVId: null,
+            masterCVDetails: null,
+            isUsingMasterCV: false,
             
             init() {
                 // Initialize the component
                 this.resetProgressInterval = null;
+                
+                // Check if we have a master_cv_id parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                const masterCVId = urlParams.get('master_cv_id');
+                
+                if (masterCVId) {
+                    this.masterCVId = masterCVId;
+                    this.loadMasterCVDetails();
+                }
                 
                 // Listen for escape key to exit full screen PDF view if implemented
                 window.addEventListener('keydown', (e) => {
@@ -587,7 +654,12 @@
             handleResumeDrop(event) {
                 this.isDraggingResume = false;
                 const file = event.dataTransfer.files[0];
-                if (file && file.type === 'application/pdf' && file.size <= 5 * 1024 * 1024) {
+                const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/markdown', 'text/plain'];
+                const validExtensions = ['.pdf', '.docx', '.md', '.markdown', '.txt'];
+                const fileName = file.name.toLowerCase();
+                const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+                
+                if (file && (validTypes.includes(file.type) || hasValidExtension) && file.size <= 5 * 1024 * 1024) {
                     this.resumeFile = file;
                     this.uploadResumeFile();
                 }
@@ -595,10 +667,44 @@
             
             handleResumeFileChange(event) {
                 const file = event.target.files[0];
-                if (file && file.type === 'application/pdf' && file.size <= 5 * 1024 * 1024) {
+                const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/markdown', 'text/plain'];
+                const validExtensions = ['.pdf', '.docx', '.md', '.markdown', '.txt'];
+                const fileName = file.name.toLowerCase();
+                const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+                
+                if (file && (validTypes.includes(file.type) || hasValidExtension) && file.size <= 5 * 1024 * 1024) {
                     this.resumeFile = file;
                     this.uploadResumeFile();
                 }
+            },
+            
+            // Load master CV details when creating a resume from master CV
+            async loadMasterCVDetails() {
+                try {
+                    const response = await fetch(`/api/resume/${this.masterCVId}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to load master CV details');
+                    }
+                    
+                    const masterCV = await response.json();
+                    this.masterCVDetails = masterCV;
+                    this.isUsingMasterCV = true;
+                    this.resumeId = this.masterCVId;
+                    this.resumeContent = masterCV.original_content;
+                    
+                    // Update the UI to show master CV is being used
+                    this.showNotification('Using master CV: ' + masterCV.title, 'success');
+                    
+                } catch (error) {
+                    console.error('Error loading master CV details:', error);
+                    this.showNotification('Failed to load master CV details', 'error');
+                }
+            },
+            
+            // Show notification helper
+            showNotification(message, type = 'info') {
+                // You can implement a toast notification system here
+                console.log(`${type}: ${message}`);
             },
             
             // Upload the resume file to the backend
@@ -644,8 +750,10 @@
             
             // Check if we can proceed to analysis
             canProceedToAnalysis() {
-                return (this.resumeFile && this.resumeContent && this.resumeId) && 
-                     this.jobDescription.trim().length > 0 && !this.isUploading;
+                // Check if we have either a regular file upload or a master CV
+                const hasResume = (this.isUsingMasterCV && this.masterCVDetails && this.resumeContent) || 
+                                (this.resumeFile && this.resumeContent && this.resumeId);
+                return hasResume && this.jobDescription.trim().length > 0 && !this.isUploading;
             },
             
             // Start the analysis process
@@ -667,7 +775,8 @@
                         },
                         body: JSON.stringify({
                             job_description: this.jobDescription,
-                            job_title: this.jobTitle || undefined
+                            target_company: this.targetCompany || undefined,
+                            target_role: this.targetRole || this.jobTitle || undefined
                         })
                     });
                     

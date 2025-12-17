@@ -6,16 +6,22 @@ the application. It manages connection pooling and provides context managers for
 safe database operations.
 """
 
-import os
+import logging
 from contextlib import asynccontextmanager
 from typing import Dict, Optional
 
 import motor.motor_asyncio
-from dotenv import load_dotenv
+from app.config import settings
 
-load_dotenv()
+# Set up logging
+logger = logging.getLogger(__name__)
 
-MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
+# Build the MongoDB URI with database name
+MONGODB_URI = f"{settings.MONGODB_URI.rstrip('/')}/{settings.MONGODB_DB}"
+
+# Log the URI (masked) for debugging
+masked_uri = MONGODB_URI.split("@")[-1] if "@" in MONGODB_URI else MONGODB_URI
+logger.info(f"MongoDB URI: ...{masked_uri}")
 
 
 class MongoConnectionManager:
@@ -27,12 +33,11 @@ class MongoConnectionManager:
 
     Attributes:
         _instance: Class-level singleton instance reference
-        _clients: Dictionary of motor AsyncIOMotorClient instances
-        url: MongoDB connection string
+        _client: The shared motor AsyncIOMotorClient instance
     """
 
     _instance: Optional["MongoConnectionManager"] = None
-    _clients: Dict[str, motor.motor_asyncio.AsyncIOMotorClient] = {}
+    _client: Optional[motor.motor_asyncio.AsyncIOMotorClient] = None
 
     MONGO_CONFIG = {
         "maxPoolSize": 1000,
@@ -43,34 +48,44 @@ class MongoConnectionManager:
         "retryWrites": True,
     }
 
-    def __new__(cls):
-        """Singleton implementation ensuring only one instance is created.
+    @classmethod
+    def get_instance(cls):
+        """Get the singleton instance of MongoConnectionManager.
 
         Returns:
-            The singleton MongoConnectionManager instance
+            MongoConnectionManager: The singleton instance
         """
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
+            cls._instance = cls()
         return cls._instance
 
     def __init__(self):
-        """Initialize the MongoConnectionManager with the connection string.
+        """Initialize the MongoDB connection manager."""
+        if MongoConnectionManager._instance is not None and MongoConnectionManager._instance is not self:
+            return  # Don't re-initialize if instance already exists
 
-        The initialization only happens once due to the singleton pattern.
-        """
-        self.url = MONGODB_URI
-
-    async def get_client(self) -> motor.motor_asyncio.AsyncIOMotorClient:
-        """Get the MongoDB client instance, creating it if it doesn't exist.
+    async def _get_client(self) -> motor.motor_asyncio.AsyncIOMotorClient:
+        """Get an async MongoDB client instance.
 
         Returns:
             AsyncIOMotorClient: MongoDB motor client for asynchronous operations
         """
-        if "default" not in self._clients:
-            self._clients["default"] = motor.motor_asyncio.AsyncIOMotorClient(
-                self.url, **self.MONGO_CONFIG
+        return motor.motor_asyncio.AsyncIOMotorClient(
+            MONGODB_URI, **self.MONGO_CONFIG
+        )
+        
+    def get_client(self) -> motor.motor_asyncio.AsyncIOMotorClient:
+        """Get the MongoDB client instance, creating it if it doesn't exist.
+        Uses connection pooling for better performance.
+
+        Returns:
+            AsyncIOMotorClient: MongoDB motor client for asynchronous operations
+        """
+        if self._client is None:
+            self._client = motor.motor_asyncio.AsyncIOMotorClient(
+                MONGODB_URI, **self.MONGO_CONFIG
             )
-        return self._clients["default"]
+        return self._client
 
     async def close_all(self):
         """Close all active MongoDB connections.
@@ -78,9 +93,9 @@ class MongoConnectionManager:
         This method should be called during application shutdown to properly
         release all database connections.
         """
-        for client in self._clients.values():
-            client.close()
-        self._clients.clear()
+        if self._client is not None:
+            self._client.close()
+            self._client = None
 
     @asynccontextmanager
     async def get_collection(self, db_name: str, collection_name: str):
@@ -99,7 +114,7 @@ class MongoConnectionManager:
                 await collection.find_one({"email": "user@example.com"})
             ```
         """
-        client = await self.get_client()
+        client = self.get_client()
         try:
             collection = client[db_name][collection_name]
             yield collection

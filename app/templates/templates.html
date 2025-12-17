@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Template Gallery - MyResumo{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8" x-data="templatesApp()">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Template Gallery</h1>
+        <p class="text-gray-500 mt-2">Choose from our collection of professional resume templates to find the perfect style for your needs.</p>
+    </div>
+
+    <!-- Loading State -->
+    <div x-show="isLoading" class="flex justify-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-primary-500"></div>
+    </div>
+
+    <!-- Templates Grid -->
+    <template x-if="!isLoading">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <template x-for="template in templates" :key="template.filename">
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+                    <!-- Template Preview -->
+                    <div class="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                        <div class="text-center p-4">
+                            <!-- Template Icon based on style -->
+                            <div class="mb-3">
+                                <template x-if="template.style === 'Professional'">
+                                    <svg class="h-12 w-12 text-gray-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </template>
+                                <template x-if="template.style === 'Modern'">
+                                    <svg class="h-12 w-12 text-blue-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                                    </svg>
+                                </template>
+                                <template x-if="template.style === 'Creative'">
+                                    <svg class="h-12 w-12 text-purple-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                                    </svg>
+                                </template>
+                                <template x-if="template.style === 'Minimalist'">
+                                    <svg class="h-12 w-12 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                </template>
+                                <template x-if="template.style === 'Simple'">
+                                    <svg class="h-12 w-12 text-gray-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                </template>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900" x-text="template.name"></h3>
+                        </div>
+                    </div>
+                    
+                    <!-- Template Info -->
+                    <div class="p-4">
+                        <div class="mb-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                  :class="{
+                                      'bg-blue-100 text-blue-800': template.style === 'Professional',
+                                      'bg-green-100 text-green-800': template.style === 'Modern',
+                                      'bg-purple-100 text-purple-800': template.style === 'Creative',
+                                      'bg-gray-100 text-gray-800': template.style === 'Minimalist',
+                                      'bg-yellow-100 text-yellow-800': template.style === 'Simple'
+                                  }" x-text="template.style"></span>
+                            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800" x-text="template.margins + ' Margins'"></span>
+                        </div>
+                        
+                        <p class="text-sm text-gray-600 mb-4" x-text="template.description"></p>
+                        
+                        <div class="flex space-x-2">
+                            <button @click="useTemplate(template.filename)" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                Use This Template
+                            </button>
+                            <button @click="previewTemplate(template.filename)" class="inline-flex justify-center items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                Preview
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template>
+
+    <!-- Template Selection Modal -->
+    <div x-show="showSelectionModal" class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="selection-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end sm:items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div x-show="showSelectionModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            
+            <!-- Modal panel -->
+            <div x-show="showSelectionModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-5 w-5 sm:h-6 sm:w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-base sm:text-lg leading-6 font-medium text-gray-900" id="selection-modal-title">
+                            Template Selected
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500">
+                                Your selected template "<span x-text="selectedTemplateName"></span>" is ready to use. You can now create a new resume with this template.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                    <button @click="createResumeWithTemplate()" type="button" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Create Resume
+                    </button>
+                    <button @click="showSelectionModal = false" type="button" class="mt-3 sm:mt-0 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function templatesApp() {
+        return {
+            templates: [],
+            isLoading: true,
+            showSelectionModal: false,
+            selectedTemplate: null,
+            selectedTemplateName: '',
+            
+            // Initialize
+            async init() {
+                await this.loadTemplates();
+            },
+            
+            // Load templates from API
+            async loadTemplates() {
+                try {
+                    const response = await fetch('/api/resume/templates');
+                    if (response.ok) {
+                        this.templates = await response.json();
+                    } else {
+                        this.showNotification('Failed to load templates', 'error');
+                    }
+                } catch (error) {
+                    this.showNotification('Error loading templates', 'error');
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+            
+            // Use template
+            useTemplate(templateFilename) {
+                this.selectedTemplate = templateFilename;
+                const template = this.templates.find(t => t.filename === templateFilename);
+                this.selectedTemplateName = template ? template.name : templateFilename;
+                this.showSelectionModal = true;
+            },
+            
+            // Create resume with selected template
+            createResumeWithTemplate() {
+                if (this.selectedTemplate) {
+                    // Store selected template in sessionStorage for the create page
+                    sessionStorage.setItem('selectedTemplate', this.selectedTemplate);
+                    window.location.href = '/create';
+                }
+            },
+            
+            // Preview template (placeholder for future implementation)
+            previewTemplate(templateFilename) {
+                this.showNotification('Preview feature coming soon!', 'info');
+            },
+            
+            // Show notification
+            showNotification(message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                    type === 'success' ? 'bg-green-500 text-white' : 
+                    type === 'error' ? 'bg-red-500 text-white' : 
+                    'bg-blue-500 text-white'
+                }`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 3000);
+            }
+        }
+    }
+</script>
+{% endblock %}

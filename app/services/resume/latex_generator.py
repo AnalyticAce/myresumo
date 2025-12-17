@@ -160,15 +160,30 @@ class LaTeXGenerator:
             str: The formatted date string. Returns 'Present' if input is empty or
                 'present' (case insensitive). Returns the original string if parsing fails.
         """
-        if not date_str or date_str.lower() == "present":
+        if not date_str or str(date_str).strip().lower() == "present":
             return "Present"
 
-        try:
-            date_obj = datetime.strptime(date_str, "%m/%Y")
-            return date_obj.strftime("%b. %Y")
-        except Exception as e:
-            print(f"Error formatting date: {e}")
+        date_str = str(date_str).strip()
+
+        # Common case: year-only values (e.g., "2005")
+        if re.fullmatch(r"\d{4}", date_str):
             return date_str
+
+        formats = ["%m/%Y", "%Y-%m", "%Y-%m-%d", "%Y/%m/", "%Y"]
+
+        for fmt in formats:
+            try:
+                date_obj = datetime.strptime(date_str, fmt)
+                if fmt == "%Y":
+                    return date_obj.strftime("%Y")
+                return date_obj.strftime("%b. %Y")
+            except ValueError:
+                continue
+
+        # If all formats fail, print error and return original
+        print(
+            f"Error formatting date: {date_str} does not match any expected format")
+        return date_str
 
     @staticmethod
     def bold_numbers(text) -> str:

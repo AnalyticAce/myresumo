@@ -16,6 +16,91 @@ import pytesseract
 from pdf2image import convert_from_path
 
 
+def extract_text_from_docx(docx_path: str) -> str:
+    """Extract text content from a DOCX file.
+    
+    Args:
+        docx_path: Path to the DOCX file
+        
+    Returns:
+        str: Extracted text content
+    """
+    try:
+        from docx import Document
+        doc = Document(docx_path)
+        text = []
+        for paragraph in doc.paragraphs:
+            text.append(paragraph.text)
+        return '\n'.join(text)
+    except ImportError:
+        return "Error: python-docx package is required for DOCX support. Install with: pip install python-docx"
+    except Exception as e:
+        return f"Error extracting text from DOCX: {str(e)}"
+
+
+def extract_text_from_markdown(md_path: str) -> str:
+    """Extract text content from a Markdown file.
+    
+    Args:
+        md_path: Path to the Markdown file
+        
+    Returns:
+        str: Extracted text content
+    """
+    try:
+        with open(md_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    except Exception as e:
+        return f"Error reading Markdown file: {str(e)}"
+
+
+def extract_text_from_txt(txt_path: str) -> str:
+    """Extract text content from a TXT file.
+    
+    Args:
+        txt_path: Path to the TXT file
+        
+    Returns:
+        str: Extracted text content
+    """
+    try:
+        with open(txt_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    except UnicodeDecodeError:
+        # Try with different encoding
+        try:
+            with open(txt_path, 'r', encoding='latin-1') as file:
+                return file.read()
+        except Exception as e:
+            return f"Error reading TXT file: {str(e)}"
+    except Exception as e:
+        return f"Error reading TXT file: {str(e)}"
+
+
+def extract_text_from_file(file_path: str, file_extension: str) -> str:
+    """Extract text content from various file formats.
+    
+    Args:
+        file_path: Path to the file
+        file_extension: File extension (e.g., '.pdf', '.docx', '.md', '.txt')
+        
+    Returns:
+        str: Extracted text content
+    """
+    file_extension = file_extension.lower()
+    
+    if file_extension == '.pdf':
+        return extract_text_from_pdf(file_path)
+    elif file_extension == '.docx':
+        return extract_text_from_docx(file_path)
+    elif file_extension in ['.md', '.markdown']:
+        return extract_text_from_markdown(file_path)
+    elif file_extension == '.txt':
+        return extract_text_from_txt(file_path)
+    else:
+        return f"Unsupported file format: {file_extension}"
+
+
 def extract_text_from_pdf(pdf_path: str) -> str:
     """Extract text content from a PDF file.
 
@@ -110,24 +195,37 @@ def create_temporary_pdf(latex_content: str) -> Optional[str]:
         # Compile LaTeX to PDF
         try:
             # Run pdflatex twice to ensure references are resolved
-            for _ in range(2):
+            for i in range(2):
                 process = subprocess.run(
-                    ["pdflatex", "-interaction=nonstopmode", tex_path.name],
+                    ["pdflatex", "-interaction=nonstopmode", "-shell-escape", tex_path.name],
                     cwd=temp_dir,
                     capture_output=True,
                     text=True,
+                    encoding='utf-8',
+                    errors='replace',  # Handle encoding errors
                     timeout=30,  # 30 seconds timeout
                 )
+                
+                # If pdflatex failed, check the error
+                if process.returncode != 0:
+                    print(f"pdflatex run {i+1} failed with return code {process.returncode}")
+                    print(f"STDOUT: {process.stdout}")
+                    print(f"STDERR: {process.stderr}")
+                    # Continue anyway - sometimes first run fails but second succeeds
 
             # Check if PDF was created
             pdf_path = Path(temp_dir) / "resume.pdf"
             if not pdf_path.exists():
-                print(f"PDF generation failed: {process.stderr}")
+                print(
+                    f"PDF generation failed with return code {process.returncode}")
+                print(f"STDOUT: {process.stdout}")
+                print(f"STDERR: {process.stderr}")
                 return None
 
             # Copy the PDF to a location that will
             # persist after the temp directory is deleted
-            permanent_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+            permanent_pdf = tempfile.NamedTemporaryFile(
+                delete=False, suffix=".pdf")
             permanent_pdf.close()
 
             with open(pdf_path, "rb") as src_file:
@@ -137,8 +235,17 @@ def create_temporary_pdf(latex_content: str) -> Optional[str]:
             return permanent_pdf.name
 
         except subprocess.TimeoutExpired:
-            print("PDF generation timed out")
+            print("PDF generation timed out after 30 seconds")
             return None
+        except UnicodeEncodeError as e:
+            print(f"PDF generation failed due to encoding error: {str(e)}")
+            # Try to clean the LaTeX content and retry
+            try:
+                cleaned_content = latex_content.encode('ascii', errors='ignore').decode('ascii')
+                return create_temporary_pdf(cleaned_content)
+            except:
+                print("Failed to clean LaTeX content for PDF generation")
+                return None
         except Exception as e:
             print(f"PDF generation failed: {str(e)}")
             return None

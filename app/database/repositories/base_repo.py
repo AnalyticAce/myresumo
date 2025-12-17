@@ -34,7 +34,7 @@ class BaseRepository:
         """
         self.db_name = db_name or os.getenv("DB_NAME", "myresumo")
         self.collection_name = collection_name
-        self.connection_manager = MongoConnectionManager()
+        self.connection_manager = MongoConnectionManager.get_instance()
 
     async def find_one(self, query: Dict) -> Optional[Dict]:
         """Find a single document matching the query.

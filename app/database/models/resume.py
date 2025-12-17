@@ -32,7 +32,7 @@ class Experience(BaseSchema):
     location: Optional[str] = None
     start_date: str
     end_date: str
-    four_tasks: List[str] = Field(..., min_items=4, max_items=4)
+    four_tasks: List[str] = Field(..., min_items=1, max_items=6)
 
 
 class Education(BaseSchema):
@@ -49,6 +49,7 @@ class Education(BaseSchema):
 
     institution: str
     degree: str
+    location: Optional[str] = None
     description: Optional[str] = None
     start_date: str
     end_date: str
@@ -88,8 +89,12 @@ class UserInformation(BaseSchema):
     main_job_title: str
     profile_description: str
     email: EmailStr
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    address: Optional[str] = None
     linkedin: Optional[str] = None
     github: Optional[str] = None
+    languages: Optional[List[str]] = None
     experiences: List[Experience]
     education: List[Education]
     skills: Skills
@@ -108,7 +113,7 @@ class Project(BaseSchema):
     """
 
     project_name: str
-    two_goals_of_the_project: List[str] = Field(..., min_items=2, max_items=2)
+    two_goals_of_the_project: List[str] = Field(..., min_items=1, max_items=4)
     project_end_result: str
     tech_stack: Optional[List[str]] = None
 
@@ -189,21 +194,39 @@ class Resume(BaseSchema):
     title: str
     original_content: str
     job_description: str
+    target_company: Optional[str] = None
+    target_role: Optional[str] = None
+    # Master CV fields
+    master_content: Optional[str] = None  # Original master CV content
+    master_filename: Optional[str] = None  # Original master CV filename
+    master_file_type: Optional[str] = None  # Original master CV file type
+    master_updated_at: Optional[datetime] = None  # When master CV was last updated
+    # Status fields for application tracking
+    application_status: str = Field(default="not_applied", description="Application status: not_applied, applied, answered, rejected, interview")
+    is_applied: bool = False  # Whether the resume has been sent/applied
+    applied_date: Optional[datetime] = None  # When the resume was applied
+    is_answered: bool = False  # Whether there's been a response
+    answered_date: Optional[datetime] = None  # When there was a response
     optimized_data: Optional[ResumeData] = None
-    ats_score: Optional[int] = None
-    original_ats_score: Optional[int] = None  # Score of the original resume before optimization
-    matching_skills: Optional[List[str]] = None  # Skills that match the job description
-    missing_skills: Optional[List[str]] = None  # Skills missing from resume but in job description
-    score_improvement: Optional[int] = None  # Difference between optimized and original scores
-    recommendation: Optional[str] = None  # AI recommendation for improving the resume
+    matching_score: Optional[int] = None
+    # Score of the original resume before optimization
+    original_matching_score: Optional[int] = None
+    # Skills that match the job description
+    matching_skills: Optional[List[str]] = None
+    # Skills missing from resume but in job description
+    missing_skills: Optional[List[str]] = None
+    # Difference between optimized and original scores
+    score_improvement: Optional[int] = None
+    # AI recommendation for improving the resume
+    recommendation: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     latex_template: str = "resume_template.tex"
 
-    @field_validator("ats_score", "original_ats_score")
+    @field_validator("matching_score", "original_matching_score")
     @classmethod
-    def validate_ats_score(cls, v):
-        """Validate that ATS score is between 0 and 100."""
+    def validate_matching_score(cls, v):
+        """Validate that matching score is between 0 and 100."""
         if v is not None and (v < 0 or v > 100):
-            raise ValueError("ATS score must be between 0 and 100")
+            raise ValueError("Matching score must be between 0 and 100")
         return v

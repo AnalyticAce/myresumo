@@ -5,7 +5,7 @@ views such as resume management, profile settings, and personalized features
 that require user context.
 """
 
-from fastapi import Path, Request
+from fastapi import Path, Request, Query
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
@@ -30,13 +30,61 @@ async def dashboard(
     and actions they can take to create or optimize resumes.
 
     Args:
-        request: The incoming HTTP request
+        request: The incoming request object
 
     Returns:
     -------
-        HTMLResponse: The rendered dashboard page
+        HTMLResponse: The dashboard HTML page
     """
     return templates.TemplateResponse("dashboard.html", {"request": request})
+
+
+@web_router.get(
+    "/master-cv",
+    summary="Master CV Management",
+    response_description="Master CV management page for uploading and managing master CVs",
+    response_class=HTMLResponse,
+)
+async def master_cv_management(
+    request: Request,
+):
+    """Render the master CV management page.
+
+    This endpoint displays the master CV management interface where users can
+    upload, view, and manage their master CVs.
+
+    Args:
+        request: The incoming request object
+
+    Returns:
+    -------
+        HTMLResponse: The master CV management HTML page
+    """
+    return templates.TemplateResponse("master_cv.html", {"request": request})
+
+
+@web_router.get(
+    "/templates",
+    summary="Template Gallery",
+    response_description="Template gallery page for browsing and selecting resume templates",
+    response_class=HTMLResponse,
+)
+async def template_gallery(
+    request: Request,
+):
+    """Render the template gallery page.
+
+    This endpoint displays the template gallery where users can browse
+    and select from different resume templates.
+
+    Args:
+        request: The incoming request object
+
+    Returns:
+    -------
+        HTMLResponse: The template gallery HTML page
+    """
+    return templates.TemplateResponse("templates.html", {"request": request})
 
 
 @web_router.get(
@@ -47,6 +95,7 @@ async def dashboard(
 )
 async def create_resume(
     request: Request,
+    master_cv_id: str = Query(None, description="Master CV ID to create resume from"),
 ):
     """Render the resume creation page.
 
@@ -124,6 +173,30 @@ async def optimize_resume_page(
             "page_title": "Optimize Resume",
         },
     )
+
+
+@web_router.get(
+    "/cover-letter",
+    summary="Cover Letter Composer",
+    response_description="Cover letter composition page",
+    response_class=HTMLResponse,
+)
+async def cover_letter_composer(
+    request: Request,
+):
+    """Render the cover letter composer page.
+
+    This endpoint displays the cover letter composition interface where users can
+    create, edit, and generate professional cover letters.
+
+    Args:
+        request: The incoming request object
+
+    Returns:
+    -------
+        HTMLResponse: The cover letter composer HTML page
+    """
+    return templates.TemplateResponse("cover_letter.html", {"request": request})
 
 
 @web_router.get(

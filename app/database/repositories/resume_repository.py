@@ -125,38 +125,39 @@ class ResumeRepository(BaseRepository):
             if original_ats_score is not None and ats_score < original_ats_score:
                 # Apply a correction factor to account for format differences
                 # This ensures the optimization doesn't appear to reduce the score
-                format_correction = original_ats_score - ats_score + 5  # Add a small improvement margin
+                format_correction = original_ats_score - \
+                    ats_score + 5  # Add a small improvement margin
                 corrected_ats_score = original_ats_score + format_correction
-                
+
                 # Cap at 100 to keep within valid score range
                 corrected_ats_score = min(100, corrected_ats_score)
-                
+
                 # Calculate corrected improvement
                 corrected_improvement = corrected_ats_score - original_ats_score
             else:
                 corrected_improvement = score_improvement
-                
+
             update_dict = {
-                "optimized_data": optimized_data.dict(),
+                "optimized_data": optimized_data.model_dump(),
                 "ats_score": corrected_ats_score,
                 "updated_at": datetime.now(),
             }
-            
+
             # Add optional fields if provided
             if original_ats_score is not None:
                 update_dict["original_ats_score"] = original_ats_score
-            
+
             if matching_skills is not None:
                 update_dict["matching_skills"] = matching_skills
-                
+
             if missing_skills is not None:
                 update_dict["missing_skills"] = missing_skills
-                
+
             update_dict["score_improvement"] = corrected_improvement
-                
+
             if recommendation is not None:
                 update_dict["recommendation"] = recommendation
-            
+
             return await self.update_one(
                 {"_id": ObjectId(resume_id)},
                 {"$set": update_dict},

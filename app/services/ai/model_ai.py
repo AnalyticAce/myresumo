@@ -10,7 +10,7 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_openai import ChatOpenAI
 
@@ -78,14 +78,15 @@ class AtsResumeOptimizer:
         self.model_name = model_name or os.getenv("MODEL_NAME")
         self.resume = resume
         self.api_key = api_key or os.getenv("API_KEY")
-        self.api_base = api_base or os.getenv("API_BASE")
+        self.api_base = api_base or os.getenv(
+            "API_BASE") or os.getenv("OLLAMA_BASE_URL")
         self.user_id = user_id
 
         # Initialize LLM component and output parser
         self.llm = self._get_openai_model()
         self.output_parser = JsonOutputParser()
         self.chain = None
-        
+
         # Initialize ATS scorer for skill extraction and analysis
         self.ats_scorer = None
         if self.api_key and self.api_base and self.model_name:
@@ -100,7 +101,7 @@ class AtsResumeOptimizer:
 
     def _get_openai_model(self) -> ChatOpenAI:
         """Initialize the OpenAI model with appropriate settings.
-        
+
         Returns:
             ChatOpenAI: Configured language model instance with token tracking
         """
@@ -113,195 +114,205 @@ class AtsResumeOptimizer:
                 api_base=self.api_base,
                 feature="resume_optimization",
                 user_id=self.user_id,
-                metadata={"resume_length": len(self.resume) if self.resume else 0}
+                metadata={"resume_length": len(
+                    self.resume) if self.resume else 0}
             )
         else:
             # Fallback to standard model if no specific model is configured
             return ChatOpenAI(temperature=0)
 
-    def _get_prompt_template(self, missing_skills: Optional[List[str]] = None) -> PromptTemplate:
-        """Create the PromptTemplate for ATS resume optimization.
+    def _get_prompt_template(self, missing_skills: List[str] = None) -> PromptTemplate:
+        """Create the PromptTemplate for ATS resume optimization with missing skills.
         
+        Implements advanced prompting techniques including:
+        - Chain-of-Thought (CoT) prompting
+        - Role-based prompting
+        - Multi-step reasoning
+        - Structured output requirements
+        - Multi-prompt chaining (inspired by quick-start guide)
+
         Args:
-            missing_skills: A list of skills identified as missing from the resume
-                        that should be incorporated if the candidate has them.
-
-        Returns:
-            PromptTemplate: A prompt template with instructions for resume optimization.
+            missing_skills: List of skills from the job description that are missing from the resume
         """
-        recommended_skills_section = ""
-        if missing_skills and len(missing_skills) > 0:
-            skills_list = ", ".join([f"'{skill}'" for skill in missing_skills])
-            recommended_skills_section = f"""
-        ## RECOMMENDED SKILLS TO ADD
-        
-        The following skills were identified as potentially valuable for this position but may be missing or not prominently featured in the resume:
-        
-        {skills_list}
-        
-        If the candidate has any experience with these skills, even minor exposure:
-        - Highlight them prominently in the skills section
-        - Look for ways to showcase these skills in past experience descriptions
-        - Ensure you're using the exact terminology as listed
-        - Look for related skills or experience that could be reframed to match these requirements
-        - Reframe transferable or implied experience to match the job requirements where ethically possible
-        - Be assertive in surfacing any relevant experience, even if it is not an exact match, as long as it is truthful
-        - Do NOT fabricate experience with these skills, only highlight them if they exist
-        """
-        
-        template = f"""
-        # ROLE: Expert ATS Resume Optimization Specialist
-        You are an expert ATS (Applicant Tracking System) Resume Optimizer with specialized knowledge in resume writing, keyword optimization, and applicant tracking systems. Your task is to transform the candidate's existing resume into a highly optimized version tailored specifically to the provided job description, maximizing the candidate's chances of passing through ATS filters while maintaining honesty and accuracy.
-        
-        ## INPUT DATA:
+        prompt = """# ROLE: Expert ATS Optimization Specialist & Career Strategist (10+ years experience)
 
-        ### JOB DESCRIPTION:
-        {{job_description}}
+## CONTEXT:
+You are a senior ATS optimization specialist with 15+ years of experience at Fortune 500 companies.
+Your expertise includes:
+- ATS algorithm behavior and scoring
+- Resume parsing technology
+- HR recruitment workflows
+- Industry-specific hiring practices
+- Career transition strategies
 
-        ### CANDIDATE'S CURRENT RESUME:
-        {{resume}}
-        
-        {recommended_skills_section}
+## TASK:
+Optimize the following resume to achieve >90% ATS match rate for the target job while maintaining human readability and impact.
 
-        ## OPTIMIZATION PROCESS:
+**CRITICAL SUCCESS FACTORS (from 500+ successful optimizations):**
+1. **First 10-second test**: Ensure the top 1/3 of the resume immediately communicates value
+2. **SOAR Method**: Every bullet point must follow Situation-Obstacle-Action-Result
+3. **Metrics in every bullet**: Every claim must be supported by quantifiable results
+4. **ATS Keywords**: Must match 80%+ of the job description's hard skills
+5. **Readability**: Must pass 8th-grade reading level for maximum ATS compatibility
 
-        1. **ANALYZE THE JOB DESCRIPTION**
-            - Extract key requirements, skills, qualifications, and responsibilities
-            - Identify primary keywords, secondary keywords, and industry-specific terminology
-            - Note the exact phrasing and terminology used by the employer
-            - Identify technical requirements (software, tools, frameworks, etc.)
-            - Detect company values and culture indicators
-            - Determine desired experience level and specific metrics/achievements valued
-            - Pay special attention to both hard skills (technical) and soft skills (interpersonal)
+## INPUT DATA:
 
-        2. **EVALUATE THE CURRENT RESUME**
-            - Compare existing content against job requirements
-            - Identify skills and experiences that align with the job
-            - Detect terminology mismatches and missing keywords
-            - Assess the presentation of achievements and results
-            - Calculate an initial "match score" to identify improvement areas
-            - Note transferable skills that could be reframed for the target position
-            - Look for implied skills that might not be explicitly stated
+### JOB DESCRIPTION:
+{job_description}
 
-        3. **CREATE AN ATS-OPTIMIZED RESUME**
-            - Use a clean, ATS-friendly format with standard section headings
-            - Include the candidate's name, contact information, and professional profiles
-            - Create a targeted professional summary highlighting relevant qualifications
-            - Incorporate exact keywords and phrases from the job description throughout the resume
-            - Prioritize and emphasize experiences most relevant to the target position
-            - Reorder content to place most relevant experiences and skills first
-            - Use industry-standard terminology that ATS systems recognize
-            - Quantify achievements with metrics where possible (numbers, percentages, dollar amounts)
-            - Remove irrelevant information that doesn't support this application
-            - Ensure job titles, company names, dates, and locations are clearly formatted
-            - Include a skills section with relevant hard and soft skills using job description terminology
-            - Highlight both technical capabilities and relevant soft skills like communication, teamwork, leadership
-            - Emphasize transferable skills and reframe related experience to match job requirements, even if not an exact match
-            - Be assertive in surfacing all relevant experience, including implied or adjacent skills, as long as it is truthful
+### CURRENT RESUME:
+{resume}
 
-        4. **ATS OPTIMIZATION TECHNIQUES**
-            - Use standard section headings (e.g., "Work Experience" not "Career Adventures")
-            - Avoid tables, columns, headers, footers, images, and special characters
-            - Use standard bullet points (• or - only)
-            - Use common file formats and fonts (Arial, Calibri, Times New Roman)
-            - Include keywords in context rather than keyword stuffing
-            - Use both spelled-out terms and acronyms where applicable (e.g., "Search Engine Optimization (SEO)")
-            - Keep formatting consistent throughout the document
-            - For technical positions, include relevant projects with clear descriptions
-            - Limit project listings to 3-4 most relevant examples
-            - Use synonyms and related terms for key skills to maximize keyword matching
-            - Make connections between past experience and job requirements clear and explicit
+## INSTRUCTIONS (THINK STEP BY STEP):
 
-        5. **ETHICAL GUIDELINES**
-            - Only include truthful information from the original resume
-            - Do not fabricate experience, skills, or qualifications
-            - Focus on highlighting relevant actual experience, not inventing new experience
-            - Reframe existing experience to highlight relevant skills
-            - Optimize language and presentation while maintaining accuracy
-            - When appropriate, add context to existing skills to make them more relevant to the job
+### 1. JOB ANALYSIS (MUST BE THOROUGH)
+**A. Extract Critical Requirements**
+- [ ] Identify must-have vs nice-to-have skills
+- [ ] Note any red flags in the job description
+- [ ] Highlight any special requirements (security clearances, etc.)
 
-        ## OUTPUT FORMAT:
+**B. Skills Mapping**
+- [ ] Extract all technical skills and tools
+- [ ] Identify soft skills and behavioral traits
+- [ ] Note any industry-specific terminology
 
-        You MUST return ONLY a valid JSON object with NO additional text, explanation, or commentary.
-        The JSON must follow this EXACT structure:
+**C. Seniority & Culture**
+- [ ] Determine experience level (Entry/Mid/Senior/Exec)
+- [ ] Identify company culture indicators
+- [ ] Note any leadership/management requirements
 
-        {{{{
-            "user_information": {{{{
-                "name": "",
-                "main_job_title": "",
-                "profile_description": "",
-                "email": "",
-                "linkedin": "",
-                "github": "",
-                "experiences": [
-                    {{{{
-                        "job_title": "",
-                        "company": "",
-                        "start_date": "",
-                        "end_date": "",
-                        "location": "",
-                        "four_tasks": []
-                    }}}}
-                ],
-                "education": [
-                    {{{{
-                        "institution": "",
-                        "degree": "",
-                        "location": "",
-                        "description": "",
-                        "start_date": "",
-                        "end_date": ""
-                    }}}}
-                ],
-                "skills": {{{{
-                    "hard_skills": [],
-                    "soft_skills": []
-                }}}},
-                "hobbies": []
-            }}}},
-            "projects": [
-                {{{{
-                    "project_name": "",
-                    "project_link": "",
-                    "two_goals_of_the_project": [],
-                    "project_end_result": "",
-                    "tech_stack": []
-                }}}}
-            ],
-            "certificate": [
-                {{{{
-                    "name": "",
-                    "link" : "",
-                    "institution": "",
-                    "description": "",
-                    "date": ""
-                }}}}
-            ],
-            "extra_curricular_activities": [
-                {{{{
-                    "name": "",
-                    "description": "",
-                    "start_date": "",
-                    "end_date": ""
-                }}}}
-            ]
-        }}}}
+### 2. RESUME AUDIT (BE RUTHLESS)
+**A. Formatting Check**
+- [ ] Single-column layout
+- [ ] Standard fonts (Arial, Calibri, Times New Roman)
+- [ ] No tables, text boxes, or graphics
+- [ ] Proper section headers (Work, Education, Skills)
 
-        IMPORTANT REQUIREMENTS:
-        1. The "four_tasks" array must contain EXACTLY 4 items for each experience
-        2. The "two_goals_of_the_project" array must contain EXACTLY 2 items for each project
-        3. Make sure all dates follow a consistent format (YYYY-MM or MM/YYYY)
-        4. Ensure all fields are filled with appropriate data extracted from the resume
-        5. Return ONLY the JSON object with no other text
-        """
-        return PromptTemplate.from_template(template=template)
+**B. Content Quality**
+- [ ] Every bullet starts with a power verb
+- [ ] All claims are quantified
+- [ ] No responsibilities, only achievements
+- [ ] No pronouns (I, me, my)
+
+**C. ATS Optimization**
+- [ ] Keywords from job description present
+- [ ] No headers/footers
+- [ ] Standard file format (.docx or .pdf)
+- [ ] Proper contact information format
+
+### 3. OPTIMIZATION STRATEGY (BE STRATEGIC)
+**A. Achievement Mapping**
+- [ ] Select top 3-5 career achievements
+- [ ] Ensure each maps to job requirements
+- [ ] Quantify all achievements ($, %, #, time)
+
+**B. Keyword Integration**
+- [ ] Primary keywords in first 1/3 of resume
+- [ ] Secondary keywords throughout
+- [ ] Include variations (e.g., "ML" and "Machine Learning")
+
+**C. Structure Optimization**
+- [ ] Most relevant experience first
+- [ ] Education/certifications if required
+- [ ] Skills section with exact job title keywords
+
+### 4. IMPLEMENT CHANGES (BE PRECISE)
+**A. Bullet Point Formula**
+- [ ] Start with power verb (Led, Spearheaded, Engineered)
+- [ ] Include metric within first 10 words
+- [ ] Show business impact (increased X by Y%)
+- [ ] Add context (team size, budget, scope)
+
+**B. Keyword Placement**
+- [ ] Job title in professional summary
+- [ ] Skills in skills section (exact match)
+- [ ] Technologies in experience bullets
+- [ ] Certifications in education/certifications
+
+**C. Readability Optimization**
+- [ ] 8th-grade reading level
+- [ ] Short paragraphs (2-3 lines max)
+- [ ] Bullet points (3-5 per role)
+- [ ] White space between sections
+
+## OUTPUT FORMAT (STRICT JSON):
+{{
+    "optimized_resume": "Fully reformatted resume with ATS optimizations",
+    "analysis": {{
+        "job_title": "Extracted job title",
+        "job_level": "Entry/Mid/Senior/Executive",
+        "hard_skills_matched": ["list", "of", "matched", "skills"],
+        "hard_skills_missing": ["list", "of", "missing", "skills"],
+        "soft_skills_identified": ["list", "of", "key", "soft", "skills"],
+        "ats_score_before": 0-100,
+        "ats_score_after": 0-100,
+        "improvement_areas": ["list", "of", "key", "improvements"],
+        "top_achievements": ["list", "of", "top", "3-5", "achievements"]
+    }},
+    "optimization_details": {{
+        "keywords_added": ["list", "of", "keywords", "added"],
+        "achievements_enhanced": ["list", "of", "enhanced", "achievements"],
+        "formatting_changes": ["list", "of", "format", "changes"],
+        "sections_modified": ["list", "of", "modified", "sections"]
+    }}
+}}
+
+## ADDITIONAL INSTRUCTIONS:
+1. **Content Rules**
+   - Use industry-specific terminology from the job description
+   - Maintain consistent verb tense (past for previous roles, present for current)
+   - Focus on achievements with metrics (increase, reduce, save, grow)
+   - Include 3-5 quantifiable metrics per role
+   
+2. **Formatting Rules**
+   - Use standard section headers (Work Experience, Education, Skills)
+   - Use standard job titles that ATS systems recognize
+   - Maintain consistent date format (MM/YYYY - MM/YYYY)
+   - Use bullet points (not paragraphs)
+   
+3. **ATS Optimization**
+   - Place important keywords in the first 1/3 of the resume
+   - Include variations of keywords (e.g., "ML" and "Machine Learning")
+   - Avoid headers/footers, tables, and graphics
+   - Use standard fonts (Arial, Calibri, Times New Roman)
+   
+4. **Readability**
+   - Target 8th-grade reading level
+   - Keep bullet points to 1-2 lines
+   - Use white space effectively
+   - Bold important achievements
+   
+5. **Required Sections**
+   - Contact Information
+   - Professional Summary (3-4 lines)
+   - Work Experience (reverse chronological)
+   - Education
+   - Skills (match job description)
+   - Certifications (if relevant)
+   
+6. **Pro Tips**
+   - Use the exact job title in your professional summary
+   - Mirror the language from the job description
+   - Focus on recent experience (last 10-15 years)
+   - Remove irrelevant personal information (age, photo, etc.)
+   - Save as .docx for best ATS compatibility"""
+
+        # Add missing skills section if provided
+        if missing_skills:
+            prompt += f"\n\n## MISSING SKILLS TO INCORPORATE:\n{', '.join(missing_skills)}"
+
+        return PromptTemplate(
+            template=prompt,
+            input_variables=["job_description", "resume"],
+            partial_variables={"format_instructions": self.output_parser.get_format_instructions()}
+        )
 
     def _setup_chain(self, missing_skills: Optional[List[str]] = None) -> None:
         """Set up the processing pipeline for job descriptions and resumes.
 
         This method configures the functional composition approach with the pipe operator
         to create a processing chain from prompt template to language model.
-        
+
         Args:
             missing_skills: List of skills identified as missing that should be incorporated
                         into the optimization prompt.
@@ -332,7 +343,7 @@ class AtsResumeOptimizer:
         try:
             missing_skills = []
             score_results = {}
-            
+
             # Step 1: Analyze resume against job description to identify skill gaps
             if self.ats_scorer:
                 try:
@@ -341,15 +352,19 @@ class AtsResumeOptimizer:
                     )
                     missing_skills = score_results.get("missing_skills", [])
                     matching_skills = score_results.get("matching_skills", [])
-                    
+
                     # Reconfigure processing chain with identified missing skills
                     self._setup_chain(missing_skills)
-                    
-                    print(f"Initial ATS Score: {score_results.get('final_score', 'N/A')}%")
-                    print(f"Found {len(missing_skills)} missing skills to incorporate")
-                    print(f"Found {len(matching_skills)} matching skills to emphasize")
+
+                    print(
+                        f"Initial ATS Score: {score_results.get('final_score', 'N/A')}%")
+                    print(
+                        f"Found {len(missing_skills)} missing skills to incorporate")
+                    print(
+                        f"Found {len(matching_skills)} matching skills to emphasize")
                 except Exception as e:
-                    print(f"Warning: ATS scoring failed, proceeding without skill recommendations: {str(e)}")
+                    print(
+                        f"Warning: ATS scoring failed, proceeding without skill recommendations: {str(e)}")
                     pass
 
             # Step 2: Generate optimized resume using LLM
@@ -369,7 +384,7 @@ class AtsResumeOptimizer:
                 try:
                     # Direct JSON parsing
                     json_result = json.loads(content)
-                    
+
                     # Enrich result with ATS analysis metrics
                     if score_results:
                         json_result["ats_metrics"] = {
@@ -378,15 +393,16 @@ class AtsResumeOptimizer:
                             "missing_skills": score_results.get("missing_skills", []),
                             "recommendation": score_results.get("recommendation", "")
                         }
-                    
+
                     return json_result
                 except json.JSONDecodeError:
                     # Fallback 1: Extract JSON from code blocks
-                    json_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", content)
+                    json_match = re.search(
+                        r"```(?:json)?\s*([\s\S]*?)\s*```", content)
                     if json_match:
                         json_str = json_match.group(1)
                         json_result = json.loads(json_str)
-                        
+
                         # Enrich result with ATS analysis metrics
                         if score_results:
                             json_result["ats_metrics"] = {
@@ -395,14 +411,14 @@ class AtsResumeOptimizer:
                                 "missing_skills": score_results.get("missing_skills", []),
                                 "recommendation": score_results.get("recommendation", "")
                             }
-                        
+
                         return json_result
 
                     # Fallback 2: Find any JSON-like structure in the response
                     json_str = re.search(r"(\{[\s\S]*\})", content)
                     if json_str:
                         json_result = json.loads(json_str.group(1))
-                        
+
                         # Enrich result with ATS analysis metrics
                         if score_results:
                             json_result["ats_metrics"] = {
@@ -411,7 +427,7 @@ class AtsResumeOptimizer:
                                 "missing_skills": score_results.get("missing_skills", []),
                                 "recommendation": score_results.get("recommendation", "")
                             }
-                        
+
                         return json_result
 
                     # No valid JSON found in the response

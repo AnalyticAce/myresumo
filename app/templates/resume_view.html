@@ -16,6 +16,12 @@
                 </svg>
                 Download PDF
             </button>
+            <button @click="showReplaceModal = true" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="-ml-1 mr-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                </svg>
+                Replace Master CV
+            </button>
             <a href="/dashboard" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                 <svg xmlns="http://www.w3.org/2000/svg" class="-ml-1 mr-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
@@ -300,7 +306,12 @@
                                     <span x-text="education.start_date"></span> - <span x-text="education.end_date"></span>
                                 </span>
                             </div>
-                            <p class="text-sm font-medium text-gray-500" x-text="education.degree"></p>
+                            <p class="text-sm font-medium text-gray-500">
+                                <span x-text="education.degree"></span>
+                                <template x-if="education.location">
+                                    <span class="text-gray-400"> • </span><span x-text="education.location"></span>
+                                </template>
+                            </p>
                             <p class="mt-2 text-sm text-gray-600" x-text="education.description || ''"></p>
                         </div>
                     </template>
@@ -386,6 +397,66 @@
             </template>
         </div>
     </div>
+
+    <!-- Replace Master CV Modal -->
+    <div x-show="showReplaceModal" class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="replace-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end sm:items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div x-show="showReplaceModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            
+            <!-- Modal panel -->
+            <div x-show="showReplaceModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-base sm:text-lg leading-6 font-medium text-gray-900" id="replace-modal-title">
+                            Replace Master CV
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500">
+                                Upload a new master CV file. This will replace the current master CV and update the content for future optimizations.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <div class="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="replace-file" class="relative cursor-pointer bg-white rounded-md font-medium text-orange-600 hover:text-orange-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-orange-500">
+                                    <span>Upload a file</span>
+                                    <input id="replace-file" name="file" type="file" class="sr-only" @change="handleFileChange" accept=".pdf,.docx,.md,.markdown,.txt">
+                                </label>
+                                <p class="pl-1">or drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">PDF, DOCX, MD, TXT up to 10MB</p>
+                            <div x-show="replaceFile" class="mt-2 text-sm text-gray-600">
+                                Selected: <span x-text="replaceFile.name" class="font-medium"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                    <button @click="replaceMasterCV()" type="button" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-orange-600 text-base font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm" :disabled="isReplacing || !replaceFile">
+                        <span x-show="!isReplacing">Replace Master CV</span>
+                        <span x-show="isReplacing">Replacing...</span>
+                    </button>
+                    <button @click="cancelReplace()" type="button" class="mt-3 sm:mt-0 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -398,6 +469,9 @@
             isLoading: true,
             hasError: false,
             errorMessage: '',
+            showReplaceModal: false,
+            isReplacing: false,
+            replaceFile: null,
             
             // Initialize
             async init() {
@@ -423,6 +497,68 @@
                 } finally {
                     this.isLoading = false;
                 }
+            },
+            
+            // Handle file input for replacement
+            handleFileChange(event) {
+                this.replaceFile = event.target.files[0];
+            },
+            
+            // Replace master CV
+            async replaceMasterCV() {
+                if (!this.replaceFile) {
+                    this.showNotification('Please select a file', 'error');
+                    return;
+                }
+                
+                this.isReplacing = true;
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('file', this.replaceFile);
+                    
+                    const response = await fetch(`/api/resume/${this.resumeId}/master`, {
+                        method: 'PUT',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        this.showNotification('Master CV replaced successfully', 'success');
+                        this.showReplaceModal = false;
+                        this.replaceFile = null;
+                        // Reload the resume data
+                        await this.loadResume();
+                    } else {
+                        const error = await response.json();
+                        this.showNotification(error.detail || 'Failed to replace master CV', 'error');
+                    }
+                } catch (error) {
+                    this.showNotification('Error replacing master CV', 'error');
+                } finally {
+                    this.isReplacing = false;
+                }
+            },
+            
+            // Cancel replacement
+            cancelReplace() {
+                this.showReplaceModal = false;
+                this.replaceFile = null;
+                this.isReplacing = false;
+            },
+            
+            // Show notification
+            showNotification(message, type = 'success') {
+                // Simple notification implementation
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                    type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                }`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 3000);
             },
             
             // Download resume as PDF
