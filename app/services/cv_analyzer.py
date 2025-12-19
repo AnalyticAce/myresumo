@@ -1,7 +1,7 @@
 """CV analysis service using Cerebras AI."""
 import json
 import re
-from typing import Dict
+from typing import Dict, List, Optional
 import logging
 from .cerebras_client import CerebrasClient
 from ..prompts.prompt_loader import PromptLoader
@@ -91,15 +91,6 @@ class CVAnalyzer:
 
     def _clean_json_response(self, response: str) -> str:
         """Remove markdown code fences and cleanup JSON with enhanced error handling.
-
-        Args:
-            response: Raw response from API
-
-        Returns:
-            str: Cleaned JSON string
-
-        Raises:
-            ValueError: If response cannot be cleaned to valid JSON
         """
         if not response or not response.strip():
             raise ValueError("Empty response received from API")
@@ -107,47 +98,37 @@ class CVAnalyzer:
         response = response.strip()
 
         # Remove ```json and ``` markers
-        if response.startswith('```'):
-            lines = response.split('\n')
-            if lines[0].startswith('```'):
-                lines = lines[1:]
-            if lines and lines[-1].strip() == '```':
-                lines = lines[:-1]
-            response = '\n'.join(lines)
+        if '```' in response:
+            import re
+            match = re.search(
+                r'```(?:json)?\s*(\{.*?\})\s*```', response, re.DOTALL)
+            if match:
+                response = match.group(1)
+            else:
+                # Fallback: remove fences manually
+                response = re.sub(r'```(?:json)?', '', response)
+                response = response.replace('```', '')
 
         # Find JSON object boundaries
         json_start = response.find('{')
         json_end = response.rfind('}')
 
         if json_start == -1 or json_end == -1 or json_end <= json_start:
-            raise ValueError("No valid JSON object found in response")
+            return response
 
         response = response[json_start:json_end+1]
-
-        # Fix common JSON issues with enhanced patterns
         response = response.strip()
 
-        # Fix trailing commas before closing braces/brackets
-        response = re.sub(r',\s*}', '}', response)
+        # Fix common JSON issues safely
+        # 1. Fix trailing commas before closing braces/brackets
+        response = re.sub(r',\s*\}', '}', response)
         response = re.sub(r',\s*\]', ']', response)
 
-        # Fix missing commas between array elements
-        response = re.sub(r'}\s*{', '},{', response)
-        response = re.sub(r'"\s*"', '","', response)
+        # 2. Fix missing commas between key-value pairs
+        response = re.sub(r'"\s*\n?\s*"([^"]+)"\s*:', r'", "\1":', response)
 
-        # Fix quotes around keys and values
-        # Add quotes to unquoted keys
-        response = re.sub(r'(\w+):', r'"\1":', response)
-        # Add quotes to unquoted values
-        response = re.sub(
-            r':\s*([^",\[\]\{\}][^",\[\]\{\}]*?)\s*([,\]\}])', r': "\1"\2', response)
-
-        # Remove any remaining markdown
-        response = response.replace('```json', '').replace('```', '')
-
-        # Validate basic JSON structure
-        if not response.startswith('{') or not response.endswith('}'):
-            raise ValueError("Invalid JSON structure after cleaning")
+        # 3. Fix missing commas between closing brace and next key
+        response = re.sub(r'\}\s*\n?\s*"([^"]+)"\s*:', r'}, "\1":', response)
 
         return response
 

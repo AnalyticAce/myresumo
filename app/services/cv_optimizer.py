@@ -1,4 +1,3 @@
-"""CV optimization service using Cerebras AI."""
 import json
 import re
 from typing import Dict, List, Optional
@@ -186,15 +185,6 @@ class CVOptimizer:
 
     def _clean_json_response(self, response: str) -> str:
         """Remove markdown code fences and cleanup JSON with enhanced error handling.
-
-        Args:
-            response: Raw response from API
-
-        Returns:
-            str: Cleaned JSON string
-
-        Raises:
-            ValueError: If response cannot be cleaned to valid JSON
         """
         if not response or not response.strip():
             raise ValueError("Empty response received from API")
@@ -202,49 +192,94 @@ class CVOptimizer:
         response = response.strip()
 
         # Remove ```json and ``` markers
-        if response.startswith('```'):
-            lines = response.split('\n')
-            if lines[0].startswith('```'):
-                lines = lines[1:]
-            if lines and lines[-1].strip() == '```':
-                lines = lines[:-1]
-            response = '\n'.join(lines)
+        if '```' in response:
+            match = re.search(
+                r'```(?:json)?\s*(\{.*?\})\s*```', response, re.DOTALL)
+            if match:
+                response = match.group(1)
+            else:
+                # Fallback: remove fences manually
+                response = re.sub(r'```(?:json)?', '', response)
+                response = response.replace('```', '')
 
         # Find JSON object boundaries
         json_start = response.find('{')
         json_end = response.rfind('}')
 
         if json_start == -1 or json_end == -1 or json_end <= json_start:
-            raise ValueError("No valid JSON object found in response")
+            return response
 
         response = response[json_start:json_end+1]
-
-        # Fix common JSON issues with enhanced patterns
         response = response.strip()
 
-        # Fix trailing commas before closing braces/brackets
-        response = re.sub(r',\s*}', '}', response)
+        # Fix common JSON issues safely
+        # 1. Fix trailing commas before closing braces/brackets
+        response = re.sub(r',\s*\}', '}', response)
         response = re.sub(r',\s*\]', ']', response)
 
-        # Fix missing commas between array elements
-        response = re.sub(r'}\s*{', '},{', response)
-        response = re.sub(r'"\s*"', '","', response)
+        # 2. Fix missing commas between key-value pairs
+        response = re.sub(r'"\s*\n?\s*"([^"]+)"\s*:', r'", "\1":', response)
 
-        # Fix quotes around keys and values
-        # Add quotes to unquoted keys
-        response = re.sub(r'(\w+):', r'"\1":', response)
-        # Add quotes to unquoted values
-        response = re.sub(
-            r':\s*([^",\[\]\{\}][^",\[\]\{\}]*?)\s*([,\]\}])', r': "\1"\2', response)
-
-        # Remove any remaining markdown
-        response = response.replace('```json', '').replace('```', '')
-
-        # Validate basic JSON structure
-        if not response.startswith('{') or not response.endswith('}'):
-            raise ValueError("Invalid JSON structure after cleaning")
+        # 3. Fix missing commas between closing brace and next key
+        response = re.sub(r'\}\s*\n?\s*"([^"]+)"\s*:', r'}, "\1":', response)
 
         return response
+
+    def _fallback_comprehensive_parse(self, response: str) -> Dict:
+        """Structural fallback for ResumeData one-shot optimization."""
+        # Use simple structure as base
+        result = {
+            "user_information": {
+                "name": "Candidate",
+                "main_job_title": "Professional",
+                "profile_description": "Experienced professional.",
+                "email": "none@example.com",
+                "experiences": [],
+                "education": [],
+                "skills": {"hard_skills": [], "soft_skills": []}
+            },
+            "projects": []
+        }
+
+        # Try to extract name
+        name_match = re.search(
+            r'"name"\s*:\s*"([^"]+)"', response, re.IGNORECASE)
+        if name_match:
+            result["user_information"]["name"] = name_match.group(1)
+
+        # Try to extract profile_description
+        profile_match = re.search(
+            r'"profile_description"\s*:\s*"([^"]+)"', response, re.IGNORECASE)
+        if profile_match:
+            result["user_information"]["profile_description"] = profile_match.group(
+                1)
+
+        # Try to extract skills
+        h_skills = re.findall(
+            r'"hard_skills"\s*:\s*\[(.*?)\]', response, re.DOTALL | re.IGNORECASE)
+        if h_skills:
+            skills = re.findall(r'"([^"]+)"', h_skills[0])
+            result["user_information"]["skills"]["hard_skills"] = skills
+
+        s_skills = re.findall(
+            r'"soft_skills"\s*:\s*\[(.*?)\]', response, re.DOTALL | re.IGNORECASE)
+        if s_skills:
+            skills = re.findall(r'"([^"]+)"', s_skills[0])
+            result["user_information"]["skills"]["soft_skills"] = skills
+
+        # Extract experiences (more robust list extraction)
+        exp_matches = re.finditer(
+            r'\{[^{}]*"job_title"\s*:\s*"(.*?)"[^{}]*"company"\s*:\s*"(.*?)"', response, re.DOTALL | re.IGNORECASE)
+        for match in exp_matches:
+            result["user_information"]["experiences"].append({
+                "job_title": match.group(1),
+                "company": match.group(2),
+                "start_date": "Unknown",
+                "end_date": "Present",
+                "four_tasks": ["Optimized role content (extracted via fallback)"]
+            })
+
+        return result
 
     def _fallback_parse(self, response: str) -> Dict:
         """Fallback parsing method for malformed JSON responses.

@@ -1225,9 +1225,14 @@ async def optimize_resume(
 
         # 7. Check for errors in result (Unified)
         if "error" in result:
-            # Standard legacy error handling
-            logger.error(f"AI service returned error: {result['error']}")
-            raise HTTPException(status_code=500, detail=result["error"])
+            if result.get("error") == "JSON Parse Error" or "JSON" in result.get("error", ""):
+                logger.warning(
+                    f"AI optimization had parsing issues: {result['error']}. Attempting recovery.")
+                # We will let it proceed to sanitize_for_pydantic which can handle it
+            else:
+                logger.error(
+                    f"AI service returned critical error: {result['error']}")
+                raise HTTPException(status_code=500, detail=result["error"])
 
         # 8. Log success
         logger.info("Optimization completed successfully")
