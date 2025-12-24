@@ -46,8 +46,8 @@ TASK: Create an optimized resume that:
 IMPORTANT: Extract and use the ACTUAL work experience from the current resume. Do not invent or omit any real positions.
 
 OUTPUT FORMAT:
-Ilnar Nizametdinov
-nizametdinov@gmail.com | +31 6 53230968 | 1441 DR Purmerend, The Netherlands
+John Doe
+john.doe@example.com | +31 6 12345678 | 123 Main St, Amsterdam, The Netherlands
 
 PROFESSIONAL SUMMARY
 [3-4 lines highlighting relevant experience]

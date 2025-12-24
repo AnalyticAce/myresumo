@@ -195,6 +195,7 @@ n8n_files/
 personal_*
 private_*
 confidential_*
+personal_data.py
 
 # Project guidance and internal files (keep private)
 *.guide.md

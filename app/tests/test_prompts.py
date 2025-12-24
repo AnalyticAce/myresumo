@@ -581,9 +581,9 @@ if __name__ == "__main__":
     test_keywords = ["Python", "Flask", "Docker", "microservices", "REST API"]
     
     candidate_data = {
-        "name": "Ilnar Nizametdinov",
+        "name": "John Doe",
         "current_title": "Backend Developer",
-        "location": "Purmerend, Netherlands",
+        "location": "Amsterdam, Netherlands",
         "years_exp": "2+",
         "top_skills": ["Python", "Flask/FastAPI", "Docker"],
         "achievements": [

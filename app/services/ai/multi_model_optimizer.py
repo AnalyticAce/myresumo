@@ -112,11 +112,11 @@ class MultiModelResumeOptimizer:
         # with required fields to satisfy Pydantic
         return {
             "user_information": {
-                "name": "Ilnar Nizametdinov",
+                "name": "John Doe",
                 "main_job_title": "Software Developer",
-                "email": "nizametdinov@gmail.com",
-                "phone": "+31 6 53230968",
-                "location": "1441 DR Purmerend, The Netherlands",
+                "email": "john.doe@example.com",
+                "phone": "+31 6 12345678",
+                "location": "123 Main St, Amsterdam, The Netherlands",
                 "profile_description": optimized_text[:1000] if optimized_text else "",
                 "experiences": [],
                 "education": [],
@@ -137,11 +137,11 @@ class MultiModelResumeOptimizer:
             user_info = resume_data.get("user_information", {})
             if isinstance(user_info, dict):
                 # Ensure all required fields are present
-                user_info.setdefault("name", "Ilnar Nizametdinov")
+                user_info.setdefault("name", "John Doe")
                 user_info.setdefault("main_job_title", "Software Developer")
-                user_info.setdefault("email", "nizametdinov@gmail.com")
-                user_info.setdefault("phone", "+31 6 53230968")
-                user_info.setdefault("location", "1441 DR Purmerend, The Netherlands")
+                user_info.setdefault("email", "john.doe@example.com")
+                user_info.setdefault("phone", "+31 6 12345678")
+                user_info.setdefault("location", "123 Main St, Amsterdam, The Netherlands")
                 user_info.setdefault("profile_description", user_info.get("profile_description", ""))
                 user_info.setdefault("experiences", user_info.get("experiences", []))
                 user_info.setdefault("education", user_info.get("education", []))
@@ -162,11 +162,11 @@ class MultiModelResumeOptimizer:
             else:
                 # If user_information is not a dict, create a default one
                 resume_data["user_information"] = {
-                    "name": "Ilnar Nizametdinov",
+                    "name": "John Doe",
                     "main_job_title": "Software Developer",
-                    "email": "nizametdinov@gmail.com",
-                    "phone": "+31 6 53230968",
-                    "location": "1441 DR Purmerend, The Netherlands",
+                    "email": "john.doe@example.com",
+                    "phone": "+31 6 12345678",
+                    "location": "123 Main St, Amsterdam, The Netherlands",
                     "profile_description": "",
                     "experiences": [],
                     "education": [],
