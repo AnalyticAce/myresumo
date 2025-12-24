@@ -2,18 +2,18 @@ import json
 import re
 from typing import Dict, List, Optional
 import logging
-from .cerebras_client import CerebrasClient
+from .ai_client import get_ai_client
 from ..prompts.prompt_loader import PromptLoader
 
 logger = logging.getLogger(__name__)
 
 
 class CVOptimizer:
-    """Optimize CV sections based on job description using Cerebras AI."""
+    """Optimize CV sections based on job description using multi-provider AI."""
 
     def __init__(self):
-        """Initialize optimizer with Cerebras client and prompt."""
-        self.client = CerebrasClient()
+        """Initialize optimizer with AI client and prompt."""
+        self.client = get_ai_client()
         self.loader = PromptLoader()
         self.system_prompt = self.loader.load_prompt('cv_optimizer')
         self.comprehensive_prompt = self.loader.load_prompt(

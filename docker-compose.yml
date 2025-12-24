@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # PowerCV service
+  powercv:
+    build: .
+    container_name: powercv-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Existing variables
+      - API_KEY=${API_KEY}
+      - MONGODB_URI=${MONGODB_URI}
+      
+      # Cerebras
+      - CEREBRAS_API_KEY=${CEREBRAS_API_KEY}
+      - AI_PROVIDER=${AI_PROVIDER:-cerebras}
+      
+      # n8n integration
+      - N8N_API_KEY=${N8N_API_KEY}
+    volumes:
+      - ./data:/app/data
+    networks:
+      - powercv-network
+    depends_on:
+      - mongodb
+
+  # n8n service
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: powercv-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - N8N_ENCRYPTION_KEY=n8n_encryption_key_1234567890abcdef
+      - N8N_USER_FOLDER=/home/node/.n8n
+      - GENERIC_TIMEZONE=Europe/Amsterdam
+      - N8N_LOG_LEVEL=info
+    volumes:
+      - ./n8n_files:/files
+      - n8n_data:/home/node/.n8n
+    networks:
+      - powercv-network
+
+  # MongoDB
+  mongodb:
+    image: mongo:latest
+    container_name: powercv-mongodb
+    restart: unless-stopped
+    ports:
+      - "27018:27017"  # Use different port to avoid conflict
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - powercv-network
+
+networks:
+  powercv-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  n8n_data:

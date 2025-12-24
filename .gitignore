@@ -186,3 +186,33 @@ credentials/
 client_secret.json
 service_account.json
 database_credentials.json
+
+# Additional sensitive and personal data
+n8n_files/
+*.personal.*
+*.private.*
+*.confidential.*
+personal_*
+private_*
+confidential_*
+
+# Project guidance and internal files (keep private)
+*.guide.md
+*.internal.md
+*.notes.md
+*.todo.md
+*.checkpoint.md
+*.memory.md
+*.plan.md
+*.strategy.md
+*.debug.md
+
+# Exclude all markdown files except README.md and CONTRIBUTING.md
+*.md
+!README.md
+!CONTRIBUTING.md
+
+# Docker volumes and data
+mongodb_data/
+n8n_data/
+docker-compose.override.yml

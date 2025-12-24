@@ -1,20 +1,20 @@
-"""Cover letter generation service using Cerebras AI."""
+"""Cover letter generation service using multi-provider AI."""
 import json
 import re
 from typing import Dict, List
 import logging
-from .cerebras_client import CerebrasClient
+from .ai_client import get_ai_client
 from ..prompts.prompt_loader import PromptLoader
 
 logger = logging.getLogger(__name__)
 
 
 class CoverLetterGenerator:
-    """Generate cover letters using Cerebras AI."""
+    """Generate cover letters using multi-provider AI."""
     
     def __init__(self):
-        """Initialize generator with Cerebras client and prompt."""
-        self.client = CerebrasClient()
+        """Initialize generator with AI client and prompt."""
+        self.client = get_ai_client()
         self.loader = PromptLoader()
         self.system_prompt = self.loader.load_prompt('cover_letter')
         logger.info("CoverLetterGenerator initialized")
@@ -69,6 +69,14 @@ Requirements: {', '.join(job_data.get('requirements', []))}
         
         # Parse JSON response
         try:
+            if not response or not response.strip():
+                logger.warning("Empty response received from AI")
+                return {
+                    "cover_letter": "Unable to generate cover letter due to empty AI response.",
+                    "word_count": 0,
+                    "tone": tone
+                }
+            
             cleaned = self._clean_json_response(response)
             result = json.loads(cleaned)
             
@@ -78,7 +86,12 @@ Requirements: {', '.join(job_data.get('requirements', []))}
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse cover letter response: {str(e)}")
             logger.debug(f"Raw response: {response[:500]}")
-            raise ValueError(f"Failed to parse cover letter response: {str(e)}")
+            # Return a fallback response instead of raising an error
+            return {
+                "cover_letter": f"Unable to generate cover letter due to parsing error. Raw response: {response[:200]}...",
+                "word_count": 0,
+                "tone": tone
+            }
     
     def _format_achievements(self, achievements: List[str]) -> str:
         """Format achievements list for the prompt.

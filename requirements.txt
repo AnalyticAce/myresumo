@@ -43,3 +43,7 @@ requests>=2.31.0
 pydantic>=2.0.0
 langchain-ollama
 uvloop
+
+# New: n8n integration support
+httpx>=0.25.0          # For async requests
+python-multipart>=0.0.6 # For file uploads

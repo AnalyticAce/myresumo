@@ -4,11 +4,6 @@ FROM python:3.11-slim AS builder
 # Set working directory
 WORKDIR /app
 
-# Install only the needed packages and clean cache to keep image size down
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3-distutils \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy requirements first to leverage Docker cache
 COPY ./requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \

@@ -1,20 +1,20 @@
-"""CV analysis service using Cerebras AI."""
+"""CV analysis service using multi-provider AI."""
 import json
 import re
 from typing import Dict, List, Optional
 import logging
-from .cerebras_client import CerebrasClient
+from .ai_client import get_ai_client
 from ..prompts.prompt_loader import PromptLoader
 
 logger = logging.getLogger(__name__)
 
 
 class CVAnalyzer:
-    """Analyze CV against job description using Cerebras AI."""
+    """Analyze CV against job description using multi-provider AI."""
 
     def __init__(self):
-        """Initialize analyzer with Cerebras client and prompt."""
-        self.client = CerebrasClient()
+        """Initialize analyzer with AI client and prompt."""
+        self.client = get_ai_client()
         self.loader = PromptLoader()
         self.system_prompt = self.loader.load_prompt('cv_analyzer')
         logger.info("CVAnalyzer initialized")
@@ -99,7 +99,6 @@ class CVAnalyzer:
 
         # Remove ```json and ``` markers
         if '```' in response:
-            import re
             match = re.search(
                 r'```(?:json)?\s*(\{.*?\})\s*```', response, re.DOTALL)
             if match:
@@ -141,7 +140,6 @@ class CVAnalyzer:
         Returns:
             dict: Basic analysis structure
         """
-        import re
 
         # Initialize basic structure
         analysis = {

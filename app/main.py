@@ -12,6 +12,7 @@ from app.api.routers.token_usage import router as token_usage_router
 from app.api.routers.resume import resume_router
 from app.api.routers.cover_letter import cover_letter_router
 from app.api.routers.comprehensive_optimizer import comprehensive_router
+from app.routes.n8n import router as n8n_router
 from app.services.workflow_orchestrator import CVWorkflowOrchestrator
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
@@ -318,6 +319,8 @@ app.include_router(cover_letter_router)
 app.include_router(token_usage_router)
 # Add comprehensive optimizer API endpoints
 app.include_router(comprehensive_router)
+# Add n8n integration endpoints
+app.include_router(n8n_router)
 app.include_router(core_web_router)
 app.include_router(web_router)
 
