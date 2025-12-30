@@ -36,7 +36,7 @@ from app.database.models.ai_cover_letter import AICoverLetterRequest, AICoverLet
 from app.database.repositories.cover_letter_repository import CoverLetterRepository
 from app.services.cover_letter import CoverLetterTemplateGenerator, AICoverLetterGenerator
 from app.services.resume.latex_generator import LaTeXGenerator
-from app.config import settings
+from app.config import computed_settings as settings
 
 # Configure logging
 logging.basicConfig(

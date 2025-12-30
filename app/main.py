@@ -306,9 +306,99 @@ async def generate_cover_letter_v2(request: CoverLetterRequest):
             request.tone
         )
         return result
-        
+
     except Exception as e:
         logger.error(f"Cover letter generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# New endpoints for automation features
+@app.post("/api/v1/scrape", tags=["Scraping"], summary="Scrape job description from URL")
+async def scrape_job_description(url: str):
+    """
+    Scrape job description from a LinkedIn, Indeed, or other job board URL.
+
+    Returns extracted job title, company, location, and full description.
+    """
+    try:
+        from app.services.scraper import fetch_job_description
+        result = await fetch_job_description(url)
+        return result
+
+    except Exception as e:
+        logger.error(f"Scraping error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to scrape job description: {str(e)}")
+
+
+@app.post("/api/v1/extract-keywords", tags=["Analysis"], summary="Extract keywords from job description")
+async def extract_keywords(jd_text: str):
+    """
+    Extract skills and requirements from a job description.
+
+    Useful for identifying what to highlight in your CV.
+    """
+    try:
+        from app.services.scraper import extract_keywords_from_jd
+        result = await extract_keywords_from_jd(jd_text)
+        return result
+
+    except Exception as e:
+        logger.error(f"Keyword extraction error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/optimize-structured", tags=["Optimization"], summary="Optimize using structured CV data")
+async def optimize_structured_cv(
+    master_cv_file: str,
+    jd_text: str,
+    generate_cover_letter: bool = True
+):
+    """
+    Optimize CV using structured master CV format (JSON/YAML).
+
+    This endpoint reads a structured CV file and generates a tailored version
+    for the provided job description.
+    """
+    try:
+        from app.services.master_cv import MasterCV
+        from pathlib import Path
+
+        # Load structured CV
+        cv_path = Path(master_cv_file)
+        if not cv_path.exists():
+            raise HTTPException(status_code=404, detail="CV file not found")
+
+        master_cv = MasterCV.from_file(str(cv_path))
+
+        # Extract relevant sections for this job
+        from app.services.scraper import extract_keywords_from_jd
+        jd_analysis = await extract_keywords_from_jd(jd_text)
+        keywords = jd_analysis.get("skills", [])
+
+        extracted_data = master_cv.extract_for_job(keywords)
+
+        # Run optimization
+        from app.services.workflow_orchestrator import CVWorkflowOrchestrator
+        orchestrator = CVWorkflowOrchestrator()
+
+        # Convert extracted data to text for optimization
+        cv_text = master_cv.to_markdown()
+
+        result = orchestrator.optimize_cv_for_job(
+            cv_text=cv_text,
+            jd_text=jd_text,
+            generate_cover_letter=generate_cover_letter
+        )
+
+        return {
+            "extracted_cv": extracted_data,
+            "optimization_result": result
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Structured optimization error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

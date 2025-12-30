@@ -8,7 +8,7 @@ import json
 import re
 from typing import Dict, List, Optional, Tuple
 from openai import OpenAI
-from app.config import settings
+from app.config import computed_settings as settings
 
 
 class SimpleMatchScorer:

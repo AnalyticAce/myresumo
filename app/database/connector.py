@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from typing import Dict, Optional
 
 import motor.motor_asyncio
-from app.config import settings
+from app.config import computed_settings as settings
 
 # Set up logging
 logger = logging.getLogger(__name__)

@@ -3,7 +3,7 @@
 from typing import Dict, Optional
 from pydantic import BaseModel, Field
 from openai import OpenAI
-from app.config import settings
+from app.config import computed_settings as settings
 from app.services.llm.prompts.cover_letter_prompts import (
     COVER_LETTER_PROMPT,
     COVER_LETTER_SYSTEM_PROMPT

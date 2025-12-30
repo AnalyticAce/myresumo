@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Dict, Any, Optional
 import time
 from openai import OpenAI
-from app.config import settings
+from app.config import computed_settings as settings
 
 logger = logging.getLogger(__name__)
 
