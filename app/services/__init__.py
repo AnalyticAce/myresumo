@@ -16,13 +16,13 @@ from app.services.cv_analyzer import CVAnalyzer
 from app.services.cover_letter_gen import CoverLetterGenerator
 from app.services.workflow_orchestrator import CVWorkflowOrchestrator
 from app.services.cerebras_client import CerebrasClient
-from app.services.ai_providers import AIProviders
+from app.services.ai_providers import AIClient
 from app.services.ai_client import get_ai_client
 
 __all__ = [
     # AI Clients
     "get_ai_client",
-    "AIProviders",
+    "AIClient",
     "CerebrasClient",
     # Workflow
     "CVWorkflowOrchestrator",
