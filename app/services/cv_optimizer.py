@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 import logging
 from .ai_client import get_ai_client
 from ..prompts.prompt_loader import PromptLoader
+from ..utils.shared_utils import JSONParser, ErrorHandler, TextProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ class CVOptimizer:
 {json.dumps(analysis, indent=2) if analysis else "Not provided"}
 """
 
-        # Call Cerebras API with low temp for structure
+        # Call AI API with low temp for structure
         response = self.client.chat_completion(
             system_prompt=self.comprehensive_prompt,
             user_message=user_message,
@@ -57,17 +58,12 @@ class CVOptimizer:
             max_tokens=4000
         )
 
-        try:
-            cleaned = self._clean_json_response(response)
-            result = json.loads(cleaned)
-            logger.info("Comprehensive optimization JSON parsed successfully")
-            return result
-        except json.JSONDecodeError as e:
-            logger.error(
-                f"Failed to parse comprehensive optimizer response: {str(e)}")
-            # If JSON fails, the legacy sanitize logic in the router will handle the fallback
-            # but we return the raw string so it can be attempted to be parsed there
-            return {"error": "JSON Parse Error", "raw_response": response}
+        # Parse JSON response with fallback
+        fallback_result = self._get_fallback_comprehensive_structure()
+        result = JSONParser.safe_json_parse(response, fallback_result)
+        
+        logger.info("Comprehensive optimization JSON parsed successfully")
+        return result
 
     def optimize_section(
         self,
@@ -183,52 +179,13 @@ class CVOptimizer:
             optimization_focus=optimization_focus
         )
 
-    def _clean_json_response(self, response: str) -> str:
-        """Remove markdown code fences and cleanup JSON with enhanced error handling.
+    def _get_fallback_comprehensive_structure(self) -> Dict:
+        """Get fallback comprehensive structure.
+        
+        Returns:
+            dict: Basic comprehensive structure for fallback cases
         """
-        if not response or not response.strip():
-            raise ValueError("Empty response received from API")
-
-        response = response.strip()
-
-        # Remove ```json and ``` markers
-        if '```' in response:
-            match = re.search(
-                r'```(?:json)?\s*(\{.*?\})\s*```', response, re.DOTALL)
-            if match:
-                response = match.group(1)
-            else:
-                # Fallback: remove fences manually
-                response = re.sub(r'```(?:json)?', '', response)
-                response = response.replace('```', '')
-
-        # Find JSON object boundaries
-        json_start = response.find('{')
-        json_end = response.rfind('}')
-
-        if json_start == -1 or json_end == -1 or json_end <= json_start:
-            return response
-
-        response = response[json_start:json_end+1]
-        response = response.strip()
-
-        # Fix common JSON issues safely
-        # 1. Fix trailing commas before closing braces/brackets
-        response = re.sub(r',\s*\}', '}', response)
-        response = re.sub(r',\s*\]', ']', response)
-
-        # 2. Fix missing commas between key-value pairs
-        response = re.sub(r'"\s*\n?\s*"([^"]+)"\s*:', r'", "\1":', response)
-
-        # 3. Fix missing commas between closing brace and next key
-        response = re.sub(r'\}\s*\n?\s*"([^"]+)"\s*:', r'}, "\1":', response)
-
-        return response
-
-    def _fallback_comprehensive_parse(self, response: str) -> Dict:
-        """Structural fallback for ResumeData one-shot optimization."""
-        # Use simple structure as base
-        result = {
+        return {
             "user_information": {
                 "name": "Candidate",
                 "main_job_title": "Professional",
@@ -241,80 +198,6 @@ class CVOptimizer:
             "projects": []
         }
 
-        # Try to extract name
-        name_match = re.search(
-            r'"name"\s*:\s*"([^"]+)"', response, re.IGNORECASE)
-        if name_match:
-            result["user_information"]["name"] = name_match.group(1)
-
-        # Try to extract profile_description
-        profile_match = re.search(
-            r'"profile_description"\s*:\s*"([^"]+)"', response, re.IGNORECASE)
-        if profile_match:
-            result["user_information"]["profile_description"] = profile_match.group(
-                1)
-
-        # Try to extract skills
-        h_skills = re.findall(
-            r'"hard_skills"\s*:\s*\[(.*?)\]', response, re.DOTALL | re.IGNORECASE)
-        if h_skills:
-            skills = re.findall(r'"([^"]+)"', h_skills[0])
-            result["user_information"]["skills"]["hard_skills"] = skills
-
-        s_skills = re.findall(
-            r'"soft_skills"\s*:\s*\[(.*?)\]', response, re.DOTALL | re.IGNORECASE)
-        if s_skills:
-            skills = re.findall(r'"([^"]+)"', s_skills[0])
-            result["user_information"]["skills"]["soft_skills"] = skills
-
-        # Extract experiences (more robust list extraction)
-        exp_matches = re.finditer(
-            r'\{[^{}]*"job_title"\s*:\s*"(.*?)"[^{}]*"company"\s*:\s*"(.*?)"', response, re.DOTALL | re.IGNORECASE)
-        for match in exp_matches:
-            result["user_information"]["experiences"].append({
-                "job_title": match.group(1),
-                "company": match.group(2),
-                "start_date": "Unknown",
-                "end_date": "Present",
-                "four_tasks": ["Optimized role content (extracted via fallback)"]
-            })
-
-        return result
-
-    def _fallback_parse(self, response: str) -> Dict:
-        """Fallback parsing method for malformed JSON responses.
-
-        Args:
-            response: Raw response from API
-
-        Returns:
-            dict: Basic optimization structure
-        """
-        import re
-
-        # Initialize basic structure
-        optimization_result = {
-            "optimized_content": response.strip(),
-            "changes_made": "Content extracted with fallback parsing due to JSON errors",
-            "keywords_used": [],
-            "ats_score_impact": "Unable to determine due to parsing issues",
-            "recommendations": ["Review and manually optimize the content"]
-        }
-
-        # Try to extract keywords
-        keyword_matches = re.findall(
-            r'"?keyword"?\s*:\s*"([^"]+)"', response, re.IGNORECASE)
-        if keyword_matches:
-            optimization_result["keywords_used"] = keyword_matches[:10]
-
-        # Try to extract optimized content
-        content_match = re.search(
-            r'"?optimized_content"?\s*:\s*"([^"]+)"', response, re.IGNORECASE)
-        if content_match:
-            optimization_result["optimized_content"] = content_match.group(1)
-
-        return optimization_result
-
     def _extract_optimized_section(self, response: Dict) -> str:
         """Extract just the optimized content from response.
 
@@ -325,31 +208,3 @@ class CVOptimizer:
             str: Optimized section content only
         """
         return response.get('optimized_content', '')
-
-    def _parse_optimizer_response(self, response: str) -> Dict:
-        """Parse and validate optimizer response.
-
-        Args:
-            response: Raw response from API
-
-        Returns:
-            dict: Parsed and validated response
-        """
-        try:
-            cleaned = self._clean_json_response(response)
-            result = json.loads(cleaned)
-
-            # Validate required fields
-            required_fields = ['optimized_content',
-                               'changes_made', 'keywords_used']
-            for field in required_fields:
-                if field not in result:
-                    logger.warning(
-                        f"Missing required field in optimizer response: {field}")
-                    result[field] = ''
-
-            return result
-
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse optimizer response: {str(e)}")
-            raise ValueError(f"Failed to parse optimizer response: {str(e)}")

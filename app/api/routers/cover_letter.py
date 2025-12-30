@@ -180,7 +180,7 @@ async def create_cover_letter(
         )
 
         new_cover_letter = CoverLetter(
-            user_id="local-user",  # TODO: Get from authentication
+            user_id="local-user",  # TODO: Implement proper authentication system
             title=cover_letter_data.title,
             resume_id=cover_letter_data.resume_id,
             target_company=cover_letter_data.target_company,

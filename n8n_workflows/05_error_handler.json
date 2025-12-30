@@ -1,0 +1,316 @@
+{
+  "name": "PowerCV - Error Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "onlyItemsThisWorkflow": false
+      },
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ],
+      "notes": "Triggers when any workflow fails"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "error_message",
+              "value": "={{ $error.message }}"
+            },
+            {
+              "name": "workflow_name",
+              "value": "={{ $workflow.name }}"
+            },
+            {
+              "name": "execution_id",
+              "value": "={{ $execution.id }}"
+            },
+            {
+              "name": "failing_node",
+              "value": "={{ $error.node.name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Extract Error Details",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ],
+      "notes": "Extract error information"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "error_type",
+              "value": "={{ $regexExtract($error.message, '.*?(Error|Exception)', 1) || 'Unknown' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Classify Error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ],
+      "notes": "Classify error type for handling"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $node['Classify Error'].json['error_type'] }}",
+              "operation": "contains",
+              "value2": "RateLimit"
+            }
+          ]
+        }
+      },
+      "name": "Check Rate Limit",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        950,
+        300
+      ],
+      "notes": "Check if this is a rate limit error"
+    },
+    {
+      "parameters": {
+        "amount": 60,
+        "unit": "seconds",
+        "options": {}
+      },
+      "name": "Wait Before Retry",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        200
+      ],
+      "notes": "Wait 60 seconds before retry"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://powercv-api:8080/api/v2/optimize",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "cv_text",
+              "value": "={{ $env.RETRY_CV_TEXT }}"
+            },
+            {
+              "name": "jd_text",
+              "value": "={{ $env.RETRY_JD_TEXT }}"
+            },
+            {
+              "name": "generate_cover_letter",
+              "value": "=false"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60
+        }
+      },
+      "name": "Retry Operation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1450,
+        200
+      ],
+      "notes": "Retry the failed operation"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "log_entry",
+              "value": "={\"timestamp\": \"{{ $now }}\", \"workflow\": \"{{ $workflow.name }}\", \"error\": \"{{ $error.message }}\", \"severity\": \"critical\", \"action_taken\": \"retry_skipped\"}"
+            }
+          ]
+        },
+        "options": {
+          "fileName": "=/data/error_logs.json"
+        }
+      },
+      "name": "Log to File",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        450
+      ],
+      "notes": "Log error to file for debugging"
+    },
+    {
+      "parameters": {
+        "channel": "=alerts",
+        "text": "=🚨 **PowerCV Workflow Error**\n\n**Workflow:** {{ $workflow.name }}\n**Error:** {{ $error.message }}\n**Node:** {{ $error.node.name }}\n**Execution ID:** {{ $execution.id }}\n\n_This is a critical error that requires attention._",
+        "options": {
+          "blocks": true
+        }
+      },
+      "name": "Send Discord Alert",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 1,
+      "position": [
+        1450,
+        450
+      ],
+      "notes": "Send alert to Discord"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "days",
+        "options": {}
+      },
+      "name": "Create Incident",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1700,
+        450
+      ],
+      "notes": "Wait before creating incident"
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Error Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Error Details": {
+      "main": [
+        [
+          {
+            "node": "Classify Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Error": {
+      "main": [
+        [
+          {
+            "node": "Check Rate Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Rate Limit": {
+      "main": [
+        [
+          {
+            "node": "Wait Before Retry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Before Retry": {
+      "main": [
+        [
+          {
+            "node": "Retry Operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to File": {
+      "main": [
+        [
+          {
+            "node": "Send Discord Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry Operation": {
+      "main": [
+        [
+          {
+            "node": "Create Incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Discord Alert": {
+      "main": [
+        [
+          {
+            "node": "Create Incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": true,
+  "id": "error-handler-workflow",
+  "tags": [
+    {
+      "name": "PowerCV",
+      "color": "#007acc"
+    },
+    "Error",
+    "Handling"
+  ]
+}

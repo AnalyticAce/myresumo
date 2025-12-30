@@ -1,43 +1,67 @@
-# Use Python 3.11 slim variant to reduce image size
-FROM python:3.11-slim AS builder
+# Use Python 3.12 slim variant for smaller base image
+FROM python:3.12-slim AS builder
+
+# Set build arguments
+ARG PIP_NO_CACHE_DIR=1
+ARG PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # Set working directory
-WORKDIR /app
+WORKDIR /build
 
-# Copy requirements first to leverage Docker cache
+# Install build dependencies for packages that need compilation
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first to leverage Docker layer caching
 COPY ./requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
+
+# Install Python dependencies in a virtual environment
+RUN python -m venv /opt/venv && \
+    . /opt/venv/bin/pip install --no-cache-dir --upgrade pip wheel && \
     pip install --no-cache-dir -r requirements.txt
 
-# Multi-stage build for a smaller final image
-FROM python:3.11-slim
+# Final stage - minimal runtime image
+FROM python:3.12-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PORT=8080
+    PORT=8080 \
+    PATH="/opt/venv/bin:$PATH"
 
-WORKDIR /code
+# Install minimal runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # TeX Live minimal for PDF generation (if needed)
+    texlive-latex-base \
+    texlive-fonts-recommended \
+    texlive-latex-extra \
+    lmodern \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Copy installed packages from builder stage
-COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
-COPY --from=builder /usr/local/bin/ /usr/local/bin/
+WORKDIR /app
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
 
 # Copy application code
-COPY ./app /code/app
+COPY ./app /app/app
 
-# Create a non-root user and switch to it for security
-RUN addgroup --system app && \
-    adduser --system --group app && \
-    chown -R app:app /code
+# Create a non-root user for security
+RUN groupadd --system app && \
+    useradd --system --gid app --home-dir /app --shell /bin/bash app && \
+    chown -R app:app /app
+
+# Switch to non-root user
 USER app
 
 # Expose the port the app runs on
 EXPOSE 8080
 
-# Add healthcheck to ensure the application is responsive
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
+# Health check using Python directly (no curl dependency)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')" || exit 1
 
-# Use uvicorn for production deployment
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Run with uvicorn for production
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "2"]

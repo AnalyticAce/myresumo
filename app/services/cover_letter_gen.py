@@ -5,6 +5,7 @@ from typing import Dict, List
 import logging
 from .ai_client import get_ai_client
 from ..prompts.prompt_loader import PromptLoader
+from ..utils.shared_utils import JSONParser, ErrorHandler
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +35,6 @@ class CoverLetterGenerator:
             
         Returns:
             dict: Generated cover letter and metadata
-            
-        Raises:
-            ValueError: If response parsing fails
         """
         logger.info(f"Generating cover letter with {tone} tone")
         
@@ -59,7 +57,7 @@ Requirements: {', '.join(job_data.get('requirements', []))}
 {tone}
 """
         
-        # Call Cerebras API
+        # Call AI API
         response = self.client.chat_completion(
             system_prompt=self.system_prompt,
             user_message=user_message,
@@ -67,31 +65,12 @@ Requirements: {', '.join(job_data.get('requirements', []))}
             max_tokens=1500
         )
         
-        # Parse JSON response
-        try:
-            if not response or not response.strip():
-                logger.warning("Empty response received from AI")
-                return {
-                    "cover_letter": "Unable to generate cover letter due to empty AI response.",
-                    "word_count": 0,
-                    "tone": tone
-                }
-            
-            cleaned = self._clean_json_response(response)
-            result = json.loads(cleaned)
-            
-            logger.info(f"Cover letter generated successfully ({len(result.get('cover_letter', ''))} chars)")
-            return result
-            
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse cover letter response: {str(e)}")
-            logger.debug(f"Raw response: {response[:500]}")
-            # Return a fallback response instead of raising an error
-            return {
-                "cover_letter": f"Unable to generate cover letter due to parsing error. Raw response: {response[:200]}...",
-                "word_count": 0,
-                "tone": tone
-            }
+        # Parse JSON response with fallback
+        fallback_result = self._get_fallback_result(tone)
+        result = JSONParser.safe_json_parse(response, fallback_result)
+        
+        logger.info(f"Cover letter generated successfully ({len(result.get('cover_letter', ''))} chars)")
+        return result
     
     def _format_achievements(self, achievements: List[str]) -> str:
         """Format achievements list for the prompt.
@@ -107,62 +86,17 @@ Requirements: {', '.join(job_data.get('requirements', []))}
         
         return "\n".join(f"- {achievement}" for achievement in achievements)
     
-    def _clean_json_response(self, response: str) -> str:
-        """Remove markdown code fences and cleanup JSON.
+    def _get_fallback_result(self, tone: str) -> Dict:
+        """Get fallback result structure.
         
         Args:
-            response: Raw response from API
+            tone: Requested tone for the cover letter
             
         Returns:
-            str: Cleaned JSON string
+            dict: Fallback result structure
         """
-        response = response.strip()
-        
-        # Remove ```json and ``` markers
-        if response.startswith('```'):
-            lines = response.split('\n')
-            if lines[0].startswith('```'):
-                lines = lines[1:]
-            if lines and lines[-1].strip() == '```':
-                lines = lines[:-1]
-            response = '\n'.join(lines)
-        
-        # Find JSON object boundaries
-        json_start = response.find('{')
-        json_end = response.rfind('}')
-        
-        if json_start >= 0 and json_end > json_start:
-            response = response[json_start:json_end+1]
-        
-        return response.strip()
-    
-    def _parse_cover_letter_response(self, response: str) -> Dict:
-        """Parse and validate cover letter response.
-        
-        Args:
-            response: Raw response from API
-            
-        Returns:
-            dict: Parsed and validated response
-        """
-        try:
-            cleaned = self._clean_json_response(response)
-            result = json.loads(cleaned)
-            
-            # Validate required fields
-            if 'cover_letter' not in result:
-                logger.warning("Missing 'cover_letter' field in response")
-                result['cover_letter'] = ''
-            
-            # Add metadata if not present
-            if 'word_count' not in result:
-                result['word_count'] = len(result.get('cover_letter', '').split())
-            
-            if 'tone_matched' not in result:
-                result['tone_matched'] = True
-            
-            return result
-            
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse cover letter response: {str(e)}")
-            raise ValueError(f"Failed to parse cover letter response: {str(e)}")
+        return {
+            "cover_letter": f"Unable to generate cover letter due to parsing error.",
+            "word_count": 0,
+            "tone": tone
+        }

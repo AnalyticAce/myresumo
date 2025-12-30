@@ -1,0 +1,78 @@
+# PowerCV Batch Job Configuration
+# =================================
+# This file configures multiple job applications for batch processing.
+# Edit this file with your target jobs and run:
+#   powercv batch --cv master_cv.txt --config batch_jobs.yaml --output ./applications
+
+settings:
+  # Global settings for batch processing
+  generate_cover_letter: true
+  tone: "Professional"
+  include_analysis: true
+
+# Job Applications
+# ----------------
+# Each job entry can have either:
+# - url: Direct URL to job posting (will be scraped)
+# - description: Inline job description text
+
+jobs:
+  # Example 1: LinkedIn Senior Python Developer
+  - title: Senior Python Developer
+    company: TechCorp International
+    url: https://www.linkedin.com/jobs/view/senior-python-developer-at-techcorp-123456
+    notes: "Focus on backend experience and leadership"
+
+  # Example 2: Indeed Software Engineer
+  - title: Software Engineer
+    company: StartupXYZ BV
+    description: |
+      We are looking for a talented Software Engineer to join our growing team.
+
+      About the Role:
+      As a Software Engineer, you will be responsible for designing, developing,
+      and maintaining our core platform. You will work closely with product
+      managers and designers to deliver high-quality features.
+
+      Requirements:
+      - 3+ years of experience with Python
+      - Experience with web frameworks (Django, FastAPI, or Flask)
+      - Knowledge of PostgreSQL and Redis
+      - Experience with Docker and cloud platforms (AWS/GCP)
+      - Bachelor's degree in Computer Science or equivalent
+
+      Nice to Have:
+      - Experience with Kubernetes
+      - Background in microservices architecture
+      - Open source contributions
+
+      We Offer:
+      - Competitive salary €60,000 - €80,000
+      - Remote work options
+      - Professional development budget €2,000/year
+      - Modern office in Amsterdam
+      - Team retreats and events
+
+  # Example 3: Backend Developer - Data Intensive
+  - title: Backend Developer - Data Intensive
+    company: DataDriven Inc
+    description: "Looking for a Backend Developer with Python, Kafka, and big data experience"
+
+  # Example 4: Full Stack Engineer
+  - title: Full Stack Engineer
+    company: WebAgency Netherlands
+    url: https://www.indeed.com/jobs?q=full+stack+engineer&l=rotterdam
+    notes: "Emphasize React and Node.js experience"
+
+  # Example 5: DevOps Engineer
+  - title: DevOps Engineer
+    company: CloudFirst Solutions
+    description: |
+      DevOps Engineer needed to manage our cloud infrastructure.
+
+      Requirements:
+      - Strong experience with AWS
+      - Kubernetes expertise
+      - CI/CD pipeline management (Jenkins, GitLab CI)
+      - Infrastructure as Code (Terraform, CloudFormation)
+      - Monitoring and logging (Prometheus, Grafana, ELK Stack)

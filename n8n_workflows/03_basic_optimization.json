@@ -1,0 +1,194 @@
+{
+  "name": "PowerCV - Basic CV Optimization",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "optimize-cv",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "notesInFlow": true,
+      "id": "webhook-trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=httpv://powercv-api:8080/api/v2/optimize",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "cv_text",
+              "value": "={{ $json.cv_text }}"
+            },
+            {
+              "name": "jd_text",
+              "value": "={{ $json.jd_text }}"
+            },
+            {
+              "name": "generate_cover_letter",
+              "value": "=true"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json",
+              "options": {
+                "splitIntoItems": false
+              }
+            }
+          }
+        }
+      },
+      "name": "Optimize CV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        500,
+        300
+      ],
+      "notes": "Calls PowerCV API to optimize resume"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "optimized_cv",
+              "value": "={{ $json.optimized_cv }}"
+            },
+            {
+              "name": "ats_score",
+              "value": "={{ $json.ats_score }}"
+            },
+            {
+              "name": "cover_letter",
+              "value": "={{ $json.cover_letter }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Format Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        750,
+        300
+      ],
+      "notes": "Format the API response for the webhook"
+    },
+    {
+      "parameters": {
+        "responseCode": 200,
+        "responseHeaders": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "responseBody": {
+          "parameters": [
+            {
+              "name": "optimized_cv",
+              "value": "={{ $json.optimized_cv }}"
+            },
+            {
+              "name": "ats_score",
+              "value": "={{ $json.ats_score }}"
+            },
+            {
+              "name": "cover_letter",
+              "value": "={{ $json.cover_letter }}"
+            },
+            {
+              "name": "matching_skills",
+              "value": "={{ $json.matching_skills }}"
+            },
+            {
+              "name": "missing_skills",
+              "value": "={{ $json.missing_skills }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        300
+      ],
+      "notes": "Return optimized CV to caller"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Optimize CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Optimize CV": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": true,
+  "id": "basic-optimization-workflow",
+  "tags": [
+    {
+      "name": "PowerCV",
+      "color": "#007acc"
+    },
+    "CV",
+    "Optimization"
+  ]
+}

@@ -1,17 +1,22 @@
-[tool.poetry]
-name = "myresumo"
-version = "2.0.0"
-description = "PowerCV is an AI-powered resume customization platform that tailors your professional profile to match specific job descriptions."
-authors = ["DOSSEH Shalom <dossehdosseh14@gmail.com>"]
-readme = "README.md"
-packages = [{include = "app"}]
-
-[tool.poetry.dependencies]
-python = "^3.12"
-
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "powercv"
+version = "2.0.0"
+description = "PowerCV is an AI-powered resume customization platform that tailors your professional profile to match specific job descriptions and generates cover letters."
+authors = ["DOSSEH Shalom <dossehdosseh14@gmail.com>"]
+readme = "README.md"
+packages = [{include = "app"}]
+license = "MIT"
+
+# CLI entry point
+[tool.poetry.scripts]
+powercv = "app.cli.main:main"
+
+[tool.poetry.dependencies]
+python = "^3.12"
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.

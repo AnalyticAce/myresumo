@@ -1,0 +1,318 @@
+{
+  "name": "PowerCV - Cover Letter Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-cover-letter",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ],
+      "notesInFlow": true,
+      "id": "webhook-trigger"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "candidate_name",
+              "value": "={{ $json.candidate_name }}"
+            },
+            {
+              "name": "candidate_email",
+              "value": "={{ $json.candidate_email }}"
+            },
+            {
+              "name": "resume_id",
+              "value": "={{ $json.resume_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Extract Candidate Info",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ],
+      "notes": "Extract candidate information from webhook"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://powercv-api:8080/api/resume/{{ $json.resume_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json",
+              "options": {
+                "splitIntoItems": false
+              }
+            }
+          }
+        }
+      },
+      "name": "Fetch Resume Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        700,
+        300
+      ],
+      "notes": "Fetch parsed resume data from PowerCV"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://powercv-api:8080/api/v2/cover-letter",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "candidate_data",
+              "value": "={{ JSON.stringify({ name: $node['Extract Candidate Info'].json['candidate_name'], current_title: $node['Fetch Resume Data'].json['title'], location: $node['Fetch Resume Data'].json['location'], years_exp: '5+ years', top_skills: $node['Fetch Resume Data'].json['skills'], achievements: $node['Fetch Resume Data'].json['achievements'] }) }}"
+            },
+            {
+              "name": "job_data",
+              "value": "={{ JSON.stringify({ company: $node['Extract Candidate Info'].json['company'], position: $node['Extract Candidate Info'].json['position'], location: $node['Extract Candidate Info'].json['location'], requirements: ['Python', 'Django', 'PostgreSQL'] }) }}"
+            },
+            {
+              "name": "tone",
+              "value": "={{ $json.tone || 'Professional' }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json",
+              "options": {
+                "splitIntoItems": false
+              }
+            }
+          }
+        }
+      },
+      "name": "Generate Cover Letter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1000,
+        300
+      ],
+      "notes": "Call PowerCV cover letter generation API"
+    },
+    {
+      "parameters": {
+        "template": "<html>\n<head>\n    <style>\n        body {\n            font-family: 'Times New Roman', serif;\n            max-width: 800px;\n            margin: 0 auto;\n            padding: 40px;\n            line-height: 1.6;\n        }\n        .header {\n            text-align: right;\n            margin-bottom: 40px;\n        }\n        .date {\n            margin-bottom: 20px;\n        }\n        .recipient {\n            margin-bottom: 20px;\n        }\n        .content {\n            white-space: pre-wrap;\n        }\n        .signature {\n            margin-top: 40px;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"header\">\n        <p>{{ $node['Extract Candidate Info'].json['candidate_name'] }}</p>\n        <p>{{ $node['Extract Candidate Info'].json['candidate_email'] }}</p>\n    </div>\n    <div class=\"date\">\n        <p>{{ $now.format('MMMM DD, YYYY') }}</p>\n    </div>\n    <div class=\"recipient\">\n        <p>Hiring Manager</p>\n        <p>{{ $node['Extract Candidate Info'].json['company'] }}</p>\n    </div>\n    <div class=\"content\">\n        <p>Dear Hiring Manager,</p>\n        <p>{{ $node['Generate Cover Letter'].json['cover_letter'] }}</p>\n    </div>\n    <div class=\"signature\">\n        <p>Sincerely,</p>\n        <p>{{ $node['Extract Candidate Info'].json['candidate_name'] }}</p>\n    </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "name": "Format as HTML",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1,
+      "position": [
+        1250,
+        300
+      ],
+      "notes": "Format cover letter as HTML"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "file_name",
+              "value": "=cover_letter_{{ $node['Extract Candidate Info'].json['candidate_name'].replace(' ', '_') }}_{{ $now.format('YYYYMMDD') }}.pdf"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set Filename",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        300
+      ],
+      "notes": "Set output filename"
+    },
+    {
+      "parameters": {
+        "filePath": "=/data/generated/{{ $node['Set Filename'].json['file_name'] }}",
+        "fileContent": "={{ $node['Format as HTML'].json['html'] }}",
+        "options": {}
+      },
+      "name": "Save as PDF",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        1750,
+        300
+      ],
+      "notes": "Save cover letter as PDF"
+    },
+    {
+      "parameters": {
+        "responseCode": 200,
+        "responseHeaders": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "responseBody": {
+          "parameters": [
+            {
+              "name": "success",
+              "value": "=true"
+            },
+            {
+              "name": "cover_letter",
+              "value": "={{ $node['Generate Cover Letter'].json['cover_letter'] }}"
+            },
+            {
+              "name": "file_path",
+              "value": "={{ $node['Set Filename'].json['file_name'] }}"
+            },
+            {
+              "name": "word_count",
+              "value": "={{ $node['Generate Cover Letter'].json['word_count'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        300
+      ],
+      "notes": "Return cover letter to caller"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Candidate Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Candidate Info": {
+      "main": [
+        [
+          {
+            "node": "Fetch Resume Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Resume Data": {
+      "main": [
+        [
+          {
+            "node": "Generate Cover Letter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Cover Letter": {
+      "main": [
+        [
+          {
+            "node": "Format as HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format as HTML": {
+      "main": [
+        [
+          {
+            "node": "Set Filename",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Filename": {
+      "main": [
+        [
+          {
+            "node": "Save as PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save as PDF": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": true,
+  "id": "cover-letter-generator-workflow",
+  "tags": [
+    {
+      "name": "PowerCV",
+      "color": "#007acc"
+    },
+    "Cover",
+    "Letter",
+    "Generation"
+  ]
+}

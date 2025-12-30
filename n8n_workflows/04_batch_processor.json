@@ -1,0 +1,371 @@
+{
+  "name": "PowerCV - Batch Processing",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "/input_cvs",
+        "watchFiles": true,
+        "options": {
+          "recursive": false,
+          "events": [
+            "add"
+          ]
+        }
+      },
+      "name": "Watch Input Folder",
+      "type": "n8n-nodes-base.localFileTrigger",
+      "typeVersion": 1,
+      "position": [
+        150,
+        300
+      ],
+      "notes": "Watches /input_cvs for new PDF files"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "file_path",
+              "value": "={{ $json.filePath }}"
+            },
+            {
+              "name": "file_name",
+              "value": "={{ $json.name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Extract File Info",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        350,
+        300
+      ],
+      "notes": "Extract file path and name"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "file_path",
+              "value": "={{ $node['Extract File Info'].json['file_path'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Read Binary File",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        550,
+        300
+      ],
+      "notes": "Read the PDF file as binary data"
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "name": "Split in Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [
+        750,
+        300
+      ],
+      "notes": "Process files in batches of 5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://powercv-api:8080/api/v2/analyze",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "multipart/form-data"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "cv_text",
+              "value": "={{ $binary.data }}"
+            },
+            {
+              "name": "jd_text",
+              "value": "={{ $env.DEFAULT_JOB_DESCRIPTION || 'General application' }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json",
+              "options": {
+                "splitIntoItems": false
+              }
+            }
+          }
+        }
+      },
+      "name": "Analyze CV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        950,
+        300
+      ],
+      "notes": "Send to PowerCV for analysis"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "=success"
+            },
+            {
+              "name": "output_path",
+              "value": "=/output_cvs/processed/{{ $node['Extract File Info'].json['file_name'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Success Status",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1150,
+        200
+      ],
+      "notes": "Mark as successful"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "=error"
+            },
+            {
+              "name": "output_path",
+              "value": "=/output_cvs/error/{{ $node['Extract File Info'].json['file_name'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Error Status",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1150,
+        400
+      ],
+      "notes": "Mark as error"
+    },
+    {
+      "parameters": {
+        "filePath": "={{ $node['Success Status'].json['output_path'] }}",
+        "fileContent": "={{ $node['Analyze CV'].json }}",
+        "options": {}
+      },
+      "name": "Save Success",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        200
+      ],
+      "notes": "Save processed result to output folder"
+    },
+    {
+      "parameters": {
+        "filePath": "={{ $node['Error Status'].json['output_path'] }}",
+        "fileContent": "={{ $node['Analyze CV'].json }}",
+        "options": {}
+      },
+      "name": "Save Error",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        400
+      ],
+      "notes": "Save error result to error folder"
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "seconds",
+        "options": {}
+      },
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1650,
+        300
+      ],
+      "notes": "Wait between items to prevent rate limiting"
+    },
+    {
+      "parameters": {
+        "text": "=Batch processing completed.\nSuccess: {{ $node['Save Success'].json.success }}\nErrors: {{ $node['Save Error'].json.success }}",
+        "disableSslVerification": true,
+        "options": {}
+      },
+      "name": "Send Slack Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        1900,
+        300
+      ],
+      "notes": "Send batch completion notification"
+    }
+  ],
+  "connections": {
+    "Watch Input Folder": {
+      "main": [
+        [
+          {
+            "node": "Extract File Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract File Info": {
+      "main": [
+        [
+          {
+            "node": "Read Binary File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Binary File": {
+      "main": [
+        [
+          {
+            "node": "Split in Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split in Batches": {
+      "main": [
+        [
+          {
+            "node": "Analyze CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze CV": {
+      "main": [
+        [
+          {
+            "node": "Success Status",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Error Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success Status": {
+      "main": [
+        [
+          {
+            "node": "Save Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Status": {
+      "main": [
+        [
+          {
+            "node": "Save Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Success": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Error": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "id": "batch-processing-workflow",
+  "tags": [
+    {
+      "name": "PowerCV",
+      "color": "#007acc"
+    },
+    "Batch",
+    "Processing"
+  ]
+}

@@ -245,7 +245,7 @@ Professional
     
     def _call_cerebras_api(self, system_prompt: str, user_message: str) -> str:
         """Call Cerebras API (stub - implement with actual API client)"""
-        # TODO: Replace with actual Cerebras API call
+        # TODO: Replace with actual Cerebras API call integration test
         # Example using requests:
         # import requests
         # response = requests.post(

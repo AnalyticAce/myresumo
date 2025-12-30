@@ -14,6 +14,7 @@ from app.api.routers.cover_letter import cover_letter_router
 from app.api.routers.comprehensive_optimizer import comprehensive_router
 from app.routes.n8n_integration import router as n8n_router
 from app.services.workflow_orchestrator import CVWorkflowOrchestrator
+from app.utils.shared_utils import ValidationHelper, ErrorHandler
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,7 +22,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from dotenv import load_dotenv
 import os
@@ -44,15 +45,44 @@ logger = logging.getLogger(__name__)
 
 # Request models for new endpoints
 class OptimizationRequest(BaseModel):
-    cv_text: str
-    jd_text: str
-    generate_cover_letter: bool = True
+    cv_text: str = Field(..., min_length=100, max_length=10000,
+                         description="CV text to optimize")
+    jd_text: str = Field(..., min_length=50, max_length=5000,
+                         description="Job description text")
+    generate_cover_letter: bool = Field(
+        default=True, description="Whether to generate cover letter")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "cv_text": "John Doe\nSenior Software Engineer...",
+                "jd_text": "We are looking for a Senior Software Engineer...",
+                "generate_cover_letter": True
+            }
+        }
 
 
 class CoverLetterRequest(BaseModel):
-    candidate_data: dict
-    job_data: dict
-    tone: str = "Professional"
+    candidate_data: dict = Field(..., description="Candidate information")
+    job_data: dict = Field(..., description="Job information")
+    tone: str = Field(default="Professional", regex="^(Professional|Enthusiastic|Formal|Casual)$",
+                      description="Tone for cover letter")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "candidate_data": {
+                    "name": "John Doe",
+                    "current_title": "Software Engineer",
+                    "top_skills": ["Python", "JavaScript"]
+                },
+                "job_data": {
+                    "company": "TechCorp",
+                    "position": "Senior Developer"
+                },
+                "tone": "Professional"
+            }
+        }
 
 
 async def startup_logic(app: FastAPI) -> None:
@@ -95,7 +125,7 @@ async def shutdown_logic(app: FastAPI) -> None:
 app = FastAPI(
     title="PowerCV API",
     summary="",
-    description=""" 
+    description="""
     PowerCV is an AI-backed resume generator designed to tailor your resume and skills based on a given job description. This innovative tool leverages the latest advancements in AI technology to provide you with a customized resume that stands out.
     """,
     license_info={"name": "MIT License",
@@ -200,9 +230,10 @@ async def add_response_headers(request: Request, call_next):
 # Add middleware and static file mounts
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "http://localhost:8080",
+                   "http://127.0.0.1:3000", "http://127.0.0.1:8080"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -269,7 +300,7 @@ async def optimize_cv_v2(request: OptimizationRequest):
             generate_cover_letter=request.generate_cover_letter
         )
         return result
-        
+
     except Exception as e:
         logger.error(f"Optimization error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -286,7 +317,7 @@ async def analyze_cv_v2(request: OptimizationRequest):
         analyzer = CVAnalyzer()
         analysis = analyzer.analyze(request.cv_text, request.jd_text)
         return analysis
-        
+
     except Exception as e:
         logger.error(f"Analysis error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -312,36 +343,51 @@ async def generate_cover_letter_v2(request: CoverLetterRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# New endpoints for automation features
 @app.post("/api/v1/scrape", tags=["Scraping"], summary="Scrape job description from URL")
-async def scrape_job_description(url: str):
+async def scrape_job_description(url: str = Field(..., description="URL to job posting")):
     """
     Scrape job description from a LinkedIn, Indeed, or other job board URL.
 
     Returns extracted job title, company, location, and full description.
     """
     try:
+        from app.utils.shared_utils import ValidationHelper
+        # Validate URL
+        validated_url = ValidationHelper.validate_url(url)
+
         from app.services.scraper import fetch_job_description
-        result = await fetch_job_description(url)
+        result = await fetch_job_description(validated_url)
         return result
 
+    except ValueError as e:
+        logger.error(f"URL validation error: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Scraping error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to scrape job description: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to scrape job description: {str(e)}")
 
 
 @app.post("/api/v1/extract-keywords", tags=["Analysis"], summary="Extract keywords from job description")
-async def extract_keywords(jd_text: str):
+async def extract_keywords(jd_text: str = Field(..., min_length=50, max_length=5000, description="Job description text")):
     """
     Extract skills and requirements from a job description.
 
     Useful for identifying what to highlight in your CV.
     """
     try:
+        from app.utils.shared_utils import ValidationHelper
+        # Validate input
+        validated_text = ValidationHelper.validate_text_input(
+            jd_text, 5000, "job description")
+
         from app.services.scraper import extract_keywords_from_jd
-        result = await extract_keywords_from_jd(jd_text)
+        result = await extract_keywords_from_jd(validated_text)
         return result
 
+    except ValueError as e:
+        logger.error(f"Input validation error: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Keyword extraction error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

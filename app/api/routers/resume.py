@@ -1917,7 +1917,7 @@ async def submit_contact_form(
         # 3. Potentially send an auto-response to the user
 
         # For now, we'll just return a success response
-        # TODO: Implement actual email sending functionality
+        # TODO: Implement proper email notification system with templates
 
         return ContactFormResponse(
             success=True,

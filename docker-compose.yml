@@ -1,32 +1,67 @@
 version: '3.8'
 
 services:
-  # PowerCV service
+  # PowerCV API Service
   powercv:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: powercv-api
     restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
-      # Existing variables
+      # API Configuration
       - API_KEY=${API_KEY}
-      - MONGODB_URI=${MONGODB_URI}
+      - API_BASE=${API_BASE:-https://api.deepseek.com/v1}
+      - MODEL_NAME=${MODEL_NAME:-deepseek-chat}
       
-      # Cerebras
+      # Cerebras (alternative)
       - CEREBRAS_API_KEY=${CEREBRAS_API_KEY}
-      - AI_PROVIDER=${AI_PROVIDER:-cerebras}
+      - CEREBRAS_API_BASE=${CEREBRAS_API_BASE:-https://api.cerebras.ai/v1}
+      - CEREBRAS_MODEL=${CEREBRAS_MODEL:-gpt-oss-120b}
+      
+      # OpenAI (alternative)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_BASE=${OPENAI_API_BASE:-https://api.openai.com/v1}
+      
+      # Database
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/powercv}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      
+      # Application Settings
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8080
+      - DEBUG=${DEBUG:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
       
       # n8n integration
       - N8N_API_KEY=${N8N_API_KEY}
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL:-http://n8n:5678}
     volumes:
+      # Mount data directories for persistence
       - ./data:/app/data
+      # Mount templates for hot-reloading
+      - ./app/templates:/app/app/templates:ro
+      # Mount static files
+      - ./app/static:/app/app/static:ro
     networks:
       - powercv-network
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    environment:
+      - TIMEOUT=${REQUEST_TIMEOUT:-30}
 
-  # n8n service
+  # n8n Workflow Automation
   n8n:
     image: n8nio/n8n:latest
     container_name: powercv-n8n
@@ -34,39 +69,121 @@ services:
     ports:
       - "5678:5678"
     environment:
+      # n8n Basic Auth
       - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=${N8N_USER}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
-      - N8N_HOST=localhost
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-powercv123}
+      
+      # Network Configuration
+      - N8N_HOST=0.0.0.0
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
-      - WEBHOOK_URL=http://localhost:5678/
-      - N8N_ENCRYPTION_KEY=n8n_encryption_key_1234567890abcdef
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL:-http://localhost:5678}
+      
+      # Security
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-your-encryption-key-here-change-in-production}
+      
+      # Paths
       - N8N_USER_FOLDER=/home/node/.n8n
-      - GENERIC_TIMEZONE=Europe/Amsterdam
-      - N8N_LOG_LEVEL=info
+      - GENERIC_TIMEZONE=${TIMEZONE:-Europe/Amsterdam}
+      - N8N_LOG_LEVEL=${LOG_LEVEL:-info}
+      
+      # External Storage (optional)
+      - EXECUTIONS_DATA_SAVE_ON_ERROR=all
+      - EXECUTIONS_DATA_SAVE_ON_SUCCESS=all
     volumes:
-      - ./n8n_files:/files
+      # n8n data persistence
       - n8n_data:/home/node/.n8n
+      # Workflow files
+      - ./n8n_workflows:/ workflows
+      # Shared data with PowerCV
+      - ./data/generated:/shared-data
     networks:
       - powercv-network
+    depends_on:
+      powercv:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
-  # MongoDB
+  # MongoDB Database
   mongodb:
-    image: mongo:latest
+    image: mongo:7.0
     container_name: powercv-mongodb
     restart: unless-stopped
     ports:
-      - "27018:27017"  # Use different port to avoid conflict
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=powercv
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_ROOT_USER:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_ROOT_PASSWORD:-powercv123}
     volumes:
       - mongodb_data:/data/db
+      # Initialize database with scripts if needed
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
       - powercv-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Redis Cache (for rate limiting and caching)
+  redis:
+    image: redis:7-alpine
+    container_name: powercv-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - powercv-network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Optional: Traefik for reverse proxy (uncomment to enable)
+  # traefik:
+  #   image: traefik:v3.0
+  #   container_name: powercv-traefik
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #     - "443:443/udp"
+  #   volumes:
+  #     - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+  #     - ./traefik/config.yml:/etc/traefik/config.yml:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   networks:
+  #     - powercv-network
+  #   depends_on:
+  #     - powercv
+  #     - n8n
 
 networks:
   powercv-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
 
 volumes:
   mongodb_data:
   n8n_data:
+  redis_data:
+
+# Utility commands
+# docker-compose up -d
+# docker-compose logs -f powercv
+# docker-compose exec powercv python -m pytest
