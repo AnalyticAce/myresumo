@@ -193,7 +193,7 @@ from app.tests.conftest import (
 )
 
 # Import patch for test functions
-from unittest.mock import patch, create_mock_ai_client
+from unittest.mock import patch, Mock
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ python-multipart
 authlib
 itsdangerous
 asyncio
-httpx
+httpx>=0.25.0
 websockets
 slowapi
 pandas
@@ -38,6 +38,7 @@ sentence-transformers
 tiktoken
 mkdocs
 mkdocs-material
+PyYAML>=6.0
 
 # Additional dependencies for Cerebras integration
 python-dotenv>=1.0.0
@@ -47,7 +48,6 @@ langchain-ollama
 uvloop
 
 # New: n8n integration support
-httpx>=0.25.0
 python-multipart>=0.0.6
 
 # New: Job Description Scraping
@@ -55,7 +55,6 @@ beautifulsoup4>=4.12.0
 lxml>=4.9.0
 
 # New: CLI and Configuration
-pyyaml>=6.0
 rich>=13.0.0
 click>=8.0.0
 
@@ -63,4 +62,3 @@ click>=8.0.0
 pytest>=7.0.0
 pytest-asyncio>=0.21.0
 pytest-cov>=4.0.0
-httpx>=0.25.0  # For testing async endpoints

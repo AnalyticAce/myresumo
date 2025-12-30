@@ -18,6 +18,11 @@ from app.database.repositories.base_repo import BaseRepository
 logger = logging.getLogger(__name__)
 
 
+def get_db_name() -> str:
+    """Get database name from environment or use default."""
+    return os.getenv("MONGODB_DB", "powercv")
+
+
 class CoverLetterRepository(BaseRepository):
     """Repository class for cover letter database operations.
 
@@ -56,7 +61,7 @@ class CoverLetterRepository(BaseRepository):
             if "content_data" in cover_letter_dict:
                 cover_letter_dict["content_data"] = cover_letter_dict["content_data"].model_dump()
             
-            async with connection_manager.get_collection("myresumo", self.collection_name) as collection:
+            async with connection_manager.get_collection(get_db_name(), self.collection_name) as collection:
                 result = await collection.insert_one(cover_letter_dict)
             return str(result.inserted_id) if result else None
             
@@ -75,11 +80,6 @@ class CoverLetterRepository(BaseRepository):
         Raises:
             Exception: If database operation fails
         """
-        try:
-            connection_manager = MongoConnectionManager.get_instance()
-            async with connection_manager.get_collection("myresumo", self.collection_name) as collection:
-                cover_letter = await collection.find_one({"_id": ObjectId(cover_letter_id)})
-            return cover_letter
             
         except Exception as e:
             raise Exception(f"Failed to retrieve cover letter: {str(e)}")
@@ -98,8 +98,7 @@ class CoverLetterRepository(BaseRepository):
         """
         client = None
         try:
-            # Get database name from environment or use default
-            db_name = os.getenv("MONGODB_NAME", "myresumo")
+            db_name = os.getenv("MONGODB_DB", "powercv")
             
             # Get the async client from the connection manager
             connection_manager = MongoConnectionManager.get_instance()

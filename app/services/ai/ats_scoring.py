@@ -149,15 +149,14 @@ class ATSScorerLLM:
             {job_requirements}
 
             Based on a detailed analysis, provide:
-            1. A scoring from 0-100 indicating how well the candidate's skills match the job requirements:
-               - Score 95-100 if the candidate meets nearly all core and preferred requirements (90%+ match, including transferable skills and strong alignment)
-               - Score 80-94 if the candidate meets most core and preferred requirements (75-89% match)
-               - Score 70-79 if the candidate meets the core requirements and most desired skills
-               - Score 50-69 if the candidate meets most core requirements but is missing some key skills
-               - Score 30-49 if the candidate meets some requirements but has significant gaps
-               - Score 0-29 if the candidate lacks most of the core requirements
+            1. A score from 0-100 indicating the quality of the match between candidate qualifications and job requirements.
+               - 90-100: Excellent match, meets core and preferred requirements.
+               - 75-89: Strong match, meets most core requirements.
+               - 60-74: Potential match, meets core requirements but lacks some preferred ones.
+               - 40-59: Partial match, significant gaps in core skills.
+               - 0-39: Poor match, missing core requirements.
 
-               Be optimistic: If the candidate's resume is tailored and covers most requirements, reward with a high score. Consider transferable skills, synonyms, and implied experience. If the resume is almost a copy of the job description, score 95-100.
+               Base the score on skill alignment, experience relevance, and keyword matching.
 
             2. A list of matching skills between the candidate and job requirements
             3. A list of important missing skills the candidate should highlight or develop

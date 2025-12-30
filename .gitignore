@@ -208,10 +208,12 @@ personal_data.py
 *.strategy.md
 *.debug.md
 
-# Exclude all markdown files except README.md and CONTRIBUTING.md
+# Exclude all markdown files except README.md, CONTRIBUTING.md, and prompts
 *.md
 !README.md
 !CONTRIBUTING.md
+!app/prompts/*.md
+!app/prompts/*.json
 
 # Docker volumes and data
 mongodb_data/

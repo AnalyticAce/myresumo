@@ -14,6 +14,10 @@ from app.api.routers.cover_letter import cover_letter_router
 from app.api.routers.comprehensive_optimizer import comprehensive_router
 from app.routes.n8n_integration import router as n8n_router
 from app.services.workflow_orchestrator import CVWorkflowOrchestrator
+from app.services.cv_analyzer import CVAnalyzer
+from app.services.cover_letter_gen import CoverLetterGenerator
+from app.services.scraper import fetch_job_description, extract_keywords_from_jd
+from app.services.master_cv import MasterCV
 from app.utils.shared_utils import ValidationHelper, ErrorHandler
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
@@ -22,8 +26,8 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, field_validator
+from typing import Optional, Dict, Any, List
 from dotenv import load_dotenv
 import os
 import logging
@@ -35,7 +39,7 @@ load_dotenv(override=True)
 # Initialize Jinja2 templates for HTML rendering
 templates = Jinja2Templates(directory="app/templates")
 
-# Initialize orchestrator for new Cerebras integration
+# Initialize orchestrator
 orchestrator = CVWorkflowOrchestrator()
 
 # Configure logging
@@ -43,7 +47,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# Request models for new endpoints
+# Request models
 class OptimizationRequest(BaseModel):
     cv_text: str = Field(..., min_length=100, max_length=10000,
                          description="CV text to optimize")
@@ -65,6 +69,7 @@ class OptimizationRequest(BaseModel):
 class CoverLetterRequest(BaseModel):
     candidate_data: dict = Field(..., description="Candidate information")
     job_data: dict = Field(..., description="Job information")
+
     tone: str = Field(default="Professional", regex="^(Professional|Enthusiastic|Formal|Casual)$",
                       description="Tone for cover letter")
 
@@ -81,6 +86,34 @@ class CoverLetterRequest(BaseModel):
                     "position": "Senior Developer"
                 },
                 "tone": "Professional"
+            }
+        }
+
+    @field_validator('tone')
+    @classmethod
+    def validate_tone(cls, v):
+        valid_tones = ["Professional", "Enthusiastic", "Formal", "Casual"]
+        if v not in valid_tones:
+            raise ValueError(f'tone must be one of: {valid_tones}')
+        return v
+
+
+class OptimizationResponse(BaseModel):
+    """Response model for resume optimization."""
+    success: bool
+    data: Optional[Dict[str, Any]] = None
+    message: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "success": True,
+                "data": {
+                    "analysis": {},
+                    "optimized_cv": {},
+                    "ats_score": 85
+                },
+                "message": "Resume optimization completed successfully"
             }
         }
 
@@ -108,7 +141,7 @@ async def startup_logic(app: FastAPI) -> None:
 async def shutdown_logic(app: FastAPI) -> None:
     """Execute shutdown logic for the FastAPI application.
 
-    Properly close database connections and clean up resources.
+    Closes database connections and cleans up resources.
 
     Args:
         app: The FastAPI application instance
@@ -125,8 +158,14 @@ async def shutdown_logic(app: FastAPI) -> None:
 app = FastAPI(
     title="PowerCV API",
     summary="",
+<< << << < HEAD
     description="""
     PowerCV is an AI-backed resume generator designed to tailor your resume and skills based on a given job description. This innovative tool leverages the latest advancements in AI technology to provide you with a customized resume that stands out.
+=======
+    description="""
+    PowerCV is a resume generation system that adapts resumes to specific job descriptions.
+    It leverages AI to provide customized resume content based on user input.
+>>>>>> > 1322075 (chore: humanize codebase and professionalize tone)
     """,
     license_info={"name": "MIT License",
                   "url": "https://opensource.org/licenses/MIT"},
@@ -282,25 +321,36 @@ async def health_check():
     """
     return JSONResponse(
         content={"status": "healthy",
-                 "version": app.version, "service": "myresumo"}
+                 "version": app.version, "service": "PowerCV"}
     )
 
 
-# New Cerebras-powered endpoints
+# Cerebras v2 endpoints
+_orchestrator = None
+
+
+def get_orchestrator():
+    """Get or create a singleton instance of the workflow orchestrator."""
+    global _orchestrator
+    if _orchestrator is None:
+        logger.info("Initializing CVWorkflowOrchestrator singleton")
+        _orchestrator = CVWorkflowOrchestrator()
+    return _orchestrator
+
+
 @app.post("/api/v2/optimize", tags=["CV Optimization v2"], summary="Complete CV optimization workflow")
 async def optimize_cv_v2(request: OptimizationRequest):
     """
-    New Cerebras-powered CV optimization endpoint.
-    Uses modular prompts for better quality.
+    CV optimization endpoint utilizing modular prompts.
     """
     try:
+        orchestrator = get_orchestrator()
         result = orchestrator.optimize_cv_for_job(
             cv_text=request.cv_text,
             jd_text=request.jd_text,
             generate_cover_letter=request.generate_cover_letter
         )
         return result
-
     except Exception as e:
         logger.error(f"Optimization error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -313,11 +363,10 @@ async def analyze_cv_v2(request: OptimizationRequest):
     Returns ATS score, keyword analysis, and recommendations.
     """
     try:
-        from app.services.cv_analyzer import CVAnalyzer
-        analyzer = CVAnalyzer()
-        analysis = analyzer.analyze(request.cv_text, request.jd_text)
+        orchestrator = get_orchestrator()
+        analysis = orchestrator.analyzer.analyze(
+            request.cv_text, request.jd_text)
         return analysis
-
     except Exception as e:
         logger.error(f"Analysis error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -329,20 +378,80 @@ async def generate_cover_letter_v2(request: CoverLetterRequest):
     Generate cover letter based on candidate and job data.
     """
     try:
-        from app.services.cover_letter_gen import CoverLetterGenerator
-        generator = CoverLetterGenerator()
-        result = generator.generate(
+        orchestrator = get_orchestrator()
+        result = orchestrator.cover_letter_gen.generate(
             request.candidate_data,
             request.job_data,
             request.tone
         )
         return result
-
     except Exception as e:
         logger.error(f"Cover letter generation error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Legacy/General endpoints
 
+
+
+@app.post("/api/optimize-resume", response_model=OptimizationResponse)
+async def optimize_resume(request: OptimizationRequest):
+    """
+    Main endpoint for comprehensive resume optimization.
+    """
+    try:
+        logger.info(f"Received optimization request for {request.job_title}")
+        orchestrator = get_orchestrator()
+        result = orchestrator.optimize_cv_for_job(
+            cv_text=request.cv_text,
+            jd_text=request.jd_text,
+            generate_cover_letter=request.generate_cover_letter
+        )
+        return OptimizationResponse(
+            success=True,
+            data=result,
+            message="Resume optimization completed successfully"
+        )
+    except Exception as e:
+        logger.error(f"Error in optimize_resume: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/analyze-cv")
+async def analyze_cv(request: OptimizationRequest):
+    """
+    Standalone endpoint for CV analysis only.
+    """
+    try:
+        orchestrator = get_orchestrator()
+        analysis = orchestrator.analyzer.analyze(
+            request.cv_text, request.jd_text)
+        return {"success": True, "analysis": analysis}
+    except Exception as e:
+        logger.error(f"Error in analyze_cv: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/generate-cover-letter")
+async def generate_cover_letter(request: OptimizationRequest):
+    """
+    Standalone endpoint for cover letter generation.
+    """
+    try:
+        orchestrator = get_orchestrator()
+        # Minimal data for generator
+        candidate_data = {"name": "Candidate", "top_skills": []}
+        job_data = {"position": "Professional", "requirements": []}
+
+        result = orchestrator.cover_letter_gen.generate(
+            candidate_data, job_data)
+        return {"success": True, "cover_letter": result}
+    except Exception as e:
+        logger.error(f"Error in generate_cover_letter: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Automation endpoints
+>>>>>>> 1322075 (chore: humanize codebase and professionalize tone)
 @app.post("/api/v1/scrape", tags=["Scraping"], summary="Scrape job description from URL")
 async def scrape_job_description(url: str = Field(..., description="URL to job posting")):
     """
@@ -355,7 +464,10 @@ async def scrape_job_description(url: str = Field(..., description="URL to job p
         # Validate URL
         validated_url = ValidationHelper.validate_url(url)
 
+<<<<<<< HEAD
         from app.services.scraper import fetch_job_description
+=======
+>>>>>>> 1322075 (chore: humanize codebase and professionalize tone)
         result = await fetch_job_description(validated_url)
         return result
 
@@ -363,7 +475,11 @@ async def scrape_job_description(url: str = Field(..., description="URL to job p
         logger.error(f"URL validation error: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+<<<<<<< HEAD
         logger.error(f"Scraping error: {str(e)}")
+=======
+        logger.error(f"Scraping error: {str(e)}", exc_info=True)
+>>>>>>> 1322075 (chore: humanize codebase and professionalize tone)
         raise HTTPException(
             status_code=500, detail=f"Failed to scrape job description: {str(e)}")
 
@@ -381,7 +497,10 @@ async def extract_keywords(jd_text: str = Field(..., min_length=50, max_length=5
         validated_text = ValidationHelper.validate_text_input(
             jd_text, 5000, "job description")
 
+<<<<<<< HEAD
         from app.services.scraper import extract_keywords_from_jd
+=======
+>>>>>>> 1322075 (chore: humanize codebase and professionalize tone)
         result = await extract_keywords_from_jd(validated_text)
         return result
 
@@ -389,7 +508,7 @@ async def extract_keywords(jd_text: str = Field(..., min_length=50, max_length=5
         logger.error(f"Input validation error: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Keyword extraction error: {str(e)}")
+        logger.error(f"Keyword extraction error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -400,13 +519,12 @@ async def optimize_structured_cv(
     generate_cover_letter: bool = True
 ):
     """
-    Optimize CV using structured master CV format (JSON/YAML).
+    Optimize CV using structured master CV format(JSON/YAML).
 
     This endpoint reads a structured CV file and generates a tailored version
     for the provided job description.
     """
     try:
-        from app.services.master_cv import MasterCV
         from pathlib import Path
 
         # Load structured CV
@@ -417,20 +535,18 @@ async def optimize_structured_cv(
         master_cv = MasterCV.from_file(str(cv_path))
 
         # Extract relevant sections for this job
-        from app.services.scraper import extract_keywords_from_jd
         jd_analysis = await extract_keywords_from_jd(jd_text)
         keywords = jd_analysis.get("skills", [])
 
         extracted_data = master_cv.extract_for_job(keywords)
 
         # Run optimization
-        from app.services.workflow_orchestrator import CVWorkflowOrchestrator
-        orchestrator = CVWorkflowOrchestrator()
+        local_orchestrator = CVWorkflowOrchestrator()
 
         # Convert extracted data to text for optimization
         cv_text = master_cv.to_markdown()
 
-        result = orchestrator.optimize_cv_for_job(
+        result = local_orchestrator.optimize_cv_for_job(
             cv_text=cv_text,
             jd_text=jd_text,
             generate_cover_letter=generate_cover_letter
@@ -444,7 +560,7 @@ async def optimize_structured_cv(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Structured optimization error: {str(e)}")
+        logger.error(f"Structured optimization error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

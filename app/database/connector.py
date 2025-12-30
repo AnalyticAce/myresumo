@@ -7,6 +7,7 @@ safe database operations.
 """
 
 import logging
+import os
 from contextlib import asynccontextmanager
 from typing import Dict, Optional
 
@@ -16,8 +17,12 @@ from app.config import computed_settings as settings
 # Set up logging
 logger = logging.getLogger(__name__)
 
+# Get database configuration
+mongodb_uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017/powercv")
+mongodb_db = os.getenv("MONGODB_DB", "powercv")
+
 # Build the MongoDB URI with database name
-MONGODB_URI = f"{settings.MONGODB_URI.rstrip('/')}/{settings.MONGODB_DB}"
+MONGODB_URI = f"{mongodb_uri.rstrip('/')}/{mongodb_db}"
 
 # Log the URI (masked) for debugging
 masked_uri = MONGODB_URI.split("@")[-1] if "@" in MONGODB_URI else MONGODB_URI

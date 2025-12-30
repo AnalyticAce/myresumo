@@ -6,6 +6,9 @@ import json
 from .cv_analyzer import CVAnalyzer
 from .cv_optimizer import CVOptimizer
 from .cover_letter_gen import CoverLetterGenerator
+from .ai_client import get_ai_client
+from ..prompts.prompt_loader import PromptLoader
+from ..utils.shared_utils import JSONParser, ErrorHandler, TextProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +107,7 @@ class CVWorkflowOrchestrator:
         optimized_sections = {}
 
         # Extract and optimize professional summary first
-        summary_section = self._extract_section(
+        summary_section = TextProcessor.extract_section(
             cv_text, ['PROFESSIONAL SUMMARY', 'SUMMARY', 'PROFILE'])
         if summary_section:
             optimized_summary = self.optimizer.optimize_professional_summary(
@@ -114,7 +117,7 @@ class CVWorkflowOrchestrator:
                 'optimized_content', summary_section)
 
         # Extract and optimize experience section
-        experience_section = self._extract_section(
+        experience_section = TextProcessor.extract_section(
             cv_text, ['EXPERIENCE', 'WORK EXPERIENCE', 'PROFESSIONAL EXPERIENCE'])
         if experience_section:
             optimized_experience = self.optimizer.optimize_section(
@@ -124,7 +127,7 @@ class CVWorkflowOrchestrator:
                 'optimized_content', experience_section)
 
         # Extract and optimize skills section
-        skills_section = self._extract_section(
+        skills_section = TextProcessor.extract_section(
             cv_text, ['SKILLS', 'TECHNICAL SKILLS', 'SKILLS & EXPERTISE'])
         if skills_section:
             optimized_skills = self.optimizer.optimize_section(
@@ -134,13 +137,13 @@ class CVWorkflowOrchestrator:
                 'optimized_content', skills_section)
 
         # Extract education section (preserve as-is, no optimization)
-        education_section = self._extract_section(
+        education_section = TextProcessor.extract_section(
             cv_text, ['EDUCATION', 'ACADEMIC', 'EDUCATION & CERTIFICATIONS'])
         if education_section:
             optimized_sections['education'] = education_section
 
         # Preserve contact info (extract and keep as-is)
-        contact_info = self._extract_contact_info(cv_text)
+        contact_info = TextProcessor.extract_contact_info(cv_text)
         if contact_info:
             optimized_sections['contact'] = contact_info
 
@@ -193,57 +196,6 @@ class CVWorkflowOrchestrator:
 
         return self.cover_letter_gen.generate(candidate_data, job_data)
 
-    def _extract_section(self, cv_text: str, section_headers: List[str]) -> Optional[str]:
-        """Extract a CV section by its header with improved boundary detection.
-
-        Args:
-            cv_text: Full CV text
-            section_headers: List of possible section headers
-
-        Returns:
-            str: Section content or None if not found
-        """
-        lines = cv_text.split('\n')
-        section_start = None
-        section_lines = []
-
-        # Convert headers to uppercase for comparison
-        upper_headers = [h.upper() for h in section_headers]
-
-        for i, line in enumerate(lines):
-            line_stripped = line.strip()
-
-            # Check if this line matches any of our section headers
-            is_header = any(header in line_stripped.upper()
-                            for header in upper_headers)
-
-            if is_header:
-                if section_start is not None and section_lines:
-                    # Found new section, return the previous one
-                    return '\n'.join(section_lines)
-                section_start = i
-                section_lines = []
-            elif section_start is not None:
-                # Add content lines until we hit another major section
-                # Stop if we encounter a line that looks like a new section header
-                if (line_stripped and
-                    len(line_stripped) < 60 and
-                    line_stripped.isupper() and
-                    not line_stripped.startswith('•') and
-                    not line_stripped.startswith('-') and
-                        not any(char.isdigit() for char in line_stripped)):
-                    # This looks like a new section header
-                    break
-
-                # Add the line if it has content or is part of a list
-                if line_stripped or (section_lines and section_lines[-1].startswith('•')):
-                    section_lines.append(line)
-
-        if section_start is not None and section_lines:
-            return '\n'.join(section_lines)
-
-        return None
-
     def _extract_other_sections(self, cv_text: str, exclude_headers: List[str]) -> Dict[str, str]:
         """Extract all CV sections except specified ones.
 
@@ -286,43 +238,6 @@ class CVWorkflowOrchestrator:
             sections[current_section] = '\n'.join(current_content)
 
         return sections
-
-    def _extract_contact_info(self, cv_text: str) -> Optional[str]:
-        """Extract contact information from CV text.
-
-        Args:
-            cv_text: Full CV text
-
-        Returns:
-            str: Contact information or None if not found
-        """
-        lines = cv_text.split('\n')
-        contact_lines = []
-        found_contact = False
-
-        for line in lines:
-            line_stripped = line.strip()
-
-            # Look for contact information patterns
-            if any(pattern in line_stripped.lower() for pattern in ['@', '.com', 'phone:', 'tel:', 'location:', 'linkedin:', 'github:']):
-                found_contact = True
-                contact_lines.append(line_stripped)
-            elif found_contact and line_stripped:
-                # Continue collecting related lines
-                if any(char in line_stripped for char in ['@', '+', 'www.', 'http']):
-                    contact_lines.append(line_stripped)
-                elif len(contact_lines) < 3:  # Limit to first few contact lines
-                    contact_lines.append(line_stripped)
-                else:
-                    break
-            elif found_contact and not line_stripped:
-                # Empty line, might end contact section
-                break
-
-        if contact_lines:
-            return '\n'.join(contact_lines)
-
-        return None
 
     def _extract_name_from_analysis(self, analysis: Dict) -> str:
         """Extract candidate name from analysis."""
@@ -376,9 +291,11 @@ class CVWorkflowOrchestrator:
             relevant_roles = analysis['experience_analysis'].get(
                 'relevant_roles', [])
             for role in relevant_roles:
-                key_achievements = role.get('key_achievements', [])
-                achievements.extend(key_achievements[:2])  # Top 2 per role
-        return achievements[:5]  # Max 5 total
+                role_achievements = role.get('key_achievements', [])
+                if isinstance(role_achievements, str):
+                    role_achievements = [role_achievements]
+                achievements.extend(role_achievements[:3])
+        return achievements[:10]
 
     def _extract_position_from_jd(self, jd_text: str) -> str:
         """Extract position from job description with improved patterns."""

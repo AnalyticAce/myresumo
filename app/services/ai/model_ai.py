@@ -123,7 +123,7 @@ class AtsResumeOptimizer:
 
     def _get_prompt_template(self, missing_skills: List[str] = None) -> PromptTemplate:
         """Create the PromptTemplate for ATS resume optimization with missing skills.
-        
+
         Implements advanced prompting techniques including:
         - Chain-of-Thought (CoT) prompting
         - Role-based prompting
@@ -134,168 +134,70 @@ class AtsResumeOptimizer:
         Args:
             missing_skills: List of skills from the job description that are missing from the resume
         """
-        prompt = """# ROLE: Expert ATS Optimization Specialist & Career Strategist (10+ years experience)
+        prompt = """# Role
+ATS Optimization Specialist
 
-## CONTEXT:
-You are a senior ATS optimization specialist with 15+ years of experience at Fortune 500 companies.
-Your expertise includes:
-- ATS algorithm behavior and scoring
-- Resume parsing technology
-- HR recruitment workflows
-- Industry-specific hiring practices
-- Career transition strategies
+## Context
+Process the following resume to align with the provided job description. The goal is to improve compatibility with Applicant Tracking Systems (ATS) while maintaining clear, professional content for human reviewers.
 
-## TASK:
-Optimize the following resume to achieve >90% ATS match rate for the target job while maintaining human readability and impact.
+## Guidelines
+1. Communicate value clearly in the first section of the resume.
+2. Use result-oriented bullet points (Situation-Action-Result).
+3. Quantify accomplishments where possible.
+4. Align keywords with the job description.
+5. Maintain a professional, readable tone.
 
-**CRITICAL SUCCESS FACTORS (from 500+ successful optimizations):**
-1. **First 10-second test**: Ensure the top 1/3 of the resume immediately communicates value
-2. **SOAR Method**: Every bullet point must follow Situation-Obstacle-Action-Result
-3. **Metrics in every bullet**: Every claim must be supported by quantifiable results
-4. **ATS Keywords**: Must match 80%+ of the job description's hard skills
-5. **Readability**: Must pass 8th-grade reading level for maximum ATS compatibility
+## Input Data
 
-## INPUT DATA:
-
-### JOB DESCRIPTION:
+### Job Description
 {job_description}
 
-### CURRENT RESUME:
+### Current Resume
 {resume}
 
-## INSTRUCTIONS (THINK STEP BY STEP):
+## Instructions
 
-### 1. JOB ANALYSIS (MUST BE THOROUGH)
-**A. Extract Critical Requirements**
-- [ ] Identify must-have vs nice-to-have skills
-- [ ] Note any red flags in the job description
-- [ ] Highlight any special requirements (security clearances, etc.)
+1. **Job Analysis**
+   - Extract primary technical and soft skill requirements.
+   - Identify core responsibilities and experience levels.
 
-**B. Skills Mapping**
-- [ ] Extract all technical skills and tools
-- [ ] Identify soft skills and behavioral traits
-- [ ] Note any industry-specific terminology
+2. **Resume Audit**
+   - Verify formatting is standard and readable by parsers.
+   - Check that bullet points start with active verbs.
+   - Ensure achievements are quantified.
 
-**C. Seniority & Culture**
-- [ ] Determine experience level (Entry/Mid/Senior/Exec)
-- [ ] Identify company culture indicators
-- [ ] Note any leadership/management requirements
+3. **Optimization strategy**
+   - Map candidate achievements to job requirements.
+   - Integrate relevant keywords naturally throughout the text.
+   - Prioritize recent and relevant experience.
 
-### 2. RESUME AUDIT (BE RUTHLESS)
-**A. Formatting Check**
-- [ ] Single-column layout
-- [ ] Standard fonts (Arial, Calibri, Times New Roman)
-- [ ] No tables, text boxes, or graphics
-- [ ] Proper section headers (Work, Education, Skills)
+4. **Implementation**
+   - Use professional terminology from the job description.
+   - Target a clear, concise reading level.
+   - Use standard section headers (Experience, Education, Skills).
 
-**B. Content Quality**
-- [ ] Every bullet starts with a power verb
-- [ ] All claims are quantified
-- [ ] No responsibilities, only achievements
-- [ ] No pronouns (I, me, my)
-
-**C. ATS Optimization**
-- [ ] Keywords from job description present
-- [ ] No headers/footers
-- [ ] Standard file format (.docx or .pdf)
-- [ ] Proper contact information format
-
-### 3. OPTIMIZATION STRATEGY (BE STRATEGIC)
-**A. Achievement Mapping**
-- [ ] Select top 3-5 career achievements
-- [ ] Ensure each maps to job requirements
-- [ ] Quantify all achievements ($, %, #, time)
-
-**B. Keyword Integration**
-- [ ] Primary keywords in first 1/3 of resume
-- [ ] Secondary keywords throughout
-- [ ] Include variations (e.g., "ML" and "Machine Learning")
-
-**C. Structure Optimization**
-- [ ] Most relevant experience first
-- [ ] Education/certifications if required
-- [ ] Skills section with exact job title keywords
-
-### 4. IMPLEMENT CHANGES (BE PRECISE)
-**A. Bullet Point Formula**
-- [ ] Start with power verb (Led, Spearheaded, Engineered)
-- [ ] Include metric within first 10 words
-- [ ] Show business impact (increased X by Y%)
-- [ ] Add context (team size, budget, scope)
-
-**B. Keyword Placement**
-- [ ] Job title in professional summary
-- [ ] Skills in skills section (exact match)
-- [ ] Technologies in experience bullets
-- [ ] Certifications in education/certifications
-
-**C. Readability Optimization**
-- [ ] 8th-grade reading level
-- [ ] Short paragraphs (2-3 lines max)
-- [ ] Bullet points (3-5 per role)
-- [ ] White space between sections
-
-## OUTPUT FORMAT (STRICT JSON):
+## Output Format (Strict JSON)
 {{
-    "optimized_resume": "Fully reformatted resume with ATS optimizations",
+    "optimized_resume": "The full reformatted and optimized resume text.",
     "analysis": {{
         "job_title": "Extracted job title",
-        "job_level": "Entry/Mid/Senior/Executive",
-        "hard_skills_matched": ["list", "of", "matched", "skills"],
-        "hard_skills_missing": ["list", "of", "missing", "skills"],
-        "soft_skills_identified": ["list", "of", "key", "soft", "skills"],
+        "job_level": "Experience level required",
+        "hard_skills_matched": ["list of matched skills"],
+        "hard_skills_missing": ["list of missing core skills"],
+        "soft_skills_identified": ["key soft skills"],
         "ats_score_before": 0-100,
         "ats_score_after": 0-100,
-        "improvement_areas": ["list", "of", "key", "improvements"],
-        "top_achievements": ["list", "of", "top", "3-5", "achievements"]
+        "improvement_areas": ["key areas for professional improvement"],
+        "top_achievements": ["top 3-5 quantified achievements"]
     }},
     "optimization_details": {{
-        "keywords_added": ["list", "of", "keywords", "added"],
-        "achievements_enhanced": ["list", "of", "enhanced", "achievements"],
-        "formatting_changes": ["list", "of", "format", "changes"],
-        "sections_modified": ["list", "of", "modified", "sections"]
+        "keywords_added": ["keywords integrated during optimization"],
+        "achievements_enhanced": ["list of achievements that were quantified or reframed"],
+        "formatting_changes": ["standardization changes made"],
+        "sections_modified": ["modified resume sections"]
     }}
 }}
-
-## ADDITIONAL INSTRUCTIONS:
-1. **Content Rules**
-   - Use industry-specific terminology from the job description
-   - Maintain consistent verb tense (past for previous roles, present for current)
-   - Focus on achievements with metrics (increase, reduce, save, grow)
-   - Include 3-5 quantifiable metrics per role
-   
-2. **Formatting Rules**
-   - Use standard section headers (Work Experience, Education, Skills)
-   - Use standard job titles that ATS systems recognize
-   - Maintain consistent date format (MM/YYYY - MM/YYYY)
-   - Use bullet points (not paragraphs)
-   
-3. **ATS Optimization**
-   - Place important keywords in the first 1/3 of the resume
-   - Include variations of keywords (e.g., "ML" and "Machine Learning")
-   - Avoid headers/footers, tables, and graphics
-   - Use standard fonts (Arial, Calibri, Times New Roman)
-   
-4. **Readability**
-   - Target 8th-grade reading level
-   - Keep bullet points to 1-2 lines
-   - Use white space effectively
-   - Bold important achievements
-   
-5. **Required Sections**
-   - Contact Information
-   - Professional Summary (3-4 lines)
-   - Work Experience (reverse chronological)
-   - Education
-   - Skills (match job description)
-   - Certifications (if relevant)
-   
-6. **Pro Tips**
-   - Use the exact job title in your professional summary
-   - Mirror the language from the job description
-   - Focus on recent experience (last 10-15 years)
-   - Remove irrelevant personal information (age, photo, etc.)
-   - Save as .docx for best ATS compatibility"""
+"""
 
         # Add missing skills section if provided
         if missing_skills:
@@ -304,7 +206,8 @@ Optimize the following resume to achieve >90% ATS match rate for the target job 
         return PromptTemplate(
             template=prompt,
             input_variables=["job_description", "resume"],
-            partial_variables={"format_instructions": self.output_parser.get_format_instructions()}
+            partial_variables={
+                "format_instructions": self.output_parser.get_format_instructions()}
         )
 
     def _setup_chain(self, missing_skills: Optional[List[str]] = None) -> None:

@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 import logging
 from .ai_client import get_ai_client
 from ..prompts.prompt_loader import PromptLoader
-from ..utils.shared_utils import JSONParser, ErrorHandler, MetricsHelper
+from ..utils.shared_utils import JSONParser, ErrorHandler, MetricsHelper, ValidationHelper
 
 logger = logging.getLogger(__name__)
 
@@ -13,11 +13,14 @@ logger = logging.getLogger(__name__)
 class CVAnalyzer:
     """Analyze CV against job description using multi-provider AI."""
 
+    _system_prompt = None
+
     def __init__(self):
-        """Initialize analyzer with AI client and prompt."""
+        """Initialize analyzer with AI client."""
         self.client = get_ai_client()
-        self.loader = PromptLoader()
-        self.system_prompt = self.loader.load_prompt('cv_analyzer')
+        if CVAnalyzer._system_prompt is None:
+            loader = PromptLoader()
+            CVAnalyzer._system_prompt = loader.load_prompt('cv_analyzer')
         logger.info("CVAnalyzer initialized")
 
     def analyze(self, cv_text: str, jd_text: str) -> Dict:
@@ -29,11 +32,14 @@ class CVAnalyzer:
 
         Returns:
             dict: Analysis results with ATS score, keywords, gaps, etc.
-
-        Raises:
-            ValueError: If response parsing fails
         """
         logger.info("Starting CV analysis")
+
+        # Basic sanitization
+        cv_text = ValidationHelper.validate_text_input(
+            cv_text, 12000, "CV text")
+        jd_text = ValidationHelper.validate_text_input(
+            jd_text, 8000, "job description")
 
         user_message = f"""
 **JOB DESCRIPTION:**
@@ -45,10 +51,10 @@ class CVAnalyzer:
 
         # Call AI API
         response = self.client.chat_completion(
-            system_prompt=self.system_prompt,
+            system_prompt=CVAnalyzer._system_prompt,
             user_message=user_message,
-            temperature=0.5,  # Lower temp for structured output
-            max_tokens=2500
+            temperature=0.3,  # Lower temp for more consistent structure
+            max_tokens=3000
         )
 
         # Parse JSON response with fallback
@@ -57,14 +63,16 @@ class CVAnalyzer:
 
         # Ensure ats_score is properly formatted
         if 'ats_score' in analysis:
-            analysis['ats_score'] = MetricsHelper.extract_ats_score_from_text(str(analysis['ats_score']))
+            analysis['ats_score'] = MetricsHelper.extract_ats_score_from_text(
+                analysis['ats_score'])
 
-        logger.info(f"Analysis completed. ATS Score: {analysis.get('ats_score', 'N/A')}")
+        logger.info(
+            f"Analysis completed. ATS Score: {analysis.get('ats_score', 'N/A')}")
         return analysis
 
     def _get_fallback_analysis(self) -> Dict:
         """Get fallback analysis structure.
-        
+
         Returns:
             dict: Basic analysis structure for fallback cases
         """

@@ -681,6 +681,35 @@ async def get_templates(
         )
 
 
+@resume_router.post(
+    "/{resume_id}/cover-letter",
+    response_model=Dict[str, Any],
+    summary="Generate a cover letter",
+    response_description="Cover letter generated successfully",
+)
+async def generate_cover_letter(
+    resume_id: str,
+    request: Request,
+    repo: ResumeRepository = Depends(get_resume_repository),
+):
+    """Generate a professional cover letter based on the resume and job description.
+
+    Args:
+        resume_id: ID of the resume to retrieve
+        request: The incoming request
+        repo: Resume repository instance
+
+    Returns:
+    -------
+        Dict containing the generated cover letter
+    """
+    # This is a placeholder. Actual implementation would involve:
+    # 1. Retrieving the resume and job description (if available)
+    # 2. Using an LLM to generate the cover letter
+    # 3. Storing or returning the generated cover letter
+    return {"cover_letter": "This is a placeholder cover letter for resume ID: " + resume_id}
+
+
 @resume_router.get(
     "/{resume_id}",
     response_model=Dict[str, Any],

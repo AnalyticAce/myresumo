@@ -12,13 +12,17 @@ logger = logging.getLogger(__name__)
 class CVOptimizer:
     """Optimize CV sections based on job description using multi-provider AI."""
 
+    _system_prompt = None
+    _comprehensive_prompt = None
+
     def __init__(self):
-        """Initialize optimizer with AI client and prompt."""
+        """Initialize optimizer with AI client."""
         self.client = get_ai_client()
-        self.loader = PromptLoader()
-        self.system_prompt = self.loader.load_prompt('cv_optimizer')
-        self.comprehensive_prompt = self.loader.load_prompt(
-            'comprehensive_optimizer')
+        if CVOptimizer._system_prompt is None:
+            loader = PromptLoader()
+            CVOptimizer._system_prompt = loader.load_prompt('cv_optimizer')
+            CVOptimizer._comprehensive_prompt = loader.load_prompt(
+                'comprehensive_optimizer')
         logger.info("CVOptimizer initialized with comprehensive support")
 
     def optimize_comprehensive(
@@ -52,7 +56,7 @@ class CVOptimizer:
 
         # Call AI API with low temp for structure
         response = self.client.chat_completion(
-            system_prompt=self.comprehensive_prompt,
+            system_prompt=CVOptimizer._comprehensive_prompt,
             user_message=user_message,
             temperature=0.2,
             max_tokens=4000
@@ -61,7 +65,7 @@ class CVOptimizer:
         # Parse JSON response with fallback
         fallback_result = self._get_fallback_comprehensive_structure()
         result = JSONParser.safe_json_parse(response, fallback_result)
-        
+
         logger.info("Comprehensive optimization JSON parsed successfully")
         return result
 
@@ -82,9 +86,6 @@ class CVOptimizer:
 
         Returns:
             dict: Optimization results with optimized content and metadata
-
-        Raises:
-            ValueError: If response parsing fails
         """
         logger.info(f"Optimizing CV section with {len(keywords)} keywords")
 
@@ -102,40 +103,25 @@ class CVOptimizer:
 {optimization_focus}
 """
 
-        # Call Cerebras API
+        # Call AI API
         response = self.client.chat_completion(
-            system_prompt=self.system_prompt,
+            system_prompt=CVOptimizer._system_prompt,
             user_message=user_message,
             temperature=0.6,  # Moderate temp for creative optimization
             max_tokens=2000
         )
 
         # Parse JSON response
-        try:
-            cleaned = self._clean_json_response(response)
-            result = json.loads(cleaned)
+        fallback_result = {
+            "optimized_content": original_section,
+            "keywords_used": [],
+            "improvements_made": ["Optimization failed, returned original section"]
+        }
 
-            logger.info(
-                f"Section optimization completed. Keywords used: {len(result.get('keywords_used', []))}")
-            return result
-
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse optimizer response: {str(e)}")
-            logger.debug(f"Raw response (first 500 chars): {response[:500]}")
-
-            # Try to extract basic info with regex fallback
-            try:
-                fallback_result = self._fallback_parse(response)
-                logger.info("Using fallback parsing method for optimizer")
-                return fallback_result
-            except Exception as fallback_error:
-                logger.error(
-                    f"Fallback parsing also failed: {str(fallback_error)}")
-                raise ValueError(
-                    f"Failed to parse optimizer response: {str(e)}")
-        except Exception as e:
-            logger.error(f"Unexpected error in optimizer: {str(e)}")
-            raise ValueError(f"Optimizer error: {str(e)}")
+        result = JSONParser.safe_json_parse(response, fallback_result)
+        logger.info(
+            f"Section optimization completed. Keywords used: {len(result.get('keywords_used', []))}")
+        return result
 
     def optimize_professional_summary(
         self,
@@ -181,7 +167,7 @@ class CVOptimizer:
 
     def _get_fallback_comprehensive_structure(self) -> Dict:
         """Get fallback comprehensive structure.
-        
+
         Returns:
             dict: Basic comprehensive structure for fallback cases
         """
