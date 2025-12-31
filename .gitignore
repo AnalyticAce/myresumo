@@ -211,6 +211,7 @@ personal_data.py
 # Exclude all markdown files except README.md, CONTRIBUTING.md, and prompts
 *.md
 !README.md
+!CHANGELOG.md
 !CONTRIBUTING.md
 !app/prompts/*.md
 !app/prompts/*.json

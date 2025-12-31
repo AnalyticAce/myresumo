@@ -5,33 +5,31 @@ and handles application startup and shutdown events. It serves as the central
 coordination point for the entire application.
 """
 
-from app.web.dashboard import web_router
-from app.web.core import core_web_router
-from app.database.connector import MongoConnectionManager
-from app.api.routers.token_usage import router as token_usage_router
-from app.api.routers.resume import resume_router
-from app.api.routers.cover_letter import cover_letter_router
-from app.api.routers.comprehensive_optimizer import comprehensive_router
-from app.routes.n8n_integration import router as n8n_router
-from app.services.workflow_orchestrator import CVWorkflowOrchestrator
-from app.services.cv_analyzer import CVAnalyzer
-from app.services.cover_letter_gen import CoverLetterGenerator
-from app.services.scraper import fetch_job_description, extract_keywords_from_jd
-from app.services.master_cv import MasterCV
-from app.utils.shared_utils import ValidationHelper, ErrorHandler
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from pydantic import BaseModel, Field, field_validator
-from typing import Optional, Dict, Any, List
-from dotenv import load_dotenv
-import os
 import logging
-
+from dotenv import load_dotenv
+from typing import Optional, Dict, Any, List
+from pydantic import BaseModel, Field, field_validator
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi import FastAPI, Request, HTTPException, Body, Query
+from app.utils.shared_utils import ValidationHelper, ErrorHandler
+from app.services.master_cv import MasterCV
+from app.services.scraper import fetch_job_description, extract_keywords_from_jd
+from app.services.cover_letter_gen import CoverLetterGenerator
+from app.services.cv_analyzer import CVAnalyzer
+from app.services.workflow_orchestrator import CVWorkflowOrchestrator
+from app.routes.n8n_integration import router as n8n_router
+from app.api.routers.comprehensive_optimizer import comprehensive_router
+from app.api.routers.cover_letter import cover_letter_router
+from app.api.routers.resume import resume_router
+from app.api.routers.token_usage import router as token_usage_router
+from app.database.connector import MongoConnectionManager
+from app.web.core import core_web_router
+from app.web.dashboard import web_router
 # Load environment variables from .env file
 load_dotenv(override=True)
 
@@ -49,15 +47,15 @@ logger = logging.getLogger(__name__)
 
 # Request models
 class OptimizationRequest(BaseModel):
-    cv_text: str = Field(..., min_length=100, max_length=10000,
+    cv_text: str = Field(..., min_length=100, max_length=25000,
                          description="CV text to optimize")
-    jd_text: str = Field(..., min_length=50, max_length=5000,
+    jd_text: str = Field(..., min_length=50, max_length=15000,
                          description="Job description text")
     generate_cover_letter: bool = Field(
         default=True, description="Whether to generate cover letter")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "cv_text": "John Doe\nSenior Software Engineer...",
                 "jd_text": "We are looking for a Senior Software Engineer...",
@@ -70,11 +68,11 @@ class CoverLetterRequest(BaseModel):
     candidate_data: dict = Field(..., description="Candidate information")
     job_data: dict = Field(..., description="Job information")
 
-    tone: str = Field(default="Professional", regex="^(Professional|Enthusiastic|Formal|Casual)$",
+    tone: str = Field(default="Professional", pattern="^(Professional|Enthusiastic|Formal|Casual)$",
                       description="Tone for cover letter")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "candidate_data": {
                     "name": "John Doe",
@@ -105,7 +103,7 @@ class OptimizationResponse(BaseModel):
     message: str
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "success": True,
                 "data": {
@@ -158,14 +156,9 @@ async def shutdown_logic(app: FastAPI) -> None:
 app = FastAPI(
     title="PowerCV API",
     summary="",
-<< << << < HEAD
-    description="""
-    PowerCV is an AI-backed resume generator designed to tailor your resume and skills based on a given job description. This innovative tool leverages the latest advancements in AI technology to provide you with a customized resume that stands out.
-=======
     description="""
     PowerCV is a resume generation system that adapts resumes to specific job descriptions.
     It leverages AI to provide customized resume content based on user input.
->>>>>> > 1322075 (chore: humanize codebase and professionalize tone)
     """,
     license_info={"name": "MIT License",
                   "url": "https://opensource.org/licenses/MIT"},
@@ -392,7 +385,6 @@ async def generate_cover_letter_v2(request: CoverLetterRequest):
 # Legacy/General endpoints
 
 
-
 @app.post("/api/optimize-resume", response_model=OptimizationResponse)
 async def optimize_resume(request: OptimizationRequest):
     """
@@ -451,9 +443,10 @@ async def generate_cover_letter(request: OptimizationRequest):
 
 
 # Automation endpoints
->>>>>>> 1322075 (chore: humanize codebase and professionalize tone)
+
+
 @app.post("/api/v1/scrape", tags=["Scraping"], summary="Scrape job description from URL")
-async def scrape_job_description(url: str = Field(..., description="URL to job posting")):
+async def scrape_job_description(url: str = Body(..., description="URL to job posting")):
     """
     Scrape job description from a LinkedIn, Indeed, or other job board URL.
 
@@ -464,10 +457,7 @@ async def scrape_job_description(url: str = Field(..., description="URL to job p
         # Validate URL
         validated_url = ValidationHelper.validate_url(url)
 
-<<<<<<< HEAD
         from app.services.scraper import fetch_job_description
-=======
->>>>>>> 1322075 (chore: humanize codebase and professionalize tone)
         result = await fetch_job_description(validated_url)
         return result
 
@@ -475,17 +465,13 @@ async def scrape_job_description(url: str = Field(..., description="URL to job p
         logger.error(f"URL validation error: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-<<<<<<< HEAD
-        logger.error(f"Scraping error: {str(e)}")
-=======
         logger.error(f"Scraping error: {str(e)}", exc_info=True)
->>>>>>> 1322075 (chore: humanize codebase and professionalize tone)
         raise HTTPException(
             status_code=500, detail=f"Failed to scrape job description: {str(e)}")
 
 
 @app.post("/api/v1/extract-keywords", tags=["Analysis"], summary="Extract keywords from job description")
-async def extract_keywords(jd_text: str = Field(..., min_length=50, max_length=5000, description="Job description text")):
+async def extract_keywords(jd_text: str = Body(..., min_length=50, max_length=5000, description="Job description text")):
     """
     Extract skills and requirements from a job description.
 
@@ -497,10 +483,7 @@ async def extract_keywords(jd_text: str = Field(..., min_length=50, max_length=5
         validated_text = ValidationHelper.validate_text_input(
             jd_text, 5000, "job description")
 
-<<<<<<< HEAD
         from app.services.scraper import extract_keywords_from_jd
-=======
->>>>>>> 1322075 (chore: humanize codebase and professionalize tone)
         result = await extract_keywords_from_jd(validated_text)
         return result
 
@@ -514,9 +497,10 @@ async def extract_keywords(jd_text: str = Field(..., min_length=50, max_length=5
 
 @app.post("/api/v1/optimize-structured", tags=["Optimization"], summary="Optimize using structured CV data")
 async def optimize_structured_cv(
-    master_cv_file: str,
-    jd_text: str,
-    generate_cover_letter: bool = True
+    master_cv_file: str = Body(..., description="Path to structured CV file"),
+    jd_text: str = Body(..., description="Job description text"),
+    generate_cover_letter: bool = Query(
+        default=True, description="Whether to generate cover letter")
 ):
     """
     Optimize CV using structured master CV format(JSON/YAML).

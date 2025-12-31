@@ -37,9 +37,9 @@ class CVAnalyzer:
 
         # Basic sanitization
         cv_text = ValidationHelper.validate_text_input(
-            cv_text, 12000, "CV text")
+            cv_text, 25000, "CV text")
         jd_text = ValidationHelper.validate_text_input(
-            jd_text, 8000, "job description")
+            jd_text, 15000, "job description")
 
         user_message = f"""
 **JOB DESCRIPTION:**

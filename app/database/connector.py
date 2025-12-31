@@ -18,15 +18,20 @@ from app.config import computed_settings as settings
 logger = logging.getLogger(__name__)
 
 # Get database configuration
-mongodb_uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017/powercv")
+mongodb_uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
 mongodb_db = os.getenv("MONGODB_DB", "powercv")
 
-# Build the MongoDB URI with database name
-MONGODB_URI = f"{mongodb_uri.rstrip('/')}/{mongodb_db}"
+# Build the MongoDB URI safely
+if "/" in mongodb_uri.replace("mongodb://", "").replace("mongodb+srv://", ""):
+    # URI already contains a database name/slash, use as is if it matches or adjust
+    MONGODB_URI = mongodb_uri
+else:
+    MONGODB_URI = f"{mongodb_uri.rstrip('/')}/{mongodb_db}"
 
 # Log the URI (masked) for debugging
-masked_uri = MONGODB_URI.split("@")[-1] if "@" in MONGODB_URI else MONGODB_URI
-logger.info(f"MongoDB URI: ...{masked_uri}")
+masked_uri = "mongodb://***" + \
+    MONGODB_URI.split("@")[-1] if "@" in MONGODB_URI else MONGODB_URI
+logger.info(f"MongoDB URI initialized")
 
 
 class MongoConnectionManager:
@@ -78,7 +83,7 @@ class MongoConnectionManager:
         return motor.motor_asyncio.AsyncIOMotorClient(
             MONGODB_URI, **self.MONGO_CONFIG
         )
-        
+
     def get_client(self) -> motor.motor_asyncio.AsyncIOMotorClient:
         """Get the MongoDB client instance, creating it if it doesn't exist.
         Uses connection pooling for better performance.
