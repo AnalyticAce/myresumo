@@ -5,6 +5,7 @@ import logging
 from .ai_client import get_ai_client
 from ..prompts.prompt_loader import PromptLoader
 from ..utils.shared_utils import JSONParser, ErrorHandler, TextProcessor
+from .cv_validator import CVValidator
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,21 @@ class CVOptimizer:
         # Parse JSON response with fallback
         fallback_result = self._get_fallback_comprehensive_structure()
         result = JSONParser.safe_json_parse(response, fallback_result)
+
+        # Validate the optimization
+        validation = CVValidator.validate_optimization(cv_text, result)
+
+        # Log validation results
+        if not validation['valid']:
+            for error in validation['errors']:
+                logger.error(f"CV Optimization Validation Error: {error}")
+
+        if validation['warnings']:
+            for warning in validation['warnings']:
+                logger.warning(f"CV Optimization Warning: {warning}")
+
+        # Add validation results to the output
+        result['_validation'] = validation
 
         logger.info("Comprehensive optimization JSON parsed successfully")
         return result

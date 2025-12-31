@@ -20,3 +20,10 @@ Summary of fixes and improvements made to PowerCV to resolve startup and runtime
 
 ## Documentation
 - **Professionalized Tone**: Updated `README.md` and API descriptions to maintain a consistent, professional brand voice.
+
+## CV Optimization Quality & Integrity (2025-12-31)
+- **New High-Integrity Prompt**: Replaced `comprehensive_optimizer.md` with strict rules preventing data loss and hallucinations.
+- **Automated Validation**: Created `CVValidator` class to check for missing contact info, hallucinated skills/languages, and data integrity.
+- **Service Integration**: Integrated validation into `CVOptimizer.optimize_comprehensive()` with automatic error/warning logging.
+- **Comprehensive Tests**: Added `tests/test_cv_optimization.py` with 8 test cases covering contact preservation, hallucination detection, and data integrity.
+- **Validation Results**: Optimization responses now include `_validation` field with errors, warnings, and contact info comparison.
