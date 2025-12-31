@@ -71,7 +71,13 @@ Keep ALL certifications. If space is limited, summarize as: "X certifications in
 ## 7. PRESERVE LANGUAGES
 Output the EXACT list of languages from the original CV with EXACT proficiency levels. Never add languages not listed.
 
-# OUTPUT FORMAT
+---
+
+# CRITICAL: JSON OUTPUT FORMAT
+
+**Return ONLY the raw JSON object. NO markdown code fences. NO ```json blocks. NO preamble. NO explanation.**
+
+The FIRST character of your response MUST be `{` and the LAST character MUST be `}`.
 
 Return ONLY valid JSON in this exact structure:
 
@@ -159,4 +165,4 @@ Before outputting, verify:
 - [ ] No invented certifications
 - [ ] No invented skills
 
-Return ONLY the JSON. No markdown fences. No preamble.
+**REMINDER: Return ONLY the JSON object starting with { and ending with }. NO markdown. NO ```json. NO text before or after.**

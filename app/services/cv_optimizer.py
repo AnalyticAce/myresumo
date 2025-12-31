@@ -64,7 +64,7 @@ class CVOptimizer:
         )
 
         # Parse JSON response with fallback
-        fallback_result = self._get_fallback_comprehensive_structure()
+        fallback_result = self._get_fallback_comprehensive_structure(cv_text)
         result = JSONParser.safe_json_parse(response, fallback_result)
 
         # Validate the optimization
@@ -181,18 +181,42 @@ class CVOptimizer:
             optimization_focus=optimization_focus
         )
 
-    def _get_fallback_comprehensive_structure(self) -> Dict:
-        """Get fallback comprehensive structure.
+    def _get_fallback_comprehensive_structure(self, cv_text: str = "") -> Dict:
+        """Get fallback comprehensive structure with basic extraction from original CV.
+
+        Args:
+            cv_text: Original CV text to extract basic info from
 
         Returns:
             dict: Basic comprehensive structure for fallback cases
         """
+        # Try to extract basic information from CV text
+        name = "Candidate"
+        email = "none@example.com"
+
+        if cv_text:
+            # Extract name (usually first non-empty line)
+            lines = [line.strip()
+                     for line in cv_text.split('\n') if line.strip()]
+            if lines:
+                # First line is often the name
+                name = lines[0][:100]  # Limit length
+
+            # Extract email
+            import re
+            email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', cv_text)
+            if email_match:
+                email = email_match.group()
+
+        logger.warning(
+            f"Using fallback structure with extracted name: {name[:30]}...")
+
         return {
             "user_information": {
-                "name": "Candidate",
+                "name": name,
                 "main_job_title": "Professional",
-                "profile_description": "Experienced professional.",
-                "email": "none@example.com",
+                "profile_description": "Experienced professional with technical expertise.",
+                "email": email,
                 "experiences": [],
                 "education": [],
                 "skills": {"hard_skills": [], "soft_skills": []}

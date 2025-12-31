@@ -98,10 +98,14 @@ class JSONParser:
             return json.loads(cleaned)
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse JSON response: {str(e)}")
-            logger.debug(f"Raw response (first 1000 chars): {response[:1000]}")
+            logger.error(
+                f"Raw response (first 2000 chars):\n{response[:2000]}")
+            logger.debug(
+                f"Cleaned response attempt (first 1000 chars):\n{cleaned[:1000] if 'cleaned' in locals() else 'N/A'}")
 
             if fallback_structure is not None:
-                logger.info("Using fallback structure")
+                logger.warning(
+                    "Using fallback structure due to JSON parse error")
                 return fallback_structure.copy() if hasattr(fallback_structure, 'copy') else fallback_structure
 
             # Return minimal fallback
