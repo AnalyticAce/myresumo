@@ -64,4 +64,4 @@ pytest-asyncio>=0.21.0
 pytest-cov>=4.0.0
 
 # PDF Generation
-weasyprint>=60.0
+# Typst is used via CLI (binary), no Python package required
