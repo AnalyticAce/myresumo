@@ -35,7 +35,7 @@ from app.database.models.cover_letter import (
 from app.database.models.ai_cover_letter import AICoverLetterRequest, AICoverLetterResponse
 from app.database.repositories.cover_letter_repository import CoverLetterRepository
 from app.services.cover_letter import CoverLetterTemplateGenerator, AICoverLetterGenerator
-from app.services.resume.latex_generator import LaTeXGenerator
+from app.services.resume.typst_generator import TypstGenerator
 from app.config import computed_settings as settings
 
 # Configure logging
@@ -473,70 +473,66 @@ async def download_cover_letter_pdf(
     Raises:
         HTTPException: If cover letter not found or PDF generation fails
     """
-    try:
-        cover_letter = await repo.get_cover_letter_by_id(cover_letter_id)
-        if not cover_letter:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Cover letter not found"
-            )
+    cover_letter = await repo.get_cover_letter_by_id(cover_letter_id)
+    if not cover_letter:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Cover letter not found"
+        )
 
-        # Check if cover letter is generated
-        if not cover_letter.get("is_generated"):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cover letter content not generated yet"
-            )
+    # Check if cover letter is generated
+    if not cover_letter.get("is_generated"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cover letter content not generated yet"
+        )
 
-        # Get content data and generate LaTeX
-        content_data = CoverLetterData(**cover_letter.get("content_data", {}))
-        template_name = cover_letter.get(
-            "template_name", "professional_template")
+    # Get content data
+    content_data = CoverLetterData(**cover_letter.get("content_data", {}))
 
-        template_generator = CoverLetterTemplateGenerator()
-        latex_content = template_generator.generate_latex_cover_letter(
-            content_data, template_name)
+    # Prepare data for Typst
+    typst_data = {
+        "user_information": {
+            "name": content_data.sender_name,
+            "email": content_data.sender_email,
+            "phone": content_data.sender_phone,
+            "address": content_data.sender_location
+        },
+        # Join paragraphs for body
+        "cover_letter_content": "\n\n".join([
+            content_data.introduction,
+            *content_data.body_paragraphs,
+            content_data.closing,
+            content_data.signature
+        ])
+    }
 
-        # Create temporary files
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.tex', delete=False) as tex_file:
-            tex_file.write(latex_content)
-            tex_file_path = tex_file.name
+    # Initialize Typst Generator
+    templates_dir = Path("data/templates")
+    generator = TypstGenerator(str(templates_dir))
+    generator.json_data = {"data": typst_data}
 
-        try:
-            # Generate PDF using LaTeX
-            pdf_path = tex_file_path.replace('.tex', '.pdf')
-            generator = LaTeXGenerator()
-            success = generator.generate_pdf_from_latex(
-                tex_file_path, pdf_path)
+    # Generate PDF
+    with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp_pdf:
+        output_path = tmp_pdf.name
 
-            if not success or not Path(pdf_path).exists():
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to generate PDF"
-                )
+    success = generator.generate_pdf("cover_letter.typ", output_path)
 
-            # Return PDF file
-            filename = f"cover_letter_{cover_letter.get('title', 'untitled').replace(' ', '_')}.pdf"
-            return FileResponse(
-                path=pdf_path,
-                filename=filename,
-                media_type="application/pdf"
-            )
-
-        finally:
-            # Clean up temporary files
-            for ext in ['.tex', '.aux', '.log', '.pdf']:
-                temp_file = Path(tex_file_path.replace('.tex', ext))
-                if temp_file.exists():
-                    temp_file.unlink()
-
-    except HTTPException:
-        raise
-    except Exception as e:
+    if not success or not Path(output_path).exists():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating PDF: {str(e)}",
+            detail="Failed to generate PDF. Check Typst installation."
         )
+
+    pdf_path = output_path
+
+    # Return PDF file
+    filename = f"cover_letter_{cover_letter.get('title', 'untitled').replace(' ', '_')}.pdf"
+    return FileResponse(
+        path=pdf_path,
+        filename=filename,
+        media_type="application/pdf"
+    )
 
 
 @cover_letter_router.get(
