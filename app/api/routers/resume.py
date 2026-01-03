@@ -35,7 +35,7 @@ from app.database.models.resume import Resume, ResumeData
 from app.database.repositories.resume_repository import ResumeRepository
 from app.services.resume.universal_scorer import UniversalResumeScorer
 from app.services.ai.model_ai import AtsResumeOptimizer
-from app.services.resume.latex_generator import LaTeXGenerator
+from app.services.resume.typst_generator import TypstGenerator
 from app.utils.file_handling import create_temporary_pdf, extract_text_from_file
 
 # Configure logging
@@ -625,54 +625,26 @@ async def get_templates(
         template_dir = "data/sample_latex_templates"
         templates = []
 
-        template_info = {
-            "resume_template.tex": {
-                "name": "Standard Template",
-                "description": "Classic professional resume template with A4 format and standard 1-inch margins",
+        available_templates = [
+            {
+                "filename": "resume.typ",
+                "name": "Classic Template",
+                "description": "Clean, single-column layout suitable for all industries. Features a centered header and optimized spacing.",
                 "style": "Professional",
-                "margins": "1 inch"
+                "margins": "Standard"
             },
-            "compact_resume_template.tex": {
-                "name": "Compact Template",
-                "description": "Space-efficient template with A4 format and 1-inch margins",
-                "style": "Professional",
-                "margins": "1 inch"
-            },
-            "modern_template.tex": {
-                "name": "Modern Template",
-                "description": "Contemporary design with color accents, A4 format and 1-inch margins",
+            {
+                "filename": "modern.typ",
+                "name": "Modern Side-Column",
+                "description": "Distinctive two-column layout with a sidebar for skills and contact info. Great for tech and creative roles.",
                 "style": "Modern",
-                "margins": "1 inch"
-            },
-            "minimalist_template.tex": {
-                "name": "Minimalist Template",
-                "description": "Clean, simple design with A4 format and 1-inch margins",
-                "style": "Minimalist",
-                "margins": "1 inch"
-            },
-            "creative_template.tex": {
-                "name": "Creative Template",
-                "description": "Visually striking design with colored header, A4 format and 1-inch margins",
-                "style": "Creative",
-                "margins": "1 inch"
-            },
-            "simple_resume_template.tex": {
-                "name": "Simple Template",
-                "description": "Basic template with straightforward formatting, A4 format and 1-inch margins",
-                "style": "Simple",
-                "margins": "1 inch"
+                "margins": "Full Bleed Sidebar"
             }
-        }
+        ]
 
-        if os.path.exists(template_dir):
-            for filename in os.listdir(template_dir):
-                if filename.endswith('.tex') and filename in template_info:
-                    templates.append({
-                        "filename": filename,
-                        **template_info[filename]
-                    })
-
-        return templates
+        return available_templates
+        # No-op for now as we return static list above
+        return available_templates
 
     except Exception as e:
         raise HTTPException(
@@ -1608,12 +1580,24 @@ async def download_resume(
             detail="Optimized resume data not available. Please optimize the resume first.",
         )
     try:
-        latex_dir = Path("data/sample_latex_templates")
-        if not latex_dir.exists():
-            latex_dir = Path("app/services/resume/latex_templates")
-            if not latex_dir.exists():
-                latex_dir.mkdir(parents=True, exist_ok=True)
-        generator = LaTeXGenerator(str(latex_dir))
+        # Prepare paths
+        base_dir = Path(__file__).resolve().parent.parent.parent.parent
+        templates_dir = base_dir / "data" / "templates"
+
+        output_dir = tempfile.gettempdir()
+        output_filename = f"resume_{resume_id}.pdf"
+        output_path = os.path.join(output_dir, output_filename)
+
+        # Initialize Typst Generator
+        # Check if template is passed in function args (it is named 'template')
+        # Rename local var to avoid confusion or use 'template' directly
+        target_template = template if template else "resume.typ"
+
+        if target_template.endswith('.tex') or target_template.endswith('.html'):
+            target_template = "resume.typ"
+
+        generator = TypstGenerator(str(templates_dir))
+
         if use_optimized:
             json_data = resume["optimized_data"]
         else:
@@ -1621,22 +1605,37 @@ async def download_resume(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Downloading original resume as PDF is not supported. Please optimize first.",
             )
+
+        # Parse data
         if isinstance(json_data, str):
             generator.parse_json_from_string(json_data)
         else:
             generator.json_data = json_data
-        latex_content = generator.generate_from_template(template)
-        if not latex_content:
+
+        # Initialize Typst Generator
+        # Check if template is passed in function args (it is named 'template')
+        valid_templates = ["resume.typ", "modern.typ"]
+        target_template = template if template in valid_templates else "resume.typ"
+
+        # Handle legacy or mapped names
+        if template == "modern":
+            target_template = "modern.typ"
+        elif template == "classic" or template == "simple":
+            target_template = "resume.typ"
+
+        generator = TypstGenerator(str(templates_dir))
+
+        # Generate PDF
+        success = generator.generate_pdf(target_template, output_path)
+
+        if not success:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to generate LaTeX content",
+                detail="Failed to generate PDF. Check Typst installation."
             )
-        pdf_path = create_temporary_pdf(latex_content)
-        if not pdf_path:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create PDF",
-            )
+
+        # We need to return the file path for FileResponse
+        pdf_path = output_path
 
         # Generate filename in format: name_cv_company_position_date
         import re

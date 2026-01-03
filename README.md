@@ -71,7 +71,8 @@ The resume view page displays the generated resume in a professional format.
 - **Backend**: FastAPI, Python 3.8+
 - **Database**: MongoDB
 - **Frontend**: Jinja2 templates, Alpine.js, HTML/CSS
-- **AI Integration**: Deepseek API
+- **PDF Engine**: Typst (Fast, modern Typesetting)
+- **AI Integration**: Deepseek API, Cerebras
 - **Deployment**: Docker
 - **Package Management**: uv
 
@@ -85,6 +86,7 @@ The resume view page displays the generated resume in a professional format.
 - Python 3.8+
 - Docker (for containerized deployment)
 - MongoDB
+- Typst CLI (for PDF generation)
 - Deepseek API key
 
 ### Setting Up Dependencies

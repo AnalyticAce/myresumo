@@ -140,14 +140,16 @@ Return ONLY valid JSON in this exact structure:
 
 # OPTIMIZATION RULES
 
-1. **Keyword Integration**: Naturally weave job description keywords into bullet points using content from the original CV
-2. **Achievement Focus**: Use action verbs and quantify results where original provides data
-3. **Tailored Summary**: Rewrite profile to align with job requirements using candidate's ACTUAL experience
-4. **Skill Mapping**: Include ALL skills from the original CV that match job requirements - don't omit relevant skills just because they weren't in your first draft
-5. **No Hallucinations**: Never invent companies, dates, degrees, skills, languages, or certifications not in the original CV
-6. **Integrity**: Use the candidate's original experience and skills, selecting and emphasizing what's most relevant
-7. **Completeness**: Review the entire original CV skills section - if a skill is there and relevant to the job, include it
-8. **Emphasis over Invention**: When you find relevant experience in the original CV, highlight it prominently rather than inventing new experience
+### 1. Integrity & Accuracy (CRITICAL)
+- **NO INVENTIONS**: Do NOT invent jobs, degrees, dates, or companies.
+- **NO HALLUCINATIONS**: Do NOT add skills or languages unless present in the input or directly inferred from tasks (e.g., "used Excel" -> "Microsoft Excel").
+- **PRESERVE FACTS**: Keep all dates, job titles, and company names exactly as provided.
+- **RE-FRAMING ALLOWED**: You MAY rewrite bullet points to emphasize relevant skills (e.g., highlighting "logistics" from a "Procurement" role when applying to "Warehouse"). Pivot the narrative, but do not fabricate the experience.
+
+### 2. Tailoring Strategy (Pivot & Emphasize)
+- **Role Alignment**: Rewrite the "Professional Summary" to bridge the gap between the candidate's past experience and the target role. Explain *why* their background makes them a fit.
+- **Keyword Integration**: Naturally weave target keywords into the Summary and Experience bullet points where they truthfully apply.
+- **Transferable Skills**: Emphasize skills that transfer (e.g., "Vendor Management" -> "Inventory Control").
 
 **CRITICAL**: Your role is to SELECT and EMPHASIZE from the original CV, not to CREATE new content. If the original CV mentions "inventory management" and the job requires it, make sure it's highlighted. If the original CV doesn't mention "forklift operation", don't add it.
 

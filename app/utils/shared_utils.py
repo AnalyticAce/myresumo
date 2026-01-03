@@ -80,6 +80,58 @@ class JSONParser:
         return response
 
     @staticmethod
+    def repair_json(json_str: str) -> str:
+        """Attempt to repair truncated JSON by closing open braces/brackets.
+
+        Args:
+            json_str: The potentially truncated JSON string
+
+        Returns:
+            str: Repaired JSON string
+        """
+        # Count open braces/brackets
+        open_braces = json_str.count('{') - json_str.count('}')
+        open_brackets = json_str.count('[') - json_str.count(']')
+
+        # Determine last open char to decide closing order (heuristic)
+        # This is a simple stack-based approach
+        stack = []
+        in_string = False
+        escape = False
+
+        # Re-scan to build closing stack correctly
+        for char in json_str:
+            if char == '"' and not escape:
+                in_string = not in_string
+            elif char == '\\' and in_string:
+                escape = not escape
+                continue  # Skip next char check
+            elif not in_string:
+                if char == '{':
+                    stack.append('}')
+                elif char == '[':
+                    stack.append(']')
+                elif char == '}':
+                    if stack and stack[-1] == '}':
+                        stack.pop()
+                elif char == ']':
+                    if stack and stack[-1] == ']':
+                        stack.pop()
+
+            escape = False
+
+        # Perform repair
+        if in_string:
+            # Close the open string first
+            json_str += '"'
+
+        # Append needed closing characters in reverse order
+        while stack:
+            json_str += stack.pop()
+
+        return json_str
+
+    @staticmethod
     def safe_json_parse(response: str, fallback_structure: Optional[Any] = None) -> Any:
         """Safely parse JSON response with fallback handling.
 

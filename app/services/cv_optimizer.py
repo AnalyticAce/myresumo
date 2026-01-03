@@ -60,7 +60,7 @@ class CVOptimizer:
             system_prompt=CVOptimizer._comprehensive_prompt,
             user_message=user_message,
             temperature=0.2,
-            max_tokens=4000
+            max_tokens=8000
         )
 
         # Parse JSON response with fallback

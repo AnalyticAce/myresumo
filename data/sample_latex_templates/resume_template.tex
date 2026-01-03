@@ -76,10 +76,25 @@
 
 %----------HEADING----------
 \begin{center}
-    \textbf{\Huge \scshape <<data.user_information.name|latex_escape>>} \\ \vspace{1pt}
-    \href{mailto:<<data.user_information.email|latex_escape>>}{\underline{<<data.user_information.email|latex_escape>>}} $|$
-    \href{<<data.user_information.github|latex_escape>>}{\underline{Github: <<data.user_information.github|latex_escape>>}} $|$
-    \href{<<data.user_information.linkedin|latex_escape|lower|replace(" ", "-")>>}{\underline{LinkedIn: <<data.user_information.linkedin|latex_escape>>}}
+    \textbf{\Huge \scshape <<data.user_information.name|latex_escape>>} \\ \vspace{3pt}
+    
+    \small
+    <% if data.user_information.phone %>
+    \faPhone \ <<data.user_information.phone|latex_escape>> \ $|$ \ 
+    <% endif %>
+    \href{mailto:<<data.user_information.email|latex_escape>>}{\faEnvelope \ \underline{<<data.user_information.email|latex_escape>>}} 
+    <% if data.user_information.address %>
+    \ $|$ \ \faMapMarker \ <<data.user_information.address|latex_escape>>
+    <% endif %>
+    <% if data.user_information.birthdate or data.user_information.age %>
+    \ $|$ \ <% if data.user_information.age %><<data.user_information.age|latex_escape>>\ <% endif %><% if data.user_information.birthdate %>(<<data.user_information.birthdate|latex_escape>>)<% endif %>
+    <% endif %>
+    \\ \vspace{3pt}
+    
+    <% if data.user_information.linkedin %>
+    \href{<<data.user_information.linkedin|latex_escape|lower|replace(" ", "-")>>}{\faLinkedin \ \underline{LinkedIn}} \ $|$ \ 
+    <% endif %>
+    \href{<<data.user_information.github|latex_escape>>}{\faGithub \ \underline{Github}}
 \end{center}
 
 <% if data.user_information.get('profile_description') %>
@@ -145,17 +160,34 @@
   \resumeSubHeadingListEnd
 <% endif %>
 
-<% if data.user_information.get('skills') %>
+<% if data.user_information.get('skills') or data.user_information.get('languages') %>
 %-----------SKILLS-----------
 \section{Skills}
  \begin{itemize}[leftmargin=0.15in, label={}]
     \small{\item{
-     \textbf{Languages}{: English (Proficient), French (Native)} \\
-     <% if data.user_information.skills.hard_skills %>
-     \textbf{Programming}{: <<data.user_information.skills.hard_skills|join(', ')|latex_escape>>} \\
+     <% if data.user_information.get('languages') %>
+     \textbf{Languages}{: 
+     <% if data.user_information.languages is string %>
+        <<data.user_information.languages|latex_escape>>
+     <% else %>
+        <% for lang in data.user_information.languages %>
+        <<lang|latex_escape>><% if not loop.last %>, <% endif %>
+        <% endfor %>
      <% endif %>
-     <% if data.user_information.skills.soft_skills %>
-     \textbf{Soft Skills}{: <<data.user_information.skills.soft_skills|join(', ')|latex_escape>>}
+     } \\
+     <% endif %>
+     
+     <% if data.user_information.get('skills') %>
+        <% if data.user_information.skills is mapping %>
+             <% if data.user_information.skills.hard_skills %>
+             \textbf{Programming}{: <<data.user_information.skills.hard_skills|join(', ')|latex_escape>>} \\
+             <% endif %>
+             <% if data.user_information.skills.soft_skills %>
+             \textbf{Soft Skills}{: <<data.user_information.skills.soft_skills|join(', ')|latex_escape>>}
+             <% endif %>
+        <% else %>
+             \textbf{Skills}{: <<data.user_information.skills|join(', ')|latex_escape>>}
+        <% endif %>
      <% endif %>
     }}
  \end{itemize}
