@@ -7,6 +7,9 @@ from ..prompts.prompt_loader import PromptLoader
 from ..utils.shared_utils import JSONParser, ErrorHandler, TextProcessor
 from .cv_validator import CVValidator
 
+# Compiled regex for email extraction to avoid recompilation on every call
+EMAIL_REGEX = re.compile(r'[\w\.-]+@[\w\.-]+\.\w+')
+
 logger = logging.getLogger(__name__)
 
 
@@ -209,8 +212,7 @@ class CVOptimizer:
         # Use provided email, or extract from CV, or use better placeholder
         if not email and cv_text:
             # Extract email from CV text if not provided
-            import re
-            email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', cv_text)
+            email_match = EMAIL_REGEX.search(cv_text)
             if email_match:
                 email = email_match.group()
 

@@ -487,11 +487,12 @@ async def optimize_resume(request: OptimizationRequest):
     """
     try:
         # Log request context for debugging without exposing sensitive data
+        cv_length = len(request.cv_text) if request.cv_text else 0
         jd_length = len(request.jd_text) if request.jd_text else 0
         logger.info(
             "Received resume optimization request",
             extra={
-                "cv_length": len(request.cv_text) if request.cv_text else 0,
+                "cv_length": cv_length,
                 "jd_length": jd_length,
                 "generate_cover_letter": request.generate_cover_letter
             }
