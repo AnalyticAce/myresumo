@@ -51,12 +51,12 @@ class AIClient:
         config = self.CONFIGS[self.provider]
         self.api_base = config['base']
         self.model = config['model']
-        self.api_key = getattr(settings, config['key'].lower())
+        self.api_key = getattr(settings, config['key'].lower(), None)
 
         if not self.api_key:
-            logger.warning(
+            raise ValueError(
                 f"{config['key']} not found in settings. "
-                f"AI operations will fail until API key is configured."
+                f"Configure the API key for provider '{self.provider}' to enable AI operations."
             )
 
         logger.info(f"Initialized AI client: {self.provider} ({self.model})")
