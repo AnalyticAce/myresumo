@@ -247,7 +247,29 @@ async def create_resume(
         # Secure file validation
         file_content, safe_filename, file_hash = await SecureFileValidator.validate_upload(file)
 
+        # Ensure file_content is bytes
+        if not isinstance(file_content, bytes):
+            logger.error(f"File content is not bytes: {type(file_content)}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid file content format"
+            )
+
+        # Validate file size
+        if len(file_content) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File is empty"
+            )
+
         file_extension = Path(safe_filename).suffix.lower()
+
+        # Validate file extension
+        if file_extension not in ['.pdf', '.docx', '.doc', '.txt', '.md', '.markdown']:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported file extension: {file_extension}"
+            )
 
         # Store file securely
         stored_file_path = store_file_securely(file_content, safe_filename, user_id)
@@ -296,6 +318,7 @@ async def create_resume(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Error creating resume: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error creating resume: {str(e)}",
