@@ -131,7 +131,14 @@ class SecureFileValidator:
 
         try:
             # Detect MIME type from content
-            detected_mime = magic.from_buffer(content, mime=True)
+            magic_result = magic.detect_from_content(content)
+            if magic_result is None or magic_result.mime_type is None:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Unable to determine file type from content"
+                )
+
+            detected_mime = magic_result.mime_type
 
             # Get expected extensions for this MIME type
             expected_extensions = cls.ALLOWED_TYPES.get(detected_mime, [])
