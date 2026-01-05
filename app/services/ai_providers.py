@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import logging
 
 from app.config.settings import get_settings
+from app.core.exceptions import MissingApiKeyError
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -51,13 +52,10 @@ class AIClient:
         config = self.CONFIGS[self.provider]
         self.api_base = config['base']
         self.model = config['model']
-        self.api_key = getattr(settings, config['key'].lower())
+        self.api_key = getattr(settings, config['key'].lower(), None)
 
         if not self.api_key:
-            logger.warning(
-                f"{config['key']} not found in settings. "
-                f"AI operations will fail until API key is configured."
-            )
+            raise MissingApiKeyError(config['key'], self.provider)
 
         logger.info(f"Initialized AI client: {self.provider} ({self.model})")
 

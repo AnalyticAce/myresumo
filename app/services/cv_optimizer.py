@@ -17,14 +17,21 @@ class CVOptimizer:
     _comprehensive_prompt = None
 
     def __init__(self):
-        """Initialize optimizer with AI client."""
-        self.client = get_ai_client()
+        """Initialize optimizer."""
+        self._client = None
         if CVOptimizer._system_prompt is None:
             loader = PromptLoader()
             CVOptimizer._system_prompt = loader.load_prompt('cv_optimizer')
             CVOptimizer._comprehensive_prompt = loader.load_prompt(
                 'comprehensive_optimizer')
         logger.info("CVOptimizer initialized with comprehensive support")
+
+    @property
+    def client(self):
+        """Lazy instantiation of AI client."""
+        if self._client is None:
+            self._client = get_ai_client()
+        return self._client
 
     def optimize_comprehensive(
         self,
