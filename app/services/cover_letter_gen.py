@@ -16,13 +16,20 @@ class CoverLetterGenerator:
     _system_prompt = None
 
     def __init__(self):
-        """Initialize generator with AI client."""
-        self.client = get_ai_client()
+        """Initialize generator."""
+        self._client = None
         if CoverLetterGenerator._system_prompt is None:
             loader = PromptLoader()
             CoverLetterGenerator._system_prompt = loader.load_prompt(
                 'cover_letter')
         logger.info("CoverLetterGenerator initialized")
+
+    @property
+    def client(self):
+        """Lazy instantiation of AI client."""
+        if self._client is None:
+            self._client = get_ai_client()
+        return self._client
 
     def generate(
         self,

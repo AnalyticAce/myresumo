@@ -44,6 +44,7 @@ orchestrator = CVWorkflowOrchestrator()
 from app.config.logging_config import logger
 from app.config.settings import get_settings
 from app.middleware.rate_limit import init_rate_limiting
+from app.core.exceptions import ConfigurationError, MissingApiKeyError
 
 
 # Request models
@@ -172,6 +173,53 @@ app = FastAPI(
 
 # Initialize rate limiting
 init_rate_limiting(app)
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Handle application startup and configuration validation."""
+    try:
+        # Test AI client configuration (this will raise ConfigurationError if misconfigured)
+        from app.services.ai_providers import AIClient
+        AIClient()
+
+        # Test database connection
+        from app.database.connector import MongoConnectionManager
+        manager = MongoConnectionManager.get_instance()
+
+        logger.info("Application startup completed successfully")
+
+    except (ConfigurationError, MissingApiKeyError) as e:
+        logger.error(f"Configuration error during startup: {e}")
+        error_msg = f"""
+{"="*60}
+❌ CONFIGURATION ERROR
+{"="*60}
+Error: {e}
+
+Please check your environment configuration:
+"""
+        if hasattr(e, 'config_key'):
+            error_msg += f"  - Missing or invalid: {e.config_key}\n"
+        if hasattr(e, 'provider'):
+            error_msg += f"  - For AI provider: {e.provider}\n"
+        error_msg += "\nUpdate your .env file or environment variables.\n"
+        error_msg += "="*60
+
+        print(error_msg, flush=True)
+        # Re-raise as RuntimeError to cause startup failure
+        raise RuntimeError(f"Application configuration error: {e}") from e
+
+    except Exception as e:
+        logger.error(f"Unexpected error during startup: {e}")
+        print("\n" + "="*60)
+        print("❌ STARTUP ERROR")
+        print("="*60)
+        print(f"Unexpected error: {e}")
+        print("\nCheck application logs for details.")
+        print("="*60 + "\n")
+        import sys
+        sys.exit(1)
 
 
 # Global exception handler for security

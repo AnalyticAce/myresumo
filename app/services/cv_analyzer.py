@@ -16,12 +16,19 @@ class CVAnalyzer:
     _system_prompt = None
 
     def __init__(self):
-        """Initialize analyzer with AI client."""
-        self.client = get_ai_client()
+        """Initialize analyzer."""
+        self._client = None
         if CVAnalyzer._system_prompt is None:
             loader = PromptLoader()
             CVAnalyzer._system_prompt = loader.load_prompt('cv_analyzer')
         logger.info("CVAnalyzer initialized")
+
+    @property
+    def client(self):
+        """Lazy instantiation of AI client."""
+        if self._client is None:
+            self._client = get_ai_client()
+        return self._client
 
     def analyze(self, cv_text: str, jd_text: str) -> Dict:
         """Analyze CV against job description.
