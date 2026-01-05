@@ -8,7 +8,7 @@ coordination point for the entire application.
 import logging
 from dotenv import load_dotenv
 from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -54,14 +54,15 @@ class OptimizationRequest(BaseModel):
     generate_cover_letter: bool = Field(
         default=True, description="Whether to generate cover letter")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "cv_text": "John Doe\nSenior Software Engineer...",
                 "jd_text": "We are looking for a Senior Software Engineer...",
                 "generate_cover_letter": True
             }
         }
+    )
 
 
 class CoverLetterRequest(BaseModel):
@@ -71,8 +72,8 @@ class CoverLetterRequest(BaseModel):
     tone: str = Field(default="Professional", pattern="^(Professional|Enthusiastic|Formal|Casual)$",
                       description="Tone for cover letter")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "candidate_data": {
                     "name": "John Doe",
@@ -86,6 +87,7 @@ class CoverLetterRequest(BaseModel):
                 "tone": "Professional"
             }
         }
+    )
 
     @field_validator('tone')
     @classmethod
@@ -102,8 +104,8 @@ class OptimizationResponse(BaseModel):
     data: Optional[Dict[str, Any]] = None
     message: str
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "success": True,
                 "data": {
@@ -114,6 +116,7 @@ class OptimizationResponse(BaseModel):
                 "message": "Resume optimization completed successfully"
             }
         }
+    )
 
 
 async def startup_logic(app: FastAPI) -> None:

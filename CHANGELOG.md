@@ -59,4 +59,10 @@ Summary of fixes and improvements made to PowerCV to resolve startup and runtime
   - Updated contact information and Docker instructions.
 - **Frontend**: Corrected the "Contribute" button link in `base.html` to point to the GitHub repository.
 - **Cleanup**: Removed unused assets from `.github/assets` and consolidated test configuration.
-- **Maintenance**: Resolved Pydantic V2 deprecation warnings in `app/config.py` and fixed pytest collection warnings in `test_prompts.py`.
+- **Maintenance**: 
+  - Resolved Pydantic V2 deprecation warnings in `app/config.py` (removed `env` args, updated to `model_config`).
+  - Fixed Pydantic V2 warnings in `app/main.py` (converted `Config` classes to `ConfigDict`).
+  - Fixed pytest collection warning in `test_prompts.py` (renamed `TestResult` to `PromptTestResult`).
+  - Removed obsolete `tests/test_template_render.py` (referenced deleted LaTeX generator).
+  - Fixed test failures in `test_integration.py` and `test_suite.py`.
+  - Test suite now runs clean: **43 passed, 10 warnings** (down from 59+).

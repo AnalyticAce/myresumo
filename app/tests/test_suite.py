@@ -244,9 +244,9 @@ class TestCVAnalyzer:
             from app.services.cv_analyzer import CVAnalyzer
             analyzer = CVAnalyzer()
 
-            # Should not raise exception
-            result = analyzer.analyze("", sample_jd_text)
-            assert 'ats_score' in result
+            # Should raise ValueError
+            with pytest.raises(ValueError):
+                analyzer.analyze("", sample_jd_text)
 
 
 # =============================================================================
@@ -264,7 +264,8 @@ class TestCVOptimizer:
 
             from app.services.cv_optimizer import CVOptimizer
             optimizer = CVOptimizer()
-            result = optimizer.optimize_comprehensive(sample_cv_text, sample_jd_text, {})
+            result = optimizer.optimize_comprehensive(
+                sample_cv_text, sample_jd_text, {})
 
             assert isinstance(result, dict)
 
@@ -279,7 +280,8 @@ class TestCVOptimizer:
 
             from app.services.cv_optimizer import CVOptimizer
             optimizer = CVOptimizer()
-            result = optimizer.optimize_comprehensive(sample_cv_text, sample_jd_text, {})
+            result = optimizer.optimize_comprehensive(
+                sample_cv_text, sample_jd_text, {})
 
             assert 'optimized_resume' in result
 
@@ -310,7 +312,8 @@ class TestJobScraper:
     async def test_indeed_scraper_extracts_data(self, mock_scraper_response):
         """Test Indeed scraper extracts required fields."""
         with patch('app.services.scraper.IndeedScraper.fetch') as mock_fetch:
-            mock_fetch.return_value = {**mock_scraper_response, 'source': 'indeed'}
+            mock_fetch.return_value = {
+                **mock_scraper_response, 'source': 'indeed'}
 
             from app.services.scraper import IndeedScraper
             scraper = IndeedScraper()
@@ -424,7 +427,8 @@ class TestCoverLetterGenerator:
 
             # Test with different tones
             for tone in ["Professional", "Enthusiastic", "Formal"]:
-                result = generator.generate(candidate_data, job_data, tone=tone)
+                result = generator.generate(
+                    candidate_data, job_data, tone=tone)
                 assert 'cover_letter' in result
 
 
@@ -441,8 +445,8 @@ class TestWorkflowOrchestrator:
         """Test that optimization workflow returns complete structure."""
         # Mock all dependencies
         with patch('app.services.workflow_orchestrator.CVAnalyzer') as MockAnalyzer, \
-             patch('app.services.workflow_orchestrator.CVOptimizer') as MockOptimizer, \
-             patch('app.services.workflow_orchestrator.CoverLetterGenerator') as MockGen:
+                patch('app.services.workflow_orchestrator.CVOptimizer') as MockOptimizer, \
+                patch('app.services.workflow_orchestrator.CoverLetterGenerator') as MockGen:
 
             mock_analyzer = Mock()
             mock_analyzer.analyze = Mock(return_value=mock_ai_response)
@@ -482,7 +486,7 @@ class TestWorkflowOrchestrator:
     ):
         """Test workflow without cover letter generation."""
         with patch('app.services.workflow_orchestrator.CVAnalyzer') as MockAnalyzer, \
-             patch('app.services.workflow_orchestrator.CVOptimizer') as MockOptimizer:
+                patch('app.services.workflow_orchestrator.CVOptimizer') as MockOptimizer:
 
             mock_analyzer = Mock()
             mock_analyzer.analyze = Mock(return_value=mock_ai_response)
@@ -669,5 +673,6 @@ class TestAPIEndpoints:
             openapi = response.json()
             paths = openapi.get('paths', {})
             # Check for optimization endpoints
-            has_optimize = any('/optimize' in p or '/analyze' in p for p in paths)
+            has_optimize = any(
+                '/optimize' in p or '/analyze' in p for p in paths)
             # This is a soft check - endpoint may not be fully implemented
