@@ -19,7 +19,7 @@ class SecureFileValidator:
         'application/pdf': ['.pdf'],
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
         'application/msword': ['.doc'],
-        'text/plain': ['.txt'],
+        'text/plain': ['.txt', '.md', '.markdown'],
         'text/markdown': ['.md', '.markdown'],
     }
 
