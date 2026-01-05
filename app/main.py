@@ -57,8 +57,8 @@ class OptimizationRequest(BaseModel):
         default=True, description="Whether to generate cover letter")
     template: str = Field(
         default="resume.typ",
-        pattern="^(resume\.typ|modern\.typ|brilliant-cv/cv\.typ|awesome-cv/cv\.tex|simple-xd-resume/cv\.typ)$",
-        description="Template to use for CV generation (resume.typ, modern.typ, brilliant-cv/cv.typ, awesome-cv/cv.tex, simple-xd-resume/cv.typ)"
+        pattern="^(resume\.typ|modern\.typ|brilliant-cv/cv\.typ|awesome-cv/cv\.tex|simple-xd-resume/cv\.typ|rendercv-classic/cv\.typ|rendercv-modern/cv\.typ)$",
+        description="Template to use for CV generation (resume.typ, modern.typ, brilliant-cv/cv.typ, awesome-cv/cv.tex, simple-xd-resume/cv.typ, rendercv-classic/cv.typ, rendercv-modern/cv.typ)"
     )
 
     model_config = ConfigDict(
