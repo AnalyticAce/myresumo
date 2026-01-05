@@ -544,7 +544,7 @@
     hyphenate: hyphenate,
     fill: colors-body,
     // Disable ligatures for better ATS compatibility:
-    ligatures: true,
+    ligatures: false,
   )
 
   // Main heading (name):

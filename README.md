@@ -123,7 +123,7 @@ PowerCV supports multiple professional CV templates:
 | **Classic** | Clean, traditional layout | `resume.typ` | ✅ Active |
 | **Modern** | Contemporary two-column design | `modern.typ` | ✅ Active |
 | **Brilliant CV** | Professional template with icons | `brilliant-cv/cv.typ` | ✅ Active |
-| **Awesome CV** | LaTeX-based elegant design | `awesome-cv/cv.tex` | 🔄 Template ready, LaTeX compilation pending |
+| **Awesome CV** | LaTeX-based elegant design | `awesome-cv/cv.tex` | 🔄 Template ready |
 | **Simple XD** | Minimal ATS-friendly design | `simple-xd-resume/cv.typ` | ✅ Active |
 | **RenderCV Classic** | Highly customizable classic design | `rendercv-classic/cv.typ` | ✅ Active |
 | **RenderCV Modern** | Modern minimalist design | `rendercv-modern/cv.typ` | ✅ Active |

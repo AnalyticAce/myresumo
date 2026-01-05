@@ -43,6 +43,7 @@ orchestrator = CVWorkflowOrchestrator()
 # Configure secure logging and settings
 from app.config.logging_config import logger
 from app.config.settings import get_settings
+from app.config.templates import TemplateConfig
 from app.middleware.rate_limit import init_rate_limiting
 from app.core.exceptions import ConfigurationError, MissingApiKeyError
 
@@ -57,8 +58,8 @@ class OptimizationRequest(BaseModel):
         default=True, description="Whether to generate cover letter")
     template: str = Field(
         default="resume.typ",
-        pattern="^(resume\.typ|modern\.typ|brilliant-cv/cv\.typ|awesome-cv/cv\.tex|simple-xd-resume/cv\.typ|rendercv-classic/cv\.typ|rendercv-modern/cv\.typ)$",
-        description="Template to use for CV generation (resume.typ, modern.typ, brilliant-cv/cv.typ, awesome-cv/cv.tex, simple-xd-resume/cv.typ, rendercv-classic/cv.typ, rendercv-modern/cv.typ)"
+        pattern=TemplateConfig.get_template_pattern(),
+        description=f"Template to use for CV generation ({', '.join(TemplateConfig.get_valid_templates())})"
     )
 
     model_config = ConfigDict(

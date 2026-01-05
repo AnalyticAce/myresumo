@@ -112,8 +112,6 @@
       #if experience.location != "" { [ – experience.location] }
     ],
     [
-      experience.location
-
       date_range
     ],
     main-column-second-row: [
