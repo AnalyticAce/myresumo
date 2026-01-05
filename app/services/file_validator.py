@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 from typing import Tuple, Optional
 
+import magic
 from fastapi import HTTPException, UploadFile, status
 
 logger = logging.getLogger(__name__)
@@ -134,7 +135,6 @@ class SecureFileValidator:
     @classmethod
     def _validate_content_type(cls, content: bytes, filename: str) -> None:
         """Validate file content type via magic bytes and extension."""
-        import magic
 
         try:
             # Detect MIME type from content
