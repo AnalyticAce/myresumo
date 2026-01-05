@@ -66,3 +66,19 @@ Summary of fixes and improvements made to PowerCV to resolve startup and runtime
   - Removed obsolete `tests/test_template_render.py` (referenced deleted LaTeX generator).
   - Fixed test failures in `test_integration.py` and `test_suite.py`.
   - Test suite now runs clean: **43 passed, 10 warnings** (down from 59+).
+
+## Legacy Code Removal (2026-01-05)
+
+- **LaTeX Removal**:
+  - Removed `create_temporary_pdf()` function from `app/utils/file_handling.py`
+  - Removed `generate_latex_cover_letter()` method from `app/services/cover_letter/template_generator.py`
+  - Removed `latex_template` field from `app/database/models/resume.py`
+  - Updated docstrings to reference PDF/Typst instead of LaTeX
+  - Removed LaTeX-related imports from `app/api/routers/resume.py`
+- **Deepseek Cleanup**:
+  - Removed Deepseek from provider validation in `app/routes/n8n_integration.py`
+  - Updated `app/services/ai_providers.py` to mark Cerebras as primary provider
+  - Deepseek remains as legacy fallback in CONFIGS for backward compatibility
+- **Pydantic V2 Fixes**:
+  - Fixed `min_items`/`max_items` → `min_length`/`max_length` in `app/database/models/resume.py` and `cover_letter.py`
+- **Test Results**: All tests passing (43 passed, 6 warnings - down from 10)

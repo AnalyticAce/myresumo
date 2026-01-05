@@ -114,19 +114,25 @@ class CoverLetterRequest(BaseSchema):
     sender_name: str = Field(..., description="Applicant name")
     sender_email: EmailStr = Field(..., description="Applicant email")
     sender_phone: Optional[str] = Field(None, description="Applicant phone")
-    sender_location: Optional[str] = Field(None, description="Applicant location")
-    recipient_name: Optional[str] = Field(None, description="Hiring manager name")
-    recipient_title: Optional[str] = Field(None, description="Hiring manager title")
+    sender_location: Optional[str] = Field(
+        None, description="Applicant location")
+    recipient_name: Optional[str] = Field(
+        None, description="Hiring manager name")
+    recipient_title: Optional[str] = Field(
+        None, description="Hiring manager title")
     company_address: Optional[str] = Field(None, description="Company address")
-    job_reference: Optional[str] = Field(None, description="Job reference number")
-    template_name: str = Field("professional_template", description="Template to use")
+    job_reference: Optional[str] = Field(
+        None, description="Job reference number")
+    template_name: str = Field(
+        "professional_template", description="Template to use")
 
 
 class CoverLetterGenerationRequest(BaseSchema):
     """Schema for generating cover letter content."""
 
     introduction: str = Field(..., description="Introduction paragraph")
-    body_paragraphs: List[str] = Field(..., min_items=1, max_items=4, description="Main body paragraphs")
+    body_paragraphs: List[str] = Field(..., min_length=1,
+                                       max_length=4, description="Main body paragraphs")
     closing: str = Field(..., description="Closing paragraph")
     signature: str = Field(..., description="Professional closing")
 
@@ -138,6 +144,9 @@ class CoverLetterSummary(BaseSchema):
     title: str = Field(..., description="Title of the cover letter")
     target_company: str = Field(..., description="Target company")
     target_role: str = Field(..., description="Target position/role")
-    is_generated: bool = Field(..., description="Whether the cover letter is generated")
-    created_at: datetime = Field(..., description="When the cover letter was created")
-    updated_at: datetime = Field(..., description="When the cover letter was last updated")
+    is_generated: bool = Field(...,
+                               description="Whether the cover letter is generated")
+    created_at: datetime = Field(...,
+                                 description="When the cover letter was created")
+    updated_at: datetime = Field(...,
+                                 description="When the cover letter was last updated")

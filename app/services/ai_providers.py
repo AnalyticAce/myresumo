@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class AIClient:
-    """Supports Deepseek, Cerebras, OpenAI."""
+    """Supports Cerebras (primary), OpenAI, and Deepseek (legacy fallback)."""
 
     CONFIGS = {
         'deepseek': {

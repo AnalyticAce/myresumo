@@ -32,7 +32,7 @@ class Experience(BaseSchema):
     location: Optional[str] = None
     start_date: str
     end_date: str
-    four_tasks: List[str] = Field(..., min_items=1, max_items=6)
+    four_tasks: List[str] = Field(..., min_length=1, max_length=6)
 
 
 class Education(BaseSchema):
@@ -113,7 +113,8 @@ class Project(BaseSchema):
     """
 
     project_name: str
-    two_goals_of_the_project: List[str] = Field(..., min_items=1, max_items=4)
+    two_goals_of_the_project: List[str] = Field(
+        ..., min_length=1, max_length=4)
     project_end_result: str
     tech_stack: Optional[List[str]] = None
 
@@ -153,7 +154,7 @@ class ExtraCurricularActivity(BaseSchema):
 
 
 class ResumeData(BaseSchema):
-    """Complete model for resume data that will be used for AI optimization and LaTeX generation.
+    """Complete model for resume data that will be used for AI optimization and PDF generation.
 
     Attributes:
     ----------
@@ -187,7 +188,7 @@ class Resume(BaseSchema):
         recommendation (Optional[str]): AI recommendation for improving the resume
         created_at (datetime): When the resume was created
         updated_at (datetime): When the resume was last updated
-        latex_template (str): Name of LaTeX template to use for PDF generation
+
     """
 
     user_id: str
@@ -200,9 +201,11 @@ class Resume(BaseSchema):
     master_content: Optional[str] = None  # Original master CV content
     master_filename: Optional[str] = None  # Original master CV filename
     master_file_type: Optional[str] = None  # Original master CV file type
-    master_updated_at: Optional[datetime] = None  # When master CV was last updated
+    # When master CV was last updated
+    master_updated_at: Optional[datetime] = None
     # Status fields for application tracking
-    application_status: str = Field(default="not_applied", description="Application status: not_applied, applied, answered, rejected, interview")
+    application_status: str = Field(
+        default="not_applied", description="Application status: not_applied, applied, answered, rejected, interview")
     is_applied: bool = False  # Whether the resume has been sent/applied
     applied_date: Optional[datetime] = None  # When the resume was applied
     is_answered: bool = False  # Whether there's been a response
@@ -221,7 +224,6 @@ class Resume(BaseSchema):
     recommendation: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
-    latex_template: str = "resume_template.tex"
 
     @field_validator("matching_score", "original_matching_score")
     @classmethod

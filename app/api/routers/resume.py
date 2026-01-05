@@ -36,7 +36,7 @@ from app.database.repositories.resume_repository import ResumeRepository
 from app.services.resume.universal_scorer import UniversalResumeScorer
 from app.services.ai.model_ai import AtsResumeOptimizer
 from app.services.resume.typst_generator import TypstGenerator
-from app.utils.file_handling import create_temporary_pdf, extract_text_from_file
+from app.utils.file_handling import extract_text_from_file
 
 # Configure logging
 logging.basicConfig(

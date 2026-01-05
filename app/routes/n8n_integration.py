@@ -39,8 +39,10 @@ class CVOptimizationRequest(BaseModel):
 
 
 class ProviderSwitchRequest(BaseModel):
-    provider: str = Field(..., description="AI provider to switch to (deepseek/cerebras/openai)")
-    test_connection: bool = Field(False, description="Whether to test the provider connection")
+    provider: str = Field(...,
+                          description="AI provider to switch to (deepseek/cerebras/openai)")
+    test_connection: bool = Field(
+        False, description="Whether to test the provider connection")
 
 
 # Endpoints
@@ -49,7 +51,7 @@ async def health_check():
     """Health check endpoint for n8n monitoring."""
     client = get_ai_client()
     info = client.get_provider_info()
-    
+
     return {
         "status": "healthy",
         "service": "PowerCV",
@@ -69,10 +71,10 @@ async def analyze_cv(
     """
     try:
         logger.info(f"n8n analysis request from user: {request.user_id}")
-        
+
         analyzer = CVAnalyzer()
         analysis = analyzer.analyze(request.cv_text, request.jd_text)
-        
+
         # Simplified response for n8n
         return {
             "success": True,
@@ -82,7 +84,7 @@ async def analyze_cv(
             "top_recommendations": analysis['recommendations'][:3],
             "user_id": request.user_id
         }
-        
+
     except Exception as e:
         logger.error(f"n8n analysis error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -99,14 +101,14 @@ async def optimize_cv(
     """
     try:
         logger.info(f"n8n optimization request from user: {request.user_id}")
-        
+
         orchestrator = CVWorkflowOrchestrator()
         result = orchestrator.optimize_cv_for_job(
             cv_text=request.cv_text,
             jd_text=request.jd_text,
             generate_cover_letter=request.generate_cover_letter
         )
-        
+
         # Format for n8n
         return {
             "success": True,
@@ -122,7 +124,7 @@ async def optimize_cv(
                 "model_used": get_ai_client().model
             }
         }
-        
+
     except Exception as e:
         logger.error(f"n8n optimization error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -139,10 +141,10 @@ async def switch_ai_provider(
     """
     try:
         # Validate provider
-        if request.provider not in ['deepseek', 'cerebras', 'openai']:
+        if request.provider not in ['cerebras', 'openai']:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid provider. Choose: deepseek, cerebras, openai"
+                detail=f"Invalid provider. Choose: cerebras, openai"
             )
 
         # Set environment variable
@@ -161,7 +163,8 @@ async def switch_ai_provider(
                 )
                 connection_tested = True
             except Exception as test_error:
-                logger.warning(f"Provider connection test failed: {test_error}")
+                logger.warning(
+                    f"Provider connection test failed: {test_error}")
                 connection_tested = False
         else:
             connection_tested = None
@@ -201,7 +204,6 @@ async def list_providers(api_key: str = Depends(verify_api_key)):
         # Check which providers are configured
         available_providers = []
         provider_configs = {
-            'deepseek': {'model': 'deepseek-chat', 'key': 'API_KEY'},
             'cerebras': {'model': 'gpt-oss-120b', 'key': 'CEREBRAS_API_KEY'},
             'openai': {'model': 'gpt-4', 'key': 'OPENAI_API_KEY'}
         }
