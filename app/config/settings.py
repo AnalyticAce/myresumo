@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # Security
-    secret_key: Optional[str] = None  # Must be set in environment for production
+    secret_key: str = "development-secret-key-change-in-production"  # Must be set in environment for production
     jwt_algorithm: str = "HS256"
     jwt_expiration_hours: int = 24
 
@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     openai_api_key: Optional[str] = None
 
     # Database
-    mongodb_uri: Optional[str] = None
+    mongodb_uri: str = "mongodb://localhost:27017/powercv"
     database_name: str = "powercv"
 
     # Redis (for caching and rate limiting)
