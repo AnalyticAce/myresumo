@@ -486,7 +486,16 @@ async def optimize_resume(request: OptimizationRequest):
     Main endpoint for comprehensive resume optimization.
     """
     try:
-        logger.info("Received resume optimization request")
+        # Log request context for debugging without exposing sensitive data
+        jd_length = len(request.jd_text) if request.jd_text else 0
+        logger.info(
+            "Received resume optimization request",
+            extra={
+                "cv_length": len(request.cv_text) if request.cv_text else 0,
+                "jd_length": jd_length,
+                "generate_cover_letter": request.generate_cover_letter
+            }
+        )
         orchestrator = get_orchestrator()
         result = orchestrator.optimize_cv_for_job(
             cv_text=request.cv_text,
