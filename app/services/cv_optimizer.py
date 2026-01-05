@@ -30,7 +30,8 @@ class CVOptimizer:
         self,
         cv_text: str,
         jd_text: str,
-        analysis: Optional[Dict] = None
+        analysis: Optional[Dict] = None,
+        email: Optional[str] = None
     ) -> Dict:
         """Perform one-shot comprehensive CV optimization.
 
@@ -44,13 +45,18 @@ class CVOptimizer:
         """
         logger.info("Starting comprehensive one-shot optimization")
 
+        # Prepare email instruction
+        email_instruction = ""
+        if email:
+            email_instruction = f"\n**EMAIL TO USE:** {email}\n"
+
         user_message = f"""
 **JOB DESCRIPTION:**
 {jd_text}
 
 **CANDIDATE CV:**
 {cv_text}
-
+{email_instruction}
 **PRELIMINARY ANALYSIS:**
 {json.dumps(analysis, indent=2) if analysis else "Not provided"}
 """
@@ -64,7 +70,7 @@ class CVOptimizer:
         )
 
         # Parse JSON response with fallback
-        fallback_result = self._get_fallback_comprehensive_structure(cv_text)
+        fallback_result = self._get_fallback_comprehensive_structure(cv_text, email)
         result = JSONParser.safe_json_parse(response, fallback_result)
 
         # Validate the optimization
@@ -181,7 +187,7 @@ class CVOptimizer:
             optimization_focus=optimization_focus
         )
 
-    def _get_fallback_comprehensive_structure(self, cv_text: str = "") -> Dict:
+    def _get_fallback_comprehensive_structure(self, cv_text: str = "", email: Optional[str] = None) -> Dict:
         """Get fallback comprehensive structure with basic extraction from original CV.
 
         Args:
@@ -192,21 +198,22 @@ class CVOptimizer:
         """
         # Try to extract basic information from CV text
         name = "Candidate"
-        email = "none@example.com"
 
-        if cv_text:
-            # Extract name (usually first non-empty line)
-            lines = [line.strip()
-                     for line in cv_text.split('\n') if line.strip()]
-            if lines:
-                # First line is often the name
-                name = lines[0][:100]  # Limit length
-
-            # Extract email
+        # Use provided email, or extract from CV, or use better placeholder
+        if email:
+            # Use provided email
+            pass
+        elif cv_text:
+            # Extract email from CV text
             import re
             email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', cv_text)
             if email_match:
                 email = email_match.group()
+            else:
+                # Better placeholder indicating email should be added
+                email = "please-add-your-email@example.com"
+        else:
+            email = "please-add-your-email@example.com"
 
         logger.warning(
             f"Using fallback structure with extracted name: {name[:30]}...")

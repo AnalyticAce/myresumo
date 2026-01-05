@@ -27,7 +27,8 @@ class CVWorkflowOrchestrator:
         self,
         cv_text: str,
         jd_text: str,
-        generate_cover_letter: bool = True
+        generate_cover_letter: bool = True,
+        email: Optional[str] = None
     ) -> Dict:
         """Complete workflow: analyze → optimize → generate cover letter.
 
@@ -48,7 +49,7 @@ class CVWorkflowOrchestrator:
         # Step 2: Comprehensive Optimization (One-shot)
         logger.info("Step 2/3: Performing comprehensive optimization...")
         optimized_data = self.optimizer.optimize_comprehensive(
-            cv_text, jd_text, analysis
+            cv_text, jd_text, analysis, email
         )
 
         # Step 3: Cover letter (optional)
