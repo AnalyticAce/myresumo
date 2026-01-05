@@ -31,7 +31,7 @@
 #show: cover_letter.with(
   author: "<< data.user_information.name|typst_escape >>",
   contact: (
-    <% if data.user_information.email %>"<< data.user_information.email|typst_escape >>",<% endif %>
+    <% if data.user_information.email %>"<< data.user_information.email >>",<% endif %>
     <% if data.user_information.phone %>"<< data.user_information.phone|typst_escape >>",<% endif %>
     <% if data.user_information.address %>"<< data.user_information.address|typst_escape >>",<% endif %>
   ),

@@ -48,7 +48,7 @@
   title: "Professional",
   contact: (
     <% if data.user_information.email %>
-    ("mailto:<< data.user_information.email|typst_escape >>", "<< data.user_information.email|typst_escape >>"),
+    ("mailto:<< data.user_information.email >>", "<< data.user_information.email >>"),
     <% endif %>
     <% if data.user_information.phone %>
     ("tel:<< data.user_information.phone|typst_escape >>", "<< data.user_information.phone|typst_escape >>"),
