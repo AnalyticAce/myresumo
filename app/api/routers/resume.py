@@ -36,13 +36,38 @@ from app.database.repositories.resume_repository import ResumeRepository
 from app.services.resume.universal_scorer import UniversalResumeScorer
 from app.services.ai.model_ai import AtsResumeOptimizer
 from app.services.resume.typst_generator import TypstGenerator
+from app.services.file_validator import SecureFileValidator, store_file_securely
 from app.utils.file_handling import extract_text_from_file
+from app.middleware.rate_limit import light_limit, heavy_limit
+from bson import ObjectId
+from bson.errors import InvalidId
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
+
+def validate_object_id(object_id: str) -> ObjectId:
+    """Validate and convert string to ObjectId.
+
+    Args:
+        object_id: String representation of ObjectId
+
+    Returns:
+        ObjectId: Validated ObjectId instance
+
+    Raises:
+        HTTPException: If the object_id is invalid
+    """
+    try:
+        return ObjectId(object_id)
+    except InvalidId:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid ID format"
+        )
 
 
 # Request and response models
@@ -70,6 +95,9 @@ class OptimizeResumeRequest(BaseModel):
     )
     target_role: Optional[str] = Field(
         None, description="Target position/role for which this resume is optimized"
+    )
+    email: Optional[str] = Field(
+        None, description="Email address to include in the optimized resume"
     )
 
 
@@ -215,23 +243,15 @@ async def create_resume(
         HTTPException: If the resume creation fails
     """
     try:
-        # Validate file format
-        supported_formats = ['.pdf', '.docx', '.md', '.markdown', '.txt']
-        file_extension = Path(file.filename).suffix.lower()
+        # Secure file validation
+        file_content, safe_filename, file_hash = await SecureFileValidator.validate_upload(file)
 
-        if file_extension not in supported_formats:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unsupported file format: {file_extension}. Supported formats: {', '.join(supported_formats)}"
-            )
+        file_extension = Path(safe_filename).suffix.lower()
 
-        # Read file content
-        file_content = await file.read()
+        # Store file securely
+        stored_file_path = store_file_securely(file_content, safe_filename, user_id)
 
-        # Reset file position for potential reuse
-        await file.seek(0)
-
-        # Create temporary file
+        # Create temporary file for text extraction
         with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
             temp_file.write(file_content)
             temp_file_path = temp_file.name
@@ -257,8 +277,11 @@ async def create_resume(
             original_content=resume_text,
             job_description=job_description,
             master_content=resume_text,  # Store as master CV initially
-            master_filename=file.filename,
+            master_filename=safe_filename,  # Use safe filename
+            original_filename=file.filename,  # Store original filename
             master_file_type=file.content_type,
+            master_file_path=stored_file_path,  # Store secure file path
+            master_file_hash=file_hash,  # Store file hash for deduplication
             master_updated_at=datetime.now(),
         )
 
@@ -688,6 +711,7 @@ async def generate_cover_letter(
     summary="Get a resume",
     response_description="Resume retrieved successfully",
 )
+@light_limit()  # Light rate limiting for read operations
 async def get_resume(
     resume_id: str,
     request: Request,
@@ -708,7 +732,10 @@ async def get_resume(
     ------
         HTTPException: If the resume is not found
     """
-    resume_data = await repo.get_resume_by_id(resume_id)
+    # Validate resume_id format to prevent NoSQL injection
+    validated_resume_id = validate_object_id(resume_id)
+
+    resume_data = await repo.get_resume_by_id(str(validated_resume_id))
     if not resume_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -1008,13 +1035,16 @@ async def delete_resume(
     ------
         HTTPException: If the resume is not found or deletion fails
     """
-    resume = await repo.get_resume_by_id(resume_id)
+    # Validate resume_id format to prevent NoSQL injection
+    validated_resume_id = validate_object_id(resume_id)
+
+    resume = await repo.get_resume_by_id(str(validated_resume_id))
     if not resume:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Resume with ID {resume_id} not found",
+            detail=f"Resume with ID {validated_resume_id} not found",
         )
-    success = await repo.delete_resume(resume_id)
+    success = await repo.delete_resume(str(validated_resume_id))
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -1029,6 +1059,7 @@ async def delete_resume(
     summary="Optimize a resume with AI",
     response_description="Resume optimized successfully",
 )
+@heavy_limit()  # Rate limit expensive AI operations
 async def optimize_resume(
     resume_id: str,
     optimization_request: OptimizeResumeRequest,
@@ -1055,11 +1086,14 @@ async def optimize_resume(
     ------
         HTTPException: If the resume is not found or optimization fails
     """
-    logger.info(f"Starting resume optimization for resume_id: {resume_id}")
+    # Validate resume_id format to prevent NoSQL injection
+    validated_resume_id = validate_object_id(resume_id)
+
+    logger.info(f"Starting resume optimization for resume_id: {validated_resume_id}")
 
     # 1. Retrieve resume
-    logger.info(f"Retrieving resume with ID: {resume_id}")
-    resume = await repo.get_resume_by_id(resume_id)
+    logger.info(f"Retrieving resume with ID: {validated_resume_id}")
+    resume = await repo.get_resume_by_id(str(validated_resume_id))
     if not resume:
         logger.warning(f"Resume not found with ID: {resume_id}")
         raise HTTPException(
@@ -1204,7 +1238,8 @@ async def optimize_resume(
             cv_text=resume.get("master_content") or resume.get(
                 "original_content", ""),
             jd_text=job_description,
-            generate_cover_letter=False  # Dashboard has separate cover letter generation
+            generate_cover_letter=False,  # Dashboard has separate cover letter generation
+            email=optimization_request.email
         )
 
         if "error" in optimization_result:
@@ -1408,6 +1443,7 @@ async def optimize_resume(
     summary="Score a resume against a job description",
     response_description="Resume scored successfully",
 )
+@heavy_limit()  # Rate limit AI scoring operations
 async def score_resume(
     resume_id: str,
     scoring_request: ScoreResumeRequest,
@@ -1433,11 +1469,14 @@ async def score_resume(
     ------
         HTTPException: If the resume is not found or scoring fails
     """
-    logger.info(f"Starting resume scoring for resume_id: {resume_id}")
+    # Validate resume_id format to prevent NoSQL injection
+    validated_resume_id = validate_object_id(resume_id)
+
+    logger.info(f"Starting resume scoring for resume_id: {validated_resume_id}")
 
     # Retrieve resume
-    logger.info(f"Retrieving resume with ID: {resume_id}")
-    resume = await repo.get_resume_by_id(resume_id)
+    logger.info(f"Retrieving resume with ID: {validated_resume_id}")
+    resume = await repo.get_resume_by_id(str(validated_resume_id))
     if not resume:
         logger.warning(f"Resume not found with ID: {resume_id}")
         raise HTTPException(
@@ -1568,7 +1607,10 @@ async def download_resume(
     ------
         HTTPException: If the resume is not found or PDF generation fails
     """
-    resume = await repo.get_resume_by_id(resume_id)
+    # Validate resume_id format to prevent NoSQL injection
+    validated_resume_id = validate_object_id(resume_id)
+
+    resume = await repo.get_resume_by_id(str(validated_resume_id))
     if not resume:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

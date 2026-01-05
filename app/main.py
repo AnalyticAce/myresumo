@@ -40,9 +40,10 @@ templates = Jinja2Templates(directory="app/templates")
 # Initialize orchestrator
 orchestrator = CVWorkflowOrchestrator()
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Configure secure logging and settings
+from app.config.logging_config import logger
+from app.config.settings import get_settings
+from app.middleware.rate_limit import init_rate_limiting
 
 
 # Request models
@@ -169,6 +170,34 @@ app = FastAPI(
     docs_url=None,
 )
 
+# Initialize rate limiting
+init_rate_limiting(app)
+
+
+# Global exception handler for security
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Global exception handler that doesn't expose sensitive information.
+
+    Args:
+        request: The incoming request
+        exc: The exception that was raised
+
+    Returns:
+        JSON response with sanitized error
+    """
+    # Log the full error securely (sensitive data is filtered by SensitiveDataFilter)
+    logger.error(f"Unhandled exception on {request.url.path}: {type(exc).__name__}")
+
+    # NEVER expose internal error details in production
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "error": "Internal server error",
+            "detail": "An unexpected error occurred. Please contact support if this persists."
+        }
+    )
+
 
 # Exception handlers
 @app.exception_handler(StarletteHTTPException)
@@ -224,9 +253,16 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     -------
         JSON response for API routes or template response for web routes
     """
-    # For API routes, return JSON error
+    # Log validation errors securely (don't expose sensitive input data)
+    logger.warning(f"Validation error on {request.url.path}: {len(exc.errors())} errors")
+
+    # For API routes, return sanitized error
     if request.url.path.startswith("/api"):
-        return JSONResponse(status_code=422, content={"detail": exc.errors()})
+        # Don't expose detailed validation errors that might contain sensitive data
+        return JSONResponse(
+            status_code=422,
+            content={"detail": "Invalid input data. Please check your request."}
+        )
 
     # For web routes, show an error page with validation details
     return templates.TemplateResponse(

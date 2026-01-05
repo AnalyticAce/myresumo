@@ -199,8 +199,11 @@ class Resume(BaseSchema):
     target_role: Optional[str] = None
     # Master CV fields
     master_content: Optional[str] = None  # Original master CV content
-    master_filename: Optional[str] = None  # Original master CV filename
+    master_filename: Optional[str] = None  # Safe master CV filename
+    original_filename: Optional[str] = None  # Original uploaded filename
     master_file_type: Optional[str] = None  # Original master CV file type
+    master_file_path: Optional[str] = None  # Secure file storage path
+    master_file_hash: Optional[str] = None  # File hash for deduplication
     # When master CV was last updated
     master_updated_at: Optional[datetime] = None
     # Status fields for application tracking

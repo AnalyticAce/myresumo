@@ -5,6 +5,8 @@ from typing import Optional
 from dotenv import load_dotenv
 import logging
 
+from app.config.settings import get_settings
+
 load_dotenv()
 logger = logging.getLogger(__name__)
 
@@ -45,15 +47,16 @@ class AIClient:
                 f"Supported: {list(self.CONFIGS.keys())}"
             )
 
+        settings = get_settings()
         config = self.CONFIGS[self.provider]
         self.api_base = config['base']
         self.model = config['model']
-        self.api_key = os.getenv(config['key'])
+        self.api_key = getattr(settings, config['key'].lower())
 
         if not self.api_key:
-            raise ValueError(
-                f"{config['key']} not found in environment. "
-                f"Set it in .env file for {self.provider} provider."
+            logger.warning(
+                f"{config['key']} not found in settings. "
+                f"AI operations will fail until API key is configured."
             )
 
         logger.info(f"Initialized AI client: {self.provider} ({self.model})")
@@ -100,7 +103,7 @@ class AIClient:
         }
 
         try:
-            logger.debug(f"Calling {self.provider} API: {url}")
+            logger.debug(f"Calling {self.provider} API")
             response = requests.post(
                 url,
                 headers=headers,
@@ -120,8 +123,8 @@ class AIClient:
             raise Exception(f"{self.provider} API timeout after {timeout}s")
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"{self.provider} API error: {str(e)}")
-            raise Exception(f"{self.provider} API error: {str(e)}")
+            logger.error(f"{self.provider} API error: {type(e).__name__}")
+            raise Exception(f"{self.provider} API error: {type(e).__name__}")
 
     def get_provider_info(self) -> dict:
         """Get current provider information."""

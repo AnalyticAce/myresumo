@@ -8,30 +8,39 @@ safe database operations.
 
 import logging
 import os
+import re
 from contextlib import asynccontextmanager
 from typing import Dict, Optional
 
 import motor.motor_asyncio
-from app.config import computed_settings as settings
+from app.config import get_settings
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
-# Get database configuration
-mongodb_uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
-mongodb_db = os.getenv("MONGODB_DB", "powercv")
+def sanitize_mongodb_uri_for_logging(uri: str) -> str:
+    """Remove credentials from URI for safe logging."""
+    return re.sub(r'://([^:]+):([^@]+)@', '://***:***@', uri)
 
-# Build the MongoDB URI safely
-if "/" in mongodb_uri.replace("mongodb://", "").replace("mongodb+srv://", ""):
-    # URI already contains a database name/slash, use as is if it matches or adjust
-    MONGODB_URI = mongodb_uri
-else:
-    MONGODB_URI = f"{mongodb_uri.rstrip('/')}/{mongodb_db}"
+def get_secure_mongodb_config():
+    """Get secure MongoDB configuration from settings."""
+    settings = get_settings()
 
-# Log the URI (masked) for debugging
-masked_uri = "mongodb://***" + \
-    MONGODB_URI.split("@")[-1] if "@" in MONGODB_URI else MONGODB_URI
-logger.info(f"MongoDB URI initialized")
+    if not settings.mongodb_uri:
+        raise ValueError("MONGODB_URI not configured")
+
+    return {
+        "uri": settings.mongodb_uri,
+        "database": settings.database_name
+    }
+
+# Initialize configuration
+config = get_secure_mongodb_config()
+MONGODB_URI = config["uri"]
+MONGODB_DB = config["database"]
+
+# Log securely
+logger.info(f"MongoDB URI initialized: {sanitize_mongodb_uri_for_logging(MONGODB_URI)}")
 
 
 class MongoConnectionManager:
@@ -50,12 +59,16 @@ class MongoConnectionManager:
     _client: Optional[motor.motor_asyncio.AsyncIOMotorClient] = None
 
     MONGO_CONFIG = {
-        "maxPoolSize": 1000,
-        "minPoolSize": 50,
-        "maxIdleTimeMS": 45000,
-        "waitQueueTimeoutMS": 10000,
-        "serverSelectionTimeoutMS": 10000,
+        "maxPoolSize": 10,  # Reduced for security
+        "minPoolSize": 1,
+        "maxIdleTimeMS": 30000,  # Reduced idle time
+        "waitQueueTimeoutMS": 5000,
+        "serverSelectionTimeoutMS": 5000,
         "retryWrites": True,
+        "retryReads": True,
+        # Enable TLS for production
+        "tls": True if "mongodb+srv" in MONGODB_URI else False,
+        "tlsAllowInvalidCertificates": False,  # Strict certificate validation
     }
 
     @classmethod
@@ -79,10 +92,25 @@ class MongoConnectionManager:
 
         Returns:
             AsyncIOMotorClient: MongoDB motor client for asynchronous operations
+
+        Raises:
+            ConnectionError: If connection to MongoDB fails
         """
-        return motor.motor_asyncio.AsyncIOMotorClient(
-            MONGODB_URI, **self.MONGO_CONFIG
-        )
+        try:
+            client = motor.motor_asyncio.AsyncIOMotorClient(
+                MONGODB_URI, **self.MONGO_CONFIG
+            )
+
+            # Test connection
+            await client.admin.command('ping')
+            logger.info(f"Successfully connected to MongoDB: {sanitize_mongodb_uri_for_logging(MONGODB_URI)}")
+
+            return client
+
+        except Exception as e:
+            logger.error("Failed to connect to MongoDB")
+            # Don't log the full URI which might contain credentials
+            raise ConnectionError("Database connection failed") from e
 
     def get_client(self) -> motor.motor_asyncio.AsyncIOMotorClient:
         """Get the MongoDB client instance, creating it if it doesn't exist.
@@ -90,11 +118,21 @@ class MongoConnectionManager:
 
         Returns:
             AsyncIOMotorClient: MongoDB motor client for asynchronous operations
+
+        Note:
+            This method creates a synchronous client. For async operations,
+            use _get_client() instead.
         """
         if self._client is None:
-            self._client = motor.motor_asyncio.AsyncIOMotorClient(
-                MONGODB_URI, **self.MONGO_CONFIG
-            )
+            try:
+                self._client = motor.motor_asyncio.AsyncIOMotorClient(
+                    MONGODB_URI, **self.MONGO_CONFIG
+                )
+                logger.info(f"MongoDB client created: {sanitize_mongodb_uri_for_logging(MONGODB_URI)}")
+            except Exception as e:
+                logger.error("Failed to create MongoDB client")
+                raise ConnectionError("Database client creation failed") from e
+
         return self._client
 
     async def close_all(self):
