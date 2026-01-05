@@ -6,10 +6,17 @@ import re
 from pathlib import Path
 from typing import Tuple, Optional
 
-import magic
 from fastapi import HTTPException, UploadFile, status
 
 logger = logging.getLogger(__name__)
+
+# Lazy import for magic to provide better error messages
+try:
+    import magic
+    MAGIC_AVAILABLE = True
+except ImportError:
+    magic = None
+    MAGIC_AVAILABLE = False
 
 
 class SecureFileValidator:
@@ -135,6 +142,13 @@ class SecureFileValidator:
     @classmethod
     def _validate_content_type(cls, content: bytes, filename: str) -> None:
         """Validate file content type via magic bytes and extension."""
+
+        if not MAGIC_AVAILABLE:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="File validation unavailable: python-magic library not installed. "
+                       "Please install with: pip install file-magic"
+            )
 
         try:
             # Detect MIME type from content
