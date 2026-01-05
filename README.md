@@ -124,6 +124,7 @@ PowerCV supports multiple professional CV templates:
 | **Modern** | Contemporary two-column design | `modern.typ` | ✅ Active |
 | **Brilliant CV** | Professional template with icons | `brilliant-cv/cv.typ` | ✅ Active |
 | **Awesome CV** | LaTeX-based elegant design | `awesome-cv/cv.tex` | 🔄 Template ready, LaTeX compilation pending |
+| **Simple XD** | Minimal ATS-friendly design | `simple-xd-resume/cv.typ` | ✅ Active |
 
 #### Template Selection
 
@@ -144,6 +145,7 @@ Available template options:
 - `"modern.typ"`
 - `"brilliant-cv/cv.typ"`
 - `"awesome-cv/cv.tex"` (LaTeX support needed)
+- `"simple-xd-resume/cv.typ"`
 
 **Note**: Awesome CV template requires LaTeX installation (`xelatex`) for PDF generation. Currently falls back to default template.
 
