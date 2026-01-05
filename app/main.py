@@ -55,13 +55,19 @@ class OptimizationRequest(BaseModel):
                          description="Job description text")
     generate_cover_letter: bool = Field(
         default=True, description="Whether to generate cover letter")
+    template: str = Field(
+        default="resume.typ",
+        pattern="^(resume\.typ|modern\.typ|brilliant-cv/cv\.typ|awesome-cv/cv\.tex)$",
+        description="Template to use for CV generation (resume.typ, modern.typ, brilliant-cv/cv.typ, awesome-cv/cv.tex)"
+    )
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "cv_text": "John Doe\nSenior Software Engineer...",
                 "jd_text": "We are looking for a Senior Software Engineer...",
-                "generate_cover_letter": True
+                "generate_cover_letter": True,
+                "template": "resume.typ"
             }
         }
     )
@@ -490,11 +496,12 @@ async def optimize_resume(request: OptimizationRequest):
         cv_length = len(request.cv_text) if request.cv_text else 0
         jd_length = len(request.jd_text) if request.jd_text else 0
         logger.info(
-            "Received resume optimization request",
+            f"Received resume optimization request (template: {request.template})",
             extra={
                 "cv_length": cv_length,
                 "jd_length": jd_length,
-                "generate_cover_letter": request.generate_cover_letter
+                "generate_cover_letter": request.generate_cover_letter,
+                "template": request.template
             }
         )
         orchestrator = get_orchestrator()

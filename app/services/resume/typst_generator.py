@@ -81,10 +81,10 @@ class TypstGenerator:
             return False
 
     def generate_pdf(self, template_name: str, output_path: str) -> bool:
-        """Generate PDF from Typst template.
+        """Generate PDF from template (Typst or LaTeX).
 
         Args:
-            template_name: Name of the Typst template (e.g., 'resume.typ')
+            template_name: Name of the template (e.g., 'resume.typ', 'awesome-cv/cv.tex')
             output_path: Path to write the PDF file
 
         Returns:
@@ -93,6 +93,14 @@ class TypstGenerator:
         if not self.json_data:
             logger.error("No data loaded")
             return False
+
+        # Check if this is a LaTeX template
+        if template_name.endswith('.tex'):
+            logger.warning(f"LaTeX template '{template_name}' requested but LaTeX compilation not yet implemented. "
+                          "Falling back to default Typst template. "
+                          "Please implement LaTeX support (xelatex) to use this template.")
+            # For now, fall back to default template
+            template_name = "resume.typ"
 
         if not self.typst_bin:
             logger.error("Typst binary not found")
