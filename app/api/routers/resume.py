@@ -1631,12 +1631,14 @@ async def download_resume(
         output_path = os.path.join(output_dir, output_filename)
 
         # Determine template to use
-        valid_templates = ["resume.typ", "modern.typ"]
+        valid_templates = ["resume.typ", "modern.typ", "brilliant-cv/cv.typ"]
         target_template = template if template in valid_templates else "resume.typ"
 
         # Handle legacy or mapped names
         if template == "modern":
             target_template = "modern.typ"
+        elif template == "brilliant-cv" or template == "brilliant":
+            target_template = "brilliant-cv/cv.typ"
         elif template == "classic" or template == "simple":
             target_template = "resume.typ"
 
