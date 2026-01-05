@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     cerebras_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
 
+    # Case-insensitive aliases for common environment variable variations
+    CEREBRAS_API_KEY: Optional[str] = None  # Uppercase variant
+    API_KEY: Optional[str] = None  # Uppercase Deepseek variant
+    OPENAI_API_KEY: Optional[str] = None  # Uppercase OpenAI variant
+
     # Database
     mongodb_uri: str = "mongodb://localhost:27017/powercv"
     database_name: str = "powercv"
@@ -45,11 +50,26 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_file: Optional[str] = None
 
+    # Case-insensitive aliases for common environment variable variations
+    CEREBRAS_API_KEY: Optional[str] = None  # Uppercase variant
+    API_KEY_UPPER: Optional[str] = None  # Uppercase Deepseek variant
+    OPENAI_API_KEY_UPPER: Optional[str] = None  # Uppercase OpenAI variant
+
+    def model_post_init(self, __context):
+        """Normalize API key variants after initialization."""
+        # Merge uppercase variants into lowercase ones for backward compatibility
+        if self.CEREBRAS_API_KEY and not self.cerebras_api_key:
+            self.cerebras_api_key = self.CEREBRAS_API_KEY
+        if self.API_KEY_UPPER and not self.api_key:
+            self.api_key = self.API_KEY_UPPER
+        if self.OPENAI_API_KEY_UPPER and not self.openai_api_key:
+            self.openai_api_key = self.OPENAI_API_KEY_UPPER
+
     class Config:
         """Pydantic configuration."""
         env_file = ".env"
         env_file_encoding = "utf-8"
-        case_sensitive = False  # Allow case-insensitive environment variables
+        case_sensitive = True  # Strict case-sensitive environment variables
         extra = "ignore"  # Allow extra environment variables
 
         # Fields that contain sensitive information
@@ -58,6 +78,9 @@ class Settings(BaseSettings):
             "api_key",
             "cerebras_api_key",
             "openai_api_key",
+            "CEREBRAS_API_KEY",
+            "API_KEY_UPPER",
+            "OPENAI_API_KEY_UPPER",
             "mongodb_uri",
             "redis_url",
             "sentry_dsn"

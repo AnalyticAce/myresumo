@@ -116,6 +116,26 @@ docker run -d --name mongodb -p 27017:27017 mongo:latest
 
 ### Using Docker
 
+#### Prerequisites
+
+Before running Docker containers, ensure you have the required environment variables set:
+
+1. **Required for all containers**:
+   ```bash
+   # Copy and edit the template
+   cp env-template.txt .env
+   # Edit .env with your actual values
+   ```
+
+2. **For local development** (optional):
+   ```bash
+   # Copy development overrides (provides safe defaults)
+   cp docker-compose.override.yml docker-compose.override.yml
+   # Edit with your preferred development passwords/keys
+   ```
+
+#### Starting Services
+
 Download the Docker image:
 
 ```bash
