@@ -49,6 +49,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Supported file extensions for resume uploads
+SUPPORTED_EXTENSIONS = ['.pdf', '.docx', '.doc', '.txt', '.md', '.markdown']
+
 
 def validate_object_id(object_id: str) -> ObjectId:
     """Validate and convert string to ObjectId.
@@ -265,7 +268,7 @@ async def create_resume(
         file_extension = Path(safe_filename).suffix.lower()
 
         # Validate file extension
-        if file_extension not in ['.pdf', '.docx', '.doc', '.txt', '.md', '.markdown']:
+        if file_extension not in SUPPORTED_EXTENSIONS:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Unsupported file extension: {file_extension}"
@@ -318,10 +321,10 @@ async def create_resume(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error creating resume: {str(e)}", exc_info=True)
+        logger.error("Error creating resume", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating resume: {str(e)}",
+            detail="Error creating resume",
         )
 
 
