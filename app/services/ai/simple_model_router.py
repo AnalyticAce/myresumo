@@ -216,12 +216,13 @@ Resume text:
         elif task_name == 'write_summary':
             existing_summary = kwargs.get('existing_summary', '')
             job_desc = kwargs.get('job_description', '')
-            return f"""Write a professional summary based on the person's ACTUAL experience. 
+            return f"""Write a professional summary based on the person's ACTUAL experience.
 IMPORTANT:
-1. ONLY use information from their existing experience and skills
-2. DO NOT invent fake companies, achievements, or qualifications
-3. Keep it realistic and grounded in what they've actually done
-4. Target it towards this job description: {job_desc}
+1. Write in FIRST PERSON using "I", "my", "me" (NOT third person like "John is...")
+2. ONLY use information from their existing experience and skills
+3. DO NOT invent fake companies, achievements, or qualifications
+4. Keep it realistic and grounded in what they've actually done
+5. Target it towards this job description: {job_desc}
 5. If they have an existing summary, improve it while preserving key facts
 
 Existing summary: {existing_summary}"""

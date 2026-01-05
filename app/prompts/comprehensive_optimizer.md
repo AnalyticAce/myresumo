@@ -88,7 +88,7 @@ Return ONLY valid JSON in this exact structure:
     "phone": "[Exact phone with country code]",
     "driver_license": "[Exact license info if provided]",
     "main_job_title": "[Tailored to target job]",
-    "profile_description": "[3-4 sentences using ONLY factual experience from original]",
+    "profile_description": "[3-4 sentences in FIRST PERSON (using I, my, me) using ONLY factual experience from original CV]",
     "linkedin": "[Exact LinkedIn URL]",
     "github": "[Exact GitHub URL]",
     "languages": ["[Exact language 1 (Proficiency)]", "[Exact language 2 (Proficiency)]"],
