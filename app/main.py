@@ -478,7 +478,7 @@ async def optimize_resume(request: OptimizationRequest):
     Main endpoint for comprehensive resume optimization.
     """
     try:
-        logger.info(f"Received optimization request for {request.job_title}")
+        logger.info("Received resume optimization request")
         orchestrator = get_orchestrator()
         result = orchestrator.optimize_cv_for_job(
             cv_text=request.cv_text,
