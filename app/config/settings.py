@@ -49,7 +49,7 @@ class Settings(BaseSettings):
         """Pydantic configuration."""
         env_file = ".env"
         env_file_encoding = "utf-8"
-        case_sensitive = True
+        case_sensitive = False  # Allow case-insensitive environment variables
         extra = "ignore"  # Allow extra environment variables
 
         # Fields that contain sensitive information
