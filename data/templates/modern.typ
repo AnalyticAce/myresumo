@@ -77,7 +77,7 @@
   title: "Professional",
   contact: (
     <% if data.user_information.email %>
-    ("<< data.user_information.email|typst_escape >>", "Email"),
+    ("<< data.user_information.email|typst_escape_email >>", "Email"),
     <% endif %>
     <% if data.user_information.phone %>
     ("<< data.user_information.phone|typst_escape >>", "Phone"),
