@@ -39,7 +39,7 @@ PowerCV features a comprehensive dashboard for resume management, detailed optim
 - **Package Management**: uv
 
 > [!CAUTION]
-> This application uses LLM models which may generate unpredictable responses. Review AI-generated content before submission. The application is in beta.
+> This application uses LLM models, which may generate unpredictable responses. Review AI-generated content before submission. The application is in beta.
 
 ## Installation and Setup
 
@@ -49,7 +49,7 @@ PowerCV features a comprehensive dashboard for resume management, detailed optim
 - Docker (for containerized deployment)
 - MongoDB
 - Typst CLI (for PDF generation)
-- Deepseek API key
+- Deepseek/OpenAI/Cerebras.ai API key
 
 ### Setting Up Dependencies
 
@@ -151,7 +151,7 @@ Available template options:
 - `"rendercv-classic/cv.typ"`
 - `"rendercv-modern/cv.typ"`
 
-**Note**: Awesome CV template requires LaTeX installation (`xelatex`) for PDF generation. Currently falls back to default template.
+**Note**: Awesome CV template requires LaTeX installation (`xelatex`) for PDF generation. Currently falls back to the default template.
 
 ### Using Docker
 
@@ -200,7 +200,7 @@ PowerCV supports multiple AI backends.
 
 ### Configuration
 
-PowerCV uses **Cerebras** for high-performance inference. Ensure `CEREBRAS_API_KEY` is set. Other providers (Deepseek, OpenAI) are supported but Cerebras is the recommended default for speed.
+PowerCV uses **Cerebras** for high-performance inference. Ensure `CEREBRAS_API_KEY` is set. Other providers (Deepseek, OpenAI) are supported, but Cerebras is the recommended default for speed.
 
 ### Cerebras AI Integration
 
