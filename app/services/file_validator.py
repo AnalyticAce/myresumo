@@ -131,7 +131,7 @@ class SecureFileValidator:
 
         try:
             # Detect MIME type from content
-            detected_mime = magic.from_buffer(content, mime=True)
+            detected_mime = magic.detect_from_content(content).mime_type
 
             # Get expected extensions for this MIME type
             expected_extensions = cls.ALLOWED_TYPES.get(detected_mime, [])
