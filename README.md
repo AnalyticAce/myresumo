@@ -114,6 +114,41 @@ docker run -d --name mongodb -p 27017:27017 mongo:latest
 
 3. All sensitive data should be stored in `.env` - never hardcoded in the codebase.
 
+### CV Templates
+
+PowerCV supports multiple professional CV templates:
+
+| Template | Description | File | Status |
+|----------|-------------|------|--------|
+| **Classic** | Clean, traditional layout | `resume.typ` | ✅ Active |
+| **Modern** | Contemporary two-column design | `modern.typ` | ✅ Active |
+| **Brilliant CV** | Professional template with icons | `brilliant-cv/cv.typ` | ✅ Active |
+| **Awesome CV** | LaTeX-based elegant design | `awesome-cv/cv.tex` | 🔄 Template ready, LaTeX compilation pending |
+| **Simple XD** | Minimal ATS-friendly design | `simple-xd-resume/cv.typ` | ✅ Active |
+
+#### Template Selection
+
+Choose your template during CV optimization:
+
+```json
+POST /api/optimize-resume
+{
+  "cv_text": "Your CV content...",
+  "jd_text": "Job description...",
+  "template": "brilliant-cv/cv.typ",
+  "generate_cover_letter": true
+}
+```
+
+Available template options:
+- `"resume.typ"` (default)
+- `"modern.typ"`
+- `"brilliant-cv/cv.typ"`
+- `"awesome-cv/cv.tex"` (LaTeX support needed)
+- `"simple-xd-resume/cv.typ"`
+
+**Note**: Awesome CV template requires LaTeX installation (`xelatex`) for PDF generation. Currently falls back to default template.
+
 ### Using Docker
 
 #### Prerequisites
