@@ -72,7 +72,7 @@ services:
       # n8n Basic Auth
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-powercv123}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
       
       # Network Configuration
       - N8N_HOST=0.0.0.0
@@ -81,7 +81,7 @@ services:
       - WEBHOOK_URL=${N8N_WEBHOOK_URL:-http://localhost:5678}
       
       # Security
-      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-your-encryption-key-here-change-in-production}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
       
       # Paths
       - N8N_USER_FOLDER=/home/node/.n8n
@@ -120,7 +120,7 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=powercv
       - MONGO_INITDB_ROOT_USERNAME=${MONGODB_ROOT_USER:-admin}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_ROOT_PASSWORD:-powercv123}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_ROOT_PASSWORD}
     volumes:
       - mongodb_data:/data/db
       # Initialize database with scripts if needed

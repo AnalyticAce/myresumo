@@ -1,0 +1,80 @@
+# PowerCV Environment Configuration Template
+# Copy this file to .env and fill in your actual values
+# IMPORTANT: Never commit .env to version control
+
+# =============================================================================
+# APPLICATION SETTINGS
+# =============================================================================
+
+# Application Environment
+ENVIRONMENT=development
+DEBUG=true
+LOG_LEVEL=INFO
+
+# Security - CHANGE THIS IN PRODUCTION
+SECRET_KEY=development-secret-key-change-in-production
+
+# =============================================================================
+# AI PROVIDER API KEYS
+# =============================================================================
+
+# Primary AI Provider (Cerebras)
+CEREBRAS_API_KEY=your-cerebras-api-key-here
+CEREBRAS_API_BASE=https://api.cerebras.ai/v1
+CEREBRAS_MODEL=gpt-oss-120b
+
+# Alternative AI Providers (optional)
+API_KEY=your-deepseek-api-key-here
+OPENAI_API_KEY=your-openai-api-key-here
+
+# =============================================================================
+# DATABASE CONFIGURATION
+# =============================================================================
+
+# MongoDB
+MONGODB_URI=mongodb://localhost:27017/powercv
+MONGODB_ROOT_USER=admin
+MONGODB_ROOT_PASSWORD=your-mongodb-password-change-in-production
+
+# Redis (for caching and rate limiting)
+REDIS_URL=redis://localhost:6379
+
+# =============================================================================
+# N8N WORKFLOW AUTOMATION
+# =============================================================================
+
+# n8n API Configuration
+N8N_API_KEY=your-n8n-api-key-here
+N8N_WEBHOOK_URL=http://localhost:5678
+N8N_USER=admin
+N8N_PASSWORD=your-n8n-password-change-in-production
+N8N_ENCRYPTION_KEY=your-n8n-encryption-key-change-in-production
+
+# =============================================================================
+# EXTERNAL SERVICES
+# =============================================================================
+
+# Sentry (Error Monitoring) - Optional
+SENTRY_DSN=your-sentry-dsn-here
+
+# =============================================================================
+# FILE UPLOAD SETTINGS
+# =============================================================================
+
+# Maximum file size for uploads (10MB default)
+MAX_FILE_SIZE=10485760
+UPLOAD_DIR=/tmp/uploads
+
+# =============================================================================
+# RATE LIMITING
+# =============================================================================
+
+RATE_LIMIT_PER_MINUTE=60
+RATE_LIMIT_PER_HOUR=1000
+
+# =============================================================================
+# DOCKER COMPOSE DEFAULTS (can be overridden)
+# =============================================================================
+
+REQUEST_TIMEOUT=30
+TIMEZONE=Europe/Amsterdam

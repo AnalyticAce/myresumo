@@ -89,12 +89,30 @@ docker run -d --name mongodb -p 27017:27017 mongo:latest
 
 ### Environment Variables
 
-Create a .env file in the project root:
+⚠️ **Security Note**: Never commit `.env` files to version control. The `.env` file is already ignored by `.gitignore`.
 
-```
-CEREBRAS_API_KEY=your_key_here
-MONGODB_URI=mongodb://username:password@host:port/
-```
+1. Copy the environment template:
+   ```bash
+   cp env-template.txt .env
+   ```
+
+2. Fill in your actual values in `.env`:
+   ```env
+   # AI Provider (required)
+   CEREBRAS_API_KEY=your_actual_cerebras_key
+
+   # Database (required)
+   MONGODB_URI=mongodb://username:password@host:port/powercv
+
+   # Security (change in production!)
+   SECRET_KEY=your_unique_secret_key
+
+   # Other services (as needed)
+   N8N_API_KEY=your_n8n_key
+   SENTRY_DSN=your_sentry_dsn
+   ```
+
+3. All sensitive data should be stored in `.env` - never hardcoded in the codebase.
 
 ### Using Docker
 
