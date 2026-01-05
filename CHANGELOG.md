@@ -59,3 +59,4 @@ Summary of fixes and improvements made to PowerCV to resolve startup and runtime
   - Updated contact information and Docker instructions.
 - **Frontend**: Corrected the "Contribute" button link in `base.html` to point to the GitHub repository.
 - **Cleanup**: Removed unused assets from `.github/assets` and consolidated test configuration.
+- **Maintenance**: Resolved Pydantic V2 deprecation warnings in `app/config.py` and fixed pytest collection warnings in `test_prompts.py`.

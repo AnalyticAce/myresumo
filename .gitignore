@@ -175,7 +175,7 @@ myresumo-prd.md
 # Security and sensitive files
 .env
 .env.*
-config.py
+# config.py
 secrets.json
 api_keys.txt
 credentials/
