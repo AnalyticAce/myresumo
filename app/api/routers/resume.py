@@ -1588,14 +1588,21 @@ async def download_resume(
         output_filename = f"resume_{resume_id}.pdf"
         output_path = os.path.join(output_dir, output_filename)
 
-        # Initialize Typst Generator
-        # Check if template is passed in function args (it is named 'template')
-        # Rename local var to avoid confusion or use 'template' directly
-        target_template = template if template else "resume.typ"
+        # Determine template to use
+        valid_templates = ["resume.typ", "modern.typ"]
+        target_template = template if template in valid_templates else "resume.typ"
 
+        # Handle legacy or mapped names
+        if template == "modern":
+            target_template = "modern.typ"
+        elif template == "classic" or template == "simple":
+            target_template = "resume.typ"
+
+        # Convert old template extensions to .typ
         if target_template.endswith('.tex') or target_template.endswith('.html'):
             target_template = "resume.typ"
 
+        # Initialize Typst Generator
         generator = TypstGenerator(str(templates_dir))
 
         if use_optimized:
@@ -1611,19 +1618,6 @@ async def download_resume(
             generator.parse_json_from_string(json_data)
         else:
             generator.json_data = json_data
-
-        # Initialize Typst Generator
-        # Check if template is passed in function args (it is named 'template')
-        valid_templates = ["resume.typ", "modern.typ"]
-        target_template = template if template in valid_templates else "resume.typ"
-
-        # Handle legacy or mapped names
-        if template == "modern":
-            target_template = "modern.typ"
-        elif template == "classic" or template == "simple":
-            target_template = "resume.typ"
-
-        generator = TypstGenerator(str(templates_dir))
 
         # Generate PDF
         success = generator.generate_pdf(target_template, output_path)
