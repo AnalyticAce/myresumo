@@ -179,15 +179,23 @@ init_rate_limiting(app)
 async def startup_event():
     """Handle application startup and configuration validation."""
     try:
-        # Test AI client configuration (this will raise ConfigurationError if misconfigured)
-        from app.services.ai_providers import AIClient
-        AIClient()
-
-        # Test database connection
+        # Test database connection (always required)
         from app.database.connector import MongoConnectionManager
         manager = MongoConnectionManager.get_instance()
 
-        logger.info("Application startup completed successfully")
+        # Check if AI provider is configured (optional for development)
+        from app.config import get_settings
+        settings = get_settings()
+        ai_provider_configured = bool(settings.cerebras_api_key or settings.api_key or settings.openai_api_key)
+
+        if ai_provider_configured:
+            # Test AI client configuration only if API keys are present
+            from app.services.ai_providers import AIClient
+            AIClient()
+            logger.info("Application startup completed successfully with AI providers")
+        else:
+            logger.warning("No AI provider API keys configured - AI features will be unavailable")
+            logger.info("Application startup completed (development mode)")
 
     except (ConfigurationError, MissingApiKeyError) as e:
         logger.error(f"Configuration error during startup: {e}")
@@ -478,7 +486,7 @@ async def optimize_resume(request: OptimizationRequest):
     Main endpoint for comprehensive resume optimization.
     """
     try:
-        logger.info(f"Received optimization request for {request.job_title}")
+        logger.info("Received resume optimization request")
         orchestrator = get_orchestrator()
         result = orchestrator.optimize_cv_for_job(
             cv_text=request.cv_text,
