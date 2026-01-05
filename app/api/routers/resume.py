@@ -38,6 +38,7 @@ from app.services.ai.model_ai import AtsResumeOptimizer
 from app.services.resume.typst_generator import TypstGenerator
 from app.services.file_validator import SecureFileValidator, store_file_securely
 from app.utils.file_handling import extract_text_from_file
+from app.config.templates import TemplateConfig
 from app.middleware.rate_limit import light_limit, heavy_limit
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -1630,21 +1631,12 @@ async def download_resume(
         output_filename = f"resume_{resume_id}.pdf"
         output_path = os.path.join(output_dir, output_filename)
 
-        # Determine template to use
-        valid_templates = ["resume.typ", "modern.typ", "brilliant-cv/cv.typ", "awesome-cv/cv.tex", "simple-xd-resume/cv.typ"]
-        target_template = template if template in valid_templates else "resume.typ"
+        # Resolve template using centralized configuration
+        target_template = TemplateConfig.resolve_template(template)
 
-        # Handle legacy or mapped names
-        if template == "modern":
-            target_template = "modern.typ"
-        elif template == "brilliant-cv" or template == "brilliant":
-            target_template = "brilliant-cv/cv.typ"
-        elif template == "awesome-cv" or template == "awesome":
-            target_template = "awesome-cv/cv.tex"
-        elif template == "simple-xd-resume" or template == "simple-xd" or template == "xd":
-            target_template = "simple-xd-resume/cv.typ"
-        elif template == "classic" or template == "simple":
-            target_template = "resume.typ"
+        # Validate the resolved template
+        if not TemplateConfig.is_valid_template(target_template):
+            target_template = "resume.typ"  # fallback to default
 
         # Convert old template extensions to .typ
         if target_template.endswith('.tex') or target_template.endswith('.html'):
