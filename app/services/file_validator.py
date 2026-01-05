@@ -16,11 +16,18 @@ class SecureFileValidator:
 
     # Allowed file types and their MIME types
     ALLOWED_TYPES = {
+        # Document formats
         'application/pdf': ['.pdf'],
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
         'application/msword': ['.doc'],
-        'text/plain': ['.txt'],
+
+        # Text formats - Note: Magic library often detects markdown as text/plain
+        # so we allow .md/.markdown under both text/plain and text/markdown for robustness
+        'text/plain': ['.txt', '.md', '.markdown'],
         'text/markdown': ['.md', '.markdown'],
+
+        # Additional text MIME types that might be encountered
+        'text/x-markdown': ['.md', '.markdown'],
     }
 
     # Maximum file size (10MB)
