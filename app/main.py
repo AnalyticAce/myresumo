@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
-from fastapi import FastAPI, Request, HTTPException, Body, Query
+from fastapi import FastAPI, Request, HTTPException, Body, Query, status
 from app.utils.shared_utils import ValidationHelper, ErrorHandler
 from app.services.master_cv import MasterCV
 from app.services.scraper import fetch_job_description, extract_keywords_from_jd

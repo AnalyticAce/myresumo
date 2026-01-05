@@ -58,6 +58,9 @@ class MongoConnectionManager:
     _instance: Optional["MongoConnectionManager"] = None
     _client: Optional[motor.motor_asyncio.AsyncIOMotorClient] = None
 
+    # Determine if TLS should be enabled
+    USE_TLS = "mongodb+srv" in MONGODB_URI
+
     MONGO_CONFIG = {
         "maxPoolSize": 10,  # Reduced for security
         "minPoolSize": 1,
@@ -66,10 +69,14 @@ class MongoConnectionManager:
         "serverSelectionTimeoutMS": 5000,
         "retryWrites": True,
         "retryReads": True,
-        # Enable TLS for production
-        "tls": True if "mongodb+srv" in MONGODB_URI else False,
-        "tlsAllowInvalidCertificates": False,  # Strict certificate validation
     }
+
+    # Add TLS settings only when TLS is enabled
+    if USE_TLS:
+        MONGO_CONFIG.update({
+            "tls": True,
+            "tlsAllowInvalidCertificates": False,  # Strict certificate validation for production
+        })
 
     @classmethod
     def get_instance(cls):
