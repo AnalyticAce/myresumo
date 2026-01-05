@@ -64,7 +64,11 @@
 
     cv-entry-continued(
       title: experience.job_title,
-      date: experience.start_date + " - " + experience.end_date,
+      date: if experience.end_date != "" {
+        experience.start_date + " - " + experience.end_date
+      } else {
+        experience.start_date + " - Present"
+      },
       description: experience.description.split("\n").filter(item => item != ""),
     )
   }
@@ -79,21 +83,16 @@
     title: education.degree + " in " + education.field_of_study,
     location: education.location,
     date: education.graduation_date,
-    description: education.description,
+    description: education.description.split("\n").filter(item => item != ""),
   )
 }
 
 // Skills Section
 #cv-section("Skills")
 
-#let skills_list = ()
-#for skill in data.skills {
-  skills_list.push(skill.name + " (" + skill.proficiency + ")")
-}
-
 #cv-entry(
   title: "Technical Skills",
-  description: skills_list,
+  description: data.skills.map(skill => skill.name + " (" + skill.proficiency + ")"),
 )
 
 // Projects Section (if available)
@@ -104,8 +103,12 @@
     cv-entry(
       title: project.name,
       society: project.organization,
-      date: project.start_date + " - " + project.end_date,
-      description: project.description,
+      date: if project.end_date != "" {
+        project.start_date + " - " + project.end_date
+      } else {
+        project.start_date + " - Present"
+      },
+      description: project.description.split("\n").filter(item => item != ""),
     )
   }
 }
@@ -118,8 +121,12 @@
     cv-entry(
       title: cert.name,
       society: cert.issuer,
-      date: cert.issue_date + (cert.expiry_date != "" ? " - " + cert.expiry_date : ""),
-      description: cert.description,
+      date: if cert.expiry_date != "" {
+        cert.issue_date + " - " + cert.expiry_date
+      } else {
+        cert.issue_date
+      },
+      description: cert.description.split("\n").filter(item => item != ""),
     )
   }
 }
