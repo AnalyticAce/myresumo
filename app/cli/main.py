@@ -4,6 +4,10 @@ This module provides a command-line interface for automating job-seeking tasks
 including CV tailoring and cover letter generation.
 """
 
+from app.utils.shared_utils import ValidationHelper, ErrorHandler
+from app.services.cover_letter_gen import CoverLetterGenerator
+from app.services.workflow_orchestrator import CVWorkflowOrchestrator
+from app.services.scraper import fetch_job_description, extract_keywords_from_jd
 import argparse
 import asyncio
 import json
@@ -22,10 +26,6 @@ load_dotenv()
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from app.services.scraper import fetch_job_description, extract_keywords_from_jd
-from app.services.workflow_orchestrator import CVWorkflowOrchestrator
-from app.services.cover_letter_gen import CoverLetterGenerator
-from app.utils.shared_utils import ValidationHelper, ErrorHandler
 
 logging.basicConfig(
     level=logging.INFO,
@@ -202,7 +202,8 @@ class PowerCVCLI:
 
             if output:
                 with open(output, "w", encoding="utf-8") as f:
-                    yaml.dump(result, f, default_flow_style=False, allow_unicode=True)
+                    yaml.dump(result, f, default_flow_style=False,
+                              allow_unicode=True)
                 logger.info(f"Job description saved to: {output}")
             else:
                 print("\n" + "=" * 60)
@@ -312,8 +313,10 @@ class PowerCVCLI:
         print("OPTIMIZATION COMPLETE")
         print("=" * 60)
         print(f"ATS Score: {result.get('ats_score', 'N/A')}%")
-        print(f"Matched Skills: {', '.join(result.get('matching_skills', [])[:10])}")
-        print(f"Missing Skills: {', '.join(result.get('missing_skills', [])[:5])}")
+        print(
+            f"Matched Skills: {', '.join(result.get('matching_skills', [])[:10])}")
+        print(
+            f"Missing Skills: {', '.join(result.get('missing_skills', [])[:5])}")
         print(f"\nFiles generated:")
         print(f"  - {cv_output}")
         print(f"  - {cl_output}")
@@ -354,7 +357,8 @@ class PowerCVCLI:
 
         results = []
         for i, job in enumerate(jobs, 1):
-            logger.info(f"Processing job {i}/{len(jobs)}: {job.get('title', 'Unknown')}")
+            logger.info(
+                f"Processing job {i}/{len(jobs)}: {job.get('title', 'Unknown')}")
 
             try:
                 # Fetch job description
@@ -366,7 +370,8 @@ class PowerCVCLI:
                     jd_text = jd_data.get("description", "")
 
                 if not jd_text:
-                    logger.warning(f"No job description for: {job.get('title')}")
+                    logger.warning(
+                        f"No job description for: {job.get('title')}")
                     continue
 
                 # Run optimization
@@ -415,12 +420,14 @@ class PowerCVCLI:
                     }
                 )
 
-                logger.info(f"  ✓ Completed: {job_title} (ATS: {result.get('ats_score')}%)")
+                logger.info(
+                    f"  ✓ Completed: {job_title} (ATS: {result.get('ats_score')}%)")
 
             except Exception as e:
                 logger.error(f"  ✗ Failed: {job.get('title')} - {str(e)}")
                 results.append(
-                    {"job": job.get("title"), "error": str(e), "status": "failed"}
+                    {"job": job.get("title"), "error": str(e),
+                     "status": "failed"}
                 )
 
         # Save batch summary
@@ -546,7 +553,8 @@ jobs:
 """
             with open(batch_config_example, "w", encoding="utf-8") as f:
                 f.write(example_config)
-            logger.info(f"Created example batch config: {batch_config_example}")
+            logger.info(
+                f"Created example batch config: {batch_config_example}")
 
         # Create .env example
         env_example = output_dir / ".env.example"
@@ -554,15 +562,15 @@ jobs:
             env_content = """# PowerCV Environment Variables
 # Copy this file to .env and fill in your values
 
-# API Keys
-API_KEY=your_api_key_here
-API_BASE=https://api.deepseek.com/v1
-MODEL_NAME=deepseek-chat
-
-# Cerebras API (optional alternative)
-CEREBRAS_API_KEY=
-CEREBRAS_API_BASE=https://api.cerebras.ai/v1
+# AI Provider (Cerebras - Recommended)
+CEREBRAS_API_KEY=your_key_here
 CEREBRAS_MODEL=gpt-oss-120b
+
+# Alternative Providers
+# Deepseek
+# API_KEY=
+# API_BASE=https://api.deepseek.com/v1
+# MODEL_NAME=deepseek-chat
 
 # MongoDB Connection
 MONGODB_URI=mongodb://localhost:27017/powercv
@@ -599,8 +607,10 @@ APP_PORT=8080
         print("OPTIMIZATION SUMMARY")
         print("=" * 60)
         print(f"ATS Score: {result.get('ats_score', 'N/A')}%")
-        print(f"Matched Skills: {', '.join(result.get('matching_skills', [])[:10])}")
-        print(f"Missing Skills: {', '.join(result.get('missing_skills', [])[:5])}")
+        print(
+            f"Matched Skills: {', '.join(result.get('matching_skills', [])[:10])}")
+        print(
+            f"Missing Skills: {', '.join(result.get('missing_skills', [])[:5])}")
         print(f"\nRecommendation: {result.get('recommendation', 'N/A')[:200]}")
 
 
@@ -635,10 +645,12 @@ Examples:
         """,
     )
 
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+    subparsers = parser.add_subparsers(
+        dest="command", help="Available commands")
 
     # Tailor command
-    tailor_parser = subparsers.add_parser("tailor", help="Tailor CV for a specific job")
+    tailor_parser = subparsers.add_parser(
+        "tailor", help="Tailor CV for a specific job")
     tailor_parser.add_argument(
         "--cv", required=True, help="Path to your CV file (txt/md)"
     )

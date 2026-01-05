@@ -354,15 +354,16 @@ if __name__ == "__main__":
     with open("../../../data/sample_descriptions/job_description_1.txt", "r") as f:
         job_description = f.read()
 
-    API_KEY = "sk-********************"
-    API_BASE = "https://api.deepseek.com/v1"
-    MODEL_NAME = "deepseek-chat"
+    API_KEY = "dummy-key"
+    # Using Cerebras defaults if available, otherwise just placeholders
+    CEREBRAS_API_KEY = os.getenv("CEREBRAS_API_KEY", "")
+    MODEL_NAME = "gpt-oss-120b"
 
     model = AtsResumeOptimizer(
         model_name=MODEL_NAME,
         resume=resume,
-        api_key=API_KEY,
-        api_base=API_BASE,
+        api_key=CEREBRAS_API_KEY if CEREBRAS_API_KEY else API_KEY,
+        api_base="https://api.cerebras.ai/v1" if CEREBRAS_API_KEY else "https://api.deepseek.com/v1",
     )
 
     result = model.generate_ats_optimized_resume_json(job_description)

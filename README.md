@@ -7,11 +7,6 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.95.0%2B-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-4.4%2B-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![AI Powered](https://img.shields.io/badge/AI-Powered-8A2BE2?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgMmEyIDIgMCAwIDAgLTIgMnY3YTIgMiAwIDAgMCA0IDB2LTdhMiAyIDAgMCAwIC0yIC0yeiI+PC9wYXRoPjxwYXRoIGQ9Ik0yIDEyYTIgMiAwIDAgMCAtMiAydjdhMiAyIDAgMCAwIDQgMHYtN2EyIDIgMCAwIDAgLTIgLTJ6Ij48L3BhdGg+PHBhdGggZD0iTTIyIDEyYTIgMiAwIDAgMCAtMiAydjdhMiAyIDAgMCAwIDQgMHYtN2EyIDIgMCAwIDAgLTIgLTJ6Ij48L3BhdGg+PHBhdGggZD0iTTEyIDEyYTIgMiAwIDAgMCAtMiAydjdhMiAyIDAgMCAwIDQgMHYtN2EyIDIgMCAwIDAgLTIgLTJ6Ij48L3BhdGg+PHBhdGggZD0iTTYgNmEyIDIgMCAwIDAgLTIgMnYyYTIgMiAwIDAgMCA0IDB2LTJhMiAyIDAgMCAwIC0yIC0yeiI+PC9wYXRoPjxwYXRoIGQ9Ik0xOCA2YTIgMiAwIDAgMCAtMiAydjJhMiAyIDAgMCAwIDQgMHYtMmEyIDIgMCAwIDAgLTIgLTJ6Ij48L3BhdGg+PC9zdmc+)](https://github.com/AnalyticAce/PowerCV)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.95.0%2B-009688)](https://fastapi.tiangolo.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-4.4%2B-47A248)](https://www.mongodb.com/)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED)](https://www.docker.com/)
-[![AI Powered](https://img.shields.io/badge/AI-Powered-8A2BE2)](https://github.com/AnalyticAce/PowerCV)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://makeapullrequest.com)
 
 </div>
@@ -30,41 +25,8 @@ PowerCV is a platform for resume customization that adapts professional profiles
 
 ## Showcase
 
-Screenshots of the main features:
-<div align="center">
+PowerCV features a comprehensive dashboard for resume management, detailed optimization analysis, and AI-assisted content generation.
 
-### Landing Page
-The landing page introduces the resume optimization service and the benefits of tailoring resumes for specific applications.
-
-<img src="https://github.com/AnalyticAce/PowerCV/blob/main/.github/assets/landing-page.png" alt="PowerCV Landing Page"/>
-
-### Dashboard
-The dashboard provides an overview of resumes, ATS scores, and management tools.
-
-<img src="https://github.com/AnalyticAce/PowerCV/blob/main/.github/assets/dashboard.png" alt="PowerCV Dashboard"/>
-
-### Resume Optimization
-The optimization page compares resumes against job descriptions, providing feedback on keywords and skills.
-
-<img src="https://github.com/AnalyticAce/PowerCV/blob/main/.github/assets/optimized1.png" alt="Resume Optimization"/>
-
-<img src="https://github.com/AnalyticAce/PowerCV/blob/main/.github/assets/optimized2.png" alt="Resume Optimization"/>
-
-### Resume Creation
-The interface for building resumes with AI assistance for ATS and recruiter review.
-
-<img src="https://github.com/AnalyticAce/PowerCV/blob/main/.github/assets/creation.png" alt="Resume Creation"/>
-
-<img src="https://github.com/AnalyticAce/PowerCV/blob/main/.github/assets/result.png" alt="Resume Result"/>
-
-### Resume View
-The resume view page displays the generated resume in a professional format.
-
-<img src="https://github.com/AnalyticAce/PowerCV/blob/main/.github/assets/resume_view.png" alt="Resume View"/>
-
-<img src="https://github.com/AnalyticAce/PowerCV/blob/main/.github/assets/resume_view2.png" alt="Resume View"/>
-
-</div>
 
 ## Technologies
 
@@ -116,17 +78,21 @@ docker run -d --name mongodb -p 27017:27017 mongo:latest
 3. **MongoDB Atlas**:
  - [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register)
 
-#### Get Deepseek API Key
+#### Setup AI Provider (Cerebras)
 
-1. Sign up at [Deepseek Platform](https://platform.deepseek.com/)
-2. Generate an API key in the dashboard.
+1. Get Cerebras API key from [cloud.cerebras.ai](https://cloud.cerebras.ai)
+2. Add to your `.env` file (or pass as env vars):
+   ```env
+   CEREBRAS_API_KEY=your_key_here
+   CEREBRAS_MODEL=gpt-oss-120b
+   ```
 
 ### Environment Variables
 
 Create a .env file in the project root:
 
 ```
-API_KEY=your_api_key_here
+CEREBRAS_API_KEY=your_key_here
 MONGODB_URI=mongodb://username:password@host:port/
 ```
 
@@ -143,9 +109,8 @@ Run the container:
 ```bash
 docker run -d --name myresumo \
  -p 8080:8080 \
- -e API_KEY=your_api_key_here \
- -e API_BASE=https://api.deepseek.com/v1 \
- -e MODEL_NAME=deepseek-chat \
+ -e CEREBRAS_API_KEY=your_key_here \
+ -e CEREBRAS_MODEL=gpt-oss-120b \
  -e MONGODB_URI=mongodb://username:password@host:port/ \
  ghcr.io/analyticace/myresumo:latest
 ```
@@ -156,19 +121,9 @@ PowerCV supports multiple AI backends.
 
 ### Configuration
 
-Switch between providers by updating environment variables:
+### Configuration
 
-```bash
-# For Deepseek (default)
-API_KEY=your_deepseek_api_key
-API_BASE=https://api.deepseek.com/v1
-MODEL_NAME=deepseek-chat
-
-# For OpenAI
-API_KEY=your_openai_api_key
-API_BASE=https://api.openai.com/v1
-MODEL_NAME=gpt-4
-```
+PowerCV uses **Cerebras** for high-performance inference. Ensure `CEREBRAS_API_KEY` is set. Other providers (Deepseek, OpenAI) are supported but Cerebras is the recommended default for speed.
 
 ### Cerebras AI Integration
 
@@ -310,6 +265,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-**DOSSEH Shalom** - [LinkedIn](https://www.linkedin.com/in/shalom-dosseh-4a484a262) - [GitHub](https://github.com/AnalyticAce)
+**Ilnar Nizametdinov** - [LinkedIn](https://www.linkedin.com/in/illnar/) - [GitHub](https://github.com/ILLnar-Nizami)
 
-Project Link: [https://github.com/AnalyticAce/PowerCV](https://github.com/AnalyticAce/PowerCV)
+Project Link: [https://github.com/ILLnar-Nizami/PowerCV](https://github.com/ILLnar-Nizami/PowerCV)

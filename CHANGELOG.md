@@ -49,3 +49,13 @@ Summary of fixes and improvements made to PowerCV to resolve startup and runtime
   - `Modern` (`modern.typ`): Two-column layout with a dedicated sidebar for skills and contact info.
 - **Improved API**: Updated `GET /api/resume/{id}/download` to accept `template` query parameter (`classic` or `modern`).
 - **Design Polish**: Adjusted grid padding and typography for a cleaner, improved visual density.
+
+## Codebase Cleanup & AI Provider Switch (2026-01-05)
+
+- **AI Provider**: Switched default provider from Deepseek to **Cerebras** (`gpt-oss-120b`) across the entire codebase (`model_ai.py`, `model_router.py`, `config.py`).
+- **Documentation**: 
+  - Updated `README.md` to feature Cerebras setup instructions and removed duplicate badges.
+  - Deleted obsolete UI screenshots and references.
+  - Updated contact information and Docker instructions.
+- **Frontend**: Corrected the "Contribute" button link in `base.html` to point to the GitHub repository.
+- **Cleanup**: Removed unused assets from `.github/assets` and consolidated test configuration.

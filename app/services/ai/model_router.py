@@ -39,14 +39,16 @@ class ModelRouter:
     def __init__(self):
         # Configuration - these could be loaded from env
         # Use env var for BALANCED to respect user's speed choice (Qwen), default to Mistral if not set
-        provider = (os.getenv("API_TYPE") or os.getenv("LLM_PROVIDER") or "").lower()
+        provider = (os.getenv("API_TYPE") or os.getenv(
+            "LLM_PROVIDER") or "").lower()
         cerebras_key = os.getenv("CEREBRAS_API_KEY")
         forced_provider = (os.getenv("FORCE_LLM_PROVIDER") or "").lower()
-        force_local = forced_provider in {"ollama", "local"} or provider in {"ollama", "local"}
+        force_local = forced_provider in {
+            "ollama", "local"} or provider in {"ollama", "local"}
 
         if cerebras_key and not force_local:
-            default_fast = os.getenv("CEREBRAS_MODEL_NAME", "llama3.3-70b")
-            default_balanced = os.getenv("CEREBRAS_MODEL_NAME", "llama3.3-70b")
+            default_fast = os.getenv("CEREBRAS_MODEL_NAME", "gpt-oss-120b")
+            default_balanced = os.getenv("CEREBRAS_MODEL_NAME", "gpt-oss-120b")
         else:
             default_fast = "qwen2.5:3b"
             default_balanced = "mistral:7b-instruct-v0.3-q4_K_M"
@@ -234,9 +236,11 @@ class ModelRouter:
                     parsed = json.loads(response)
 
                 if isinstance(parsed, list):
-                    cleaned = [_clean_llm_text(x) for x in parsed if isinstance(x, str)]
+                    cleaned = [_clean_llm_text(x)
+                               for x in parsed if isinstance(x, str)]
                     if len(cleaned) < len(bullets):
-                        cleaned.extend([_clean_llm_text(b) for b in bullets[len(cleaned):]])
+                        cleaned.extend([_clean_llm_text(b)
+                                       for b in bullets[len(cleaned):]])
                     return cleaned[: len(bullets)]
             except Exception:
                 pass
