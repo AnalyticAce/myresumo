@@ -58,6 +58,7 @@ class TypstGenerator:
         )
 
         self.env.filters["typst_escape"] = self.typst_escape
+        self.env.filters["typst_escape_email"] = self.typst_escape_email
         self.env.filters["format_date"] = self.format_date
 
     def load_json(self, json_path: str) -> bool:
@@ -149,6 +150,27 @@ class TypstGenerator:
             "[": "\\[",
             "]": "\\]",
             "@": "\\@",
+        }
+        for char, repl in replacements.items():
+            text = text.replace(char, repl)
+        return text
+
+    @staticmethod
+    def typst_escape_email(text) -> str:
+        """Escape special characters for Typst, but preserve @ in emails."""
+        if not isinstance(text, str):
+            return str(text)
+
+        # Escape all dangerous Typst characters EXCEPT @
+        replacements = {
+            "#": "\\#",
+            "*": "\\*",
+            "_": "\\_",
+            "`": "\\`",
+            "$": "\\$",
+            "[": "\\[",
+            "]": "\\]",
+            # Note: @ is NOT escaped here for email addresses
         }
         for char, repl in replacements.items():
             text = text.replace(char, repl)
