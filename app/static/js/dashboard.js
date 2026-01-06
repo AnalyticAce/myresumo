@@ -200,7 +200,7 @@ document.addEventListener('alpine:init', () => {
                 } else if (this.sortBy === 'company') {
                     comparison = (a.target_company || '').localeCompare(b.target_company || '');
                 } else if (this.sortBy === 'score') {
-                    comparison = (a.matching_score || 0) - (b.matching_score || 0);
+                    comparison = (a.ats_score || a.matching_score || 0) - (b.ats_score || b.matching_score || 0);
                 }
                 
                 return this.sortOrder === 'asc' ? comparison : -comparison;

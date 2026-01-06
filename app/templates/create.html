@@ -610,7 +610,8 @@
 
 {% block scripts %}
 <script>
-    function resumeCreator() {
+document.addEventListener('alpine:init', () => {
+    Alpine.data('resumeCreator', () =>
         return {
             currentStep: 1,
             resumeFile: null,
@@ -739,7 +740,7 @@
                 formData.append('file', this.resumeFile);
                 formData.append('title', this.resumeFile.name.replace('.pdf', ''));
                 formData.append('job_description', ''); // Will be updated later when we analyze
-                formData.append('user_id', 'temp-user-id'); // In a real app, you'd use the logged-in user's ID
+                formData.append('user_id', 'local-user'); // Using local-user for development
                 
                 try {
                     const response = await fetch('/api/resume/', {
@@ -1001,7 +1002,8 @@
                 window.showErrorToast('Failed to download resume. Please try again.');
             }
         }
-    }
+    });
+});
 </script>
 
 <!-- Template Selection Modal -->
