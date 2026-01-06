@@ -10,15 +10,24 @@ from ..utils.shared_utils import JSONParser, ErrorHandler
 
 logger = logging.getLogger(__name__)
 
-# Singleton instance for reuse
+# Singleton instance and lock for thread-safe initialization
 _cover_letter_generator_instance = None
+_cover_letter_generator_lock = asyncio.Lock()
 
 
-def get_cover_letter_generator() -> CoverLetterGenerator:
-    """Get singleton instance of CoverLetterGenerator to avoid repeated setup."""
+async def get_cover_letter_generator() -> CoverLetterGenerator:
+    """Get singleton instance of CoverLetterGenerator to avoid repeated setup.
+
+    Uses async lock to ensure thread-safe initialization under concurrent load.
+    """
     global _cover_letter_generator_instance
+
     if _cover_letter_generator_instance is None:
-        _cover_letter_generator_instance = CoverLetterGenerator()
+        async with _cover_letter_generator_lock:
+            # Double-check pattern to avoid race conditions
+            if _cover_letter_generator_instance is None:
+                _cover_letter_generator_instance = CoverLetterGenerator()
+
     return _cover_letter_generator_instance
 
 
