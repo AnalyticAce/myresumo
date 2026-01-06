@@ -1,3 +1,69 @@
+# Changelog - Patch 2026-01-06
+
+UI/UX enhancements, template selection, cover letter generation, and code quality improvements.
+
+## 🎨 Frontend UI/UX Enhancements (2026-01-06)
+
+### Template Selection System
+- **Resume Template Selection**: Added interactive template selection modal in create page
+  - Users can now choose between "Classic" and "Modern" resume templates before downloading
+  - Modal displays template previews, descriptions, and style information
+  - Integrated with Typst template system (`resume.typ`, `modern.typ`)
+  - Updated download endpoint to accept `template` query parameter
+
+### Cover Letter Generation Overhaul
+- **Simplified One-Button Generation**: Completely refactored cover letter page from complex multi-field form to streamlined experience
+  - Users select existing resume from dropdown
+  - Enter company name and position (optional job description)
+  - One-click generation using AI
+  - Automatic data extraction from selected resume
+- **Thread-Safe Singleton Pattern**: Implemented async lock for CoverLetterGenerator to prevent race conditions
+  - Added `asyncio.Lock` for thread-safe initialization under concurrent load
+  - Double-check pattern ensures proper singleton behavior
+  - Updated router to await singleton instance creation
+
+### Dashboard Improvements
+- **Enhanced Statistics Calculation**: Improved average matching score calculation logic
+  - Now uses `ats_score` field from optimized resumes
+  - Filters out invalid/null scores for accurate averaging
+  - Better date handling for "Last Updated" display
+- **Unified Toast Notifications**: Standardized error handling across all components
+  - Replaced inconsistent `window.showErrorToast` calls with `window.showToast`
+  - Consistent error messaging and user feedback
+
+## 🔧 Technical Improvements (2026-01-06)
+
+### Code Quality & Performance
+- **Thread-Safe Async Operations**: Fixed synchronous client calls in async methods
+  - Used `asyncio.run_in_executor()` to prevent event loop blocking
+  - Non-blocking AI API calls for better concurrency
+- **Error Handling Enhancement**: Added detailed error logging and improved user feedback
+  - Enhanced error messages in resume upload/optimization processes
+  - Better debugging information for development
+
+### File Processing & Validation
+- **Python-Magic Dependency**: Added `python-magic>=0.4.0` to requirements.txt
+  - Required for secure MIME type validation
+  - Prevents file upload security vulnerabilities
+- **Resume Preview Enhancement**: Added immediate text preview for uploaded files
+  - Shows file content in upload step for text-based files
+  - Better user experience with live preview before processing
+
+### Database & Infrastructure
+- **MongoDB Connection Fix**: Fixed indentation error in `MongoConnectionManager`
+  - Corrected client initialization block structure
+  - Ensures proper database connection setup
+
+## 📊 Quality Metrics (2026-01-06)
+
+- **UI/UX Improvements**: Template selection, simplified cover letter generation, enhanced dashboard
+- **Performance**: Thread-safe singleton patterns, non-blocking async operations
+- **Security**: File validation dependencies, consistent error handling
+- **Code Quality**: Proper async patterns, unified toast notifications
+- **User Experience**: One-click cover letter generation, immediate file previews
+
+---
+
 # Changelog - Patch 2026-01-05
 
 Comprehensive security hardening, feature enhancements, and codebase humanization.
