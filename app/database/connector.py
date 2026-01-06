@@ -31,7 +31,7 @@ def get_secure_mongodb_config():
 
     return {
         "uri": settings.mongodb_uri,
-        "database": settings.database_name
+        "database": settings.mongodb_db
     }
 
 # Initialize configuration

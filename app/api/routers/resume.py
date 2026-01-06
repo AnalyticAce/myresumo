@@ -2101,8 +2101,10 @@ async def submit_contact_form(
         # 2. Send an email notification to administrators
         # 3. Potentially send an auto-response to the user
 
-        # For now, we'll just return a success response
+        # Store contact message (implementation pending)
         # TODO: Implement proper email notification system with templates
+        # Current implementation: Log the message for manual follow-up
+        logger.info(f"Contact form submission from {contact_data.email}: {contact_data.message[:100]}...")
 
         return ContactFormResponse(
             success=True,

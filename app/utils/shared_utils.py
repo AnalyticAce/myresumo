@@ -6,7 +6,23 @@ import logging
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 
+from app.utils.validation import ValidationHelper as EnhancedValidationHelper
+
 logger = logging.getLogger(__name__)
+
+
+class ValidationHelper:
+    """Enhanced validation helper with backward compatibility."""
+    
+    @staticmethod
+    def validate_url(url: str) -> str:
+        """Validate URL with enhanced error handling."""
+        return EnhancedValidationHelper.validate_url(url)
+    
+    @staticmethod
+    def validate_text_input(text: str, max_length: int, field_name: str, min_length: int = 10) -> str:
+        """Validate text input with enhanced error handling."""
+        return EnhancedValidationHelper.validate_text_input(text, max_length, field_name, min_length)
 
 
 class JSONParser:
@@ -147,21 +163,46 @@ class JSONParser:
 
         try:
             cleaned = JSONParser.clean_json_response(response)
-            return json.loads(cleaned)
+            parsed = json.loads(cleaned)
+            logger.debug(f"Successfully parsed JSON response ({len(str(parsed))} chars)")
+            return parsed
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse JSON response: {str(e)}")
+            logger.error(f"Error location: Line {e.lineno}, Column {e.colno}")
+            logger.error(f"Error details: {e.msg}")
             logger.error(
                 f"Raw response (first 2000 chars):\n{response[:2000]}")
-            logger.debug(
-                f"Cleaned response attempt (first 1000 chars):\n{cleaned[:1000] if 'cleaned' in locals() else 'N/A'}")
+            if 'cleaned' in locals():
+                logger.debug(
+                    f"Cleaned response attempt (first 1000 chars):\n{cleaned[:1000]}")
+            else:
+                logger.debug("Cleaned response not available")
 
             if fallback_structure is not None:
                 logger.warning(
-                    "Using fallback structure due to JSON parse error")
+                    f"Using fallback structure due to JSON parse error: {type(fallback_structure).__name__}")
                 return fallback_structure.copy() if hasattr(fallback_structure, 'copy') else fallback_structure
 
-            # Return minimal fallback
-            return {"error": "JSON Parse Error", "raw_response": response[:500]}
+            # Return minimal fallback with more context
+            return {
+                "error": "JSON Parse Error", 
+                "error_details": str(e),
+                "error_line": e.lineno,
+                "error_column": e.colno,
+                "raw_response": response[:500]
+            }
+        except Exception as e:
+            logger.error(f"Unexpected error during JSON parsing: {type(e).__name__}: {str(e)}")
+            if fallback_structure is not None:
+                logger.warning("Using fallback structure due to unexpected error")
+                return fallback_structure.copy() if hasattr(fallback_structure, 'copy') else fallback_structure
+            
+            return {
+                "error": "Unexpected JSON Parsing Error", 
+                "error_type": type(e).__name__,
+                "error_details": str(e),
+                "raw_response": response[:500]
+            }
 
 
 class TextProcessor:

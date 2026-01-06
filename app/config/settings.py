@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     CEREBRAS_API_KEY: Optional[str] = None  # Uppercase variant
     API_KEY: Optional[str] = None  # Uppercase Deepseek variant
     OPENAI_API_KEY: Optional[str] = None  # Uppercase OpenAI variant
+    API_KEY_UPPER: Optional[str] = None  # Alternative uppercase variant
+    OPENAI_API_KEY_UPPER: Optional[str] = None  # Alternative uppercase variant
 
     # Database
     mongodb_uri: str = "mongodb://localhost:27017/powercv"
@@ -49,11 +51,6 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = "INFO"
     log_file: Optional[str] = None
-
-    # Case-insensitive aliases for common environment variable variations
-    CEREBRAS_API_KEY: Optional[str] = None  # Uppercase variant
-    API_KEY_UPPER: Optional[str] = None  # Uppercase Deepseek variant
-    OPENAI_API_KEY_UPPER: Optional[str] = None  # Uppercase OpenAI variant
 
     def model_post_init(self, __context):
         """Normalize API key variants after initialization."""

@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi import FastAPI, Request, HTTPException, Body, Query, status
 from app.utils.shared_utils import ValidationHelper, ErrorHandler
+from app.utils.error_handler import ErrorHandler as EnhancedErrorHandler, ErrorContext, debug_endpoint
 from app.services.master_cv import MasterCV
 from app.services.scraper import fetch_job_description, extract_keywords_from_jd
 from app.services.cover_letter_gen import CoverLetterGenerator
@@ -45,6 +46,7 @@ from app.config.logging_config import logger
 from app.config.settings import get_settings
 from app.config.templates import TemplateConfig
 from app.middleware.rate_limit import init_rate_limiting
+from app.middleware.debugging import setup_debugging_middleware
 from app.core.exceptions import ConfigurationError, MissingApiKeyError
 
 
@@ -144,7 +146,7 @@ async def startup_logic(app: FastAPI) -> None:
         connection_manager = MongoConnectionManager.get_instance()
         app.state.mongo = connection_manager
     except Exception as e:
-        print(f"Error during startup: {e}")
+        logger.error(f"Error during startup: {e}")
         raise
 
 
@@ -158,11 +160,11 @@ async def shutdown_logic(app: FastAPI) -> None:
     """
     try:
         await app.state.mongo.close_all()
-        print("Successfully closed all database connections")
+        logger.info("Successfully closed all database connections")
     except Exception as e:
-        print(f"Error during shutdown: {e}")
+        logger.error(f"Error during shutdown: {e}")
     finally:
-        print("Shutting down background tasks.")
+        logger.info("Shutting down background tasks.")
 
 
 app = FastAPI(
@@ -180,6 +182,10 @@ app = FastAPI(
 
 # Initialize rate limiting
 init_rate_limiting(app)
+
+# Setup debugging middleware
+settings = get_settings()
+setup_debugging_middleware(app, enable_debug=settings.debug)
 
 
 @app.on_event("startup")
@@ -221,18 +227,18 @@ Please check your environment configuration:
         error_msg += "\nUpdate your .env file or environment variables.\n"
         error_msg += "="*60
 
-        print(error_msg, flush=True)
+        logger.error(error_msg)
         # Re-raise as RuntimeError to cause startup failure
         raise RuntimeError(f"Application configuration error: {e}") from e
 
     except Exception as e:
         logger.error(f"Unexpected error during startup: {e}")
-        print("\n" + "="*60)
-        print("❌ STARTUP ERROR")
-        print("="*60)
-        print(f"Unexpected error: {e}")
-        print("\nCheck application logs for details.")
-        print("="*60 + "\n")
+        logger.error("="*60)
+        logger.error("❌ STARTUP ERROR")
+        logger.error("="*60)
+        logger.error(f"Unexpected error: {e}")
+        logger.error("Check application logs for details.")
+        logger.error("="*60)
         import sys
         sys.exit(1)
 
@@ -434,55 +440,88 @@ def get_orchestrator():
 
 
 @app.post("/api/v2/optimize", tags=["CV Optimization v2"], summary="Complete CV optimization workflow")
+@debug_endpoint
 async def optimize_cv_v2(request: OptimizationRequest):
     """
     CV optimization endpoint utilizing modular prompts.
     """
     try:
-        orchestrator = get_orchestrator()
-        result = orchestrator.optimize_cv_for_job(
-            cv_text=request.cv_text,
-            jd_text=request.jd_text,
-            generate_cover_letter=request.generate_cover_letter
-        )
-        return result
+        with ErrorContext("cv_optimization_v2", {
+            "template": request.template,
+            "generate_cover_letter": request.generate_cover_letter,
+            "cv_length": len(request.cv_text),
+            "jd_length": len(request.jd_text)
+        }):
+            orchestrator = get_orchestrator()
+            result = orchestrator.optimize_cv_for_job(
+                cv_text=request.cv_text,
+                jd_text=request.jd_text,
+                generate_cover_letter=request.generate_cover_letter
+            )
+            return result
     except Exception as e:
-        logger.error(f"Optimization error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Optimization error: {str(e)}", exc_info=True)
+        raise EnhancedErrorHandler.handle_ai_api_error(
+            e, 
+            provider="workflow_orchestrator", 
+            operation="cv_optimization",
+            context={"template": request.template}
+        )
 
 
 @app.post("/api/v2/analyze", tags=["CV Analysis v2"], summary="Analyze CV against job description")
+@debug_endpoint
 async def analyze_cv_v2(request: OptimizationRequest):
     """
     Analyze CV without optimization.
     Returns ATS score, keyword analysis, and recommendations.
     """
     try:
-        orchestrator = get_orchestrator()
-        analysis = orchestrator.analyzer.analyze(
-            request.cv_text, request.jd_text)
-        return analysis
+        with ErrorContext("cv_analysis_v2", {
+            "cv_length": len(request.cv_text),
+            "jd_length": len(request.jd_text)
+        }):
+            orchestrator = get_orchestrator()
+            analysis = orchestrator.analyzer.analyze(
+                request.cv_text, request.jd_text)
+            return analysis
     except Exception as e:
-        logger.error(f"Analysis error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Analysis error: {str(e)}", exc_info=True)
+        raise EnhancedErrorHandler.handle_ai_api_error(
+            e, 
+            provider="cv_analyzer", 
+            operation="cv_analysis",
+            context={"cv_length": len(request.cv_text)}
+        )
 
 
 @app.post("/api/v2/cover-letter", tags=["Cover Letter v2"], summary="Generate cover letter")
+@debug_endpoint
 async def generate_cover_letter_v2(request: CoverLetterRequest):
     """
     Generate cover letter based on candidate and job data.
     """
     try:
-        orchestrator = get_orchestrator()
-        result = orchestrator.cover_letter_gen.generate(
-            request.candidate_data,
-            request.job_data,
-            request.tone
-        )
-        return result
+        with ErrorContext("cover_letter_generation_v2", {
+            "tone": request.tone,
+            "candidate_name": request.candidate_data.get("name", "Unknown"),
+            "company": request.job_data.get("company", "Unknown")
+        }):
+            orchestrator = get_orchestrator()
+            result = orchestrator.cover_letter_gen.generate(
+                request.candidate_data,
+                request.job_data,
+                request.tone
+            )
+            return result
     except Exception as e:
-        logger.error(f"Cover letter generation error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Cover letter generation error: {str(e)}", exc_info=True)
+        raise EnhancedErrorHandler.handle_ai_api_error(
+            e, 
+            provider="cover_letter_generator", 
+            operation="cover_letter_generation",
+            context={"tone": request.tone}
+        )
 
 # Legacy/General endpoints
 

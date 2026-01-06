@@ -179,8 +179,11 @@ async def create_cover_letter(
             signature=f"Sincerely,\n{cover_letter_data.sender_name}"
         )
 
+        # Get user ID from request context (fallback to session/temp ID for development)
+        user_id = getattr(request.state, 'user_id', None) or 'temp-user-' + str(hash(str(request.client)))[:8]
+        
         new_cover_letter = CoverLetter(
-            user_id="local-user",  # TODO: Implement proper authentication system
+            user_id=user_id,
             title=cover_letter_data.title,
             resume_id=cover_letter_data.resume_id,
             target_company=cover_letter_data.target_company,

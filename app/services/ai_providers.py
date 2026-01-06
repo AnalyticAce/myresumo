@@ -118,11 +118,27 @@ class AIClient:
 
         except requests.exceptions.Timeout:
             logger.error(f"{self.provider} API timeout after {timeout}s")
-            raise Exception(f"{self.provider} API timeout after {timeout}s")
+            raise requests.exceptions.RequestException(f"{self.provider} API timeout after {timeout}s")
+
+        except requests.exceptions.ConnectionError as e:
+            logger.error(f"{self.provider} API connection error: {str(e)}")
+            raise requests.exceptions.RequestException(f"{self.provider} API connection error: {str(e)}")
+
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"{self.provider} API HTTP error: {e.response.status_code if e.response else 'Unknown'}")
+            raise requests.exceptions.RequestException(f"{self.provider} API HTTP error: {str(e)}")
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"{self.provider} API error: {type(e).__name__}")
-            raise Exception(f"{self.provider} API error: {type(e).__name__}")
+            logger.error(f"{self.provider} API request error: {type(e).__name__}: {str(e)}")
+            raise requests.exceptions.RequestException(f"{self.provider} API request error: {type(e).__name__}: {str(e)}")
+
+        except ValueError as e:
+            logger.error(f"{self.provider} API response parsing error: {str(e)}")
+            raise ValueError(f"Invalid response from {self.provider} API: {str(e)}")
+
+        except Exception as e:
+            logger.error(f"{self.provider} API unexpected error: {type(e).__name__}: {str(e)}")
+            raise Exception(f"Unexpected error with {self.provider} API: {type(e).__name__}: {str(e)}")
 
     def get_provider_info(self) -> dict:
         """Get current provider information."""
