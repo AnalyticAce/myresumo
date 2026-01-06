@@ -11,598 +11,598 @@
          x-init="init()">
         <!-- Progress Stepper -->
         <div class="flex items-center justify-between mb-12">
-            <div class="flex items-center">
-                <div class="rounded-full h-12 w-12 flex items-center justify-center bg-blue-500 text-white">
-                    1
-                </div>
-                <div class="text-sm font-medium ml-2">Upload</div>
+        <div class="flex items-center">
+            <div class="rounded-full h-12 w-12 flex items-center justify-center bg-blue-500 text-white">
+                1
             </div>
-            <div class="step-connector" :class="{'active': currentStep >= 2}"></div>
-            <div class="flex items-center">
-                <div class="rounded-full h-12 w-12 flex items-center justify-center" 
-                     :class="{'bg-blue-500 text-white': currentStep >= 2, 'bg-gray-300 text-gray-600': currentStep < 2}">
-                    2
-                </div>
-                <div class="text-sm font-medium ml-2" :class="{'text-gray-900': currentStep >= 2, 'text-gray-500': currentStep < 2}">Analyze</div>
+            <div class="text-sm font-medium ml-2">Upload</div>
+        </div>
+        <div class="step-connector" :class="{'active': currentStep >= 2}"></div>
+        <div class="flex items-center">
+            <div class="rounded-full h-12 w-12 flex items-center justify-center" 
+                 :class="{'bg-blue-500 text-white': currentStep >= 2, 'bg-gray-300 text-gray-600': currentStep < 2}">
+                2
             </div>
-            <div class="step-connector" :class="{'active': currentStep >= 3}"></div>
-            <div class="flex items-center">
-                <div class="rounded-full h-12 w-12 flex items-center justify-center" 
-                     :class="{'bg-blue-500 text-white': currentStep >= 3, 'bg-gray-300 text-gray-600': currentStep < 3}">
-                    3
-                </div>
-                <div class="text-sm font-medium ml-2" :class="{'text-gray-900': currentStep >= 3, 'text-gray-500': currentStep < 3}">Review</div>
+            <div class="text-sm font-medium ml-2" :class="{'text-gray-900': currentStep >= 2, 'text-gray-500': currentStep < 2}">Analyze</div>
+        </div>
+        <div class="step-connector" :class="{'active': currentStep >= 3}"></div>
+        <div class="flex items-center">
+            <div class="rounded-full h-12 w-12 flex items-center justify-center" 
+                 :class="{'bg-blue-500 text-white': currentStep >= 3, 'bg-gray-300 text-gray-600': currentStep < 3}">
+                3
             </div>
-            <div class="step-connector" :class="{'active': currentStep >= 4}"></div>
-            <div class="flex items-center">
-                <div class="rounded-full h-12 w-12 flex items-center justify-center"
-                     :class="{'bg-blue-500 text-white': currentStep >= 4, 'bg-gray-300 text-gray-600': currentStep < 4}">
-                    4
-                </div>
-                <div class="text-sm font-medium ml-2" :class="{'text-gray-900': currentStep >= 4, 'text-gray-500': currentStep < 4}">Template</div>
+            <div class="text-sm font-medium ml-2" :class="{'text-gray-900': currentStep >= 3, 'text-gray-500': currentStep < 3}">Review</div>
+        </div>
+        <div class="step-connector" :class="{'active': currentStep >= 4}"></div>
+        <div class="flex items-center">
+            <div class="rounded-full h-12 w-12 flex items-center justify-center"
+                 :class="{'bg-blue-500 text-white': currentStep >= 4, 'bg-gray-300 text-gray-600': currentStep < 4}">
+                4
             </div>
-            <div class="step-connector" :class="{'active': currentStep >= 5}"></div>
-            <div class="flex items-center">
-                <div class="rounded-full h-12 w-12 flex items-center justify-center"
-                     :class="{'bg-blue-500 text-white': currentStep >= 5, 'bg-gray-300 text-gray-600': currentStep < 5}">
-                    5
-                </div>
-                <div class="text-sm font-medium ml-2" :class="{'text-gray-900': currentStep >= 5, 'text-gray-500': currentStep < 5}">Download</div>
+            <div class="text-sm font-medium ml-2" :class="{'text-gray-900': currentStep >= 4, 'text-gray-500': currentStep < 4}">Template</div>
+        </div>
+        <div class="step-connector" :class="{'active': currentStep >= 5}"></div>
+        <div class="flex items-center">
+            <div class="rounded-full h-12 w-12 flex items-center justify-center"
+                 :class="{'bg-blue-500 text-white': currentStep >= 5, 'bg-gray-300 text-gray-600': currentStep < 5}">
+                5
             </div>
+            <div class="text-sm font-medium ml-2" :class="{'text-gray-900': currentStep >= 5, 'text-gray-500': currentStep < 5}">Download</div>
+        </div>
         </div>
         
         <!-- Step 1: Upload Resume and Job Description -->
         <div x-show="currentStep === 1" class="fade-in">
-            <!-- Upload Section Redesign -->
-            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-lg mb-8">
-                <!-- Show master CV info when using master CV -->
-                <template x-if="isUsingMasterCV && masterCVDetails">
-                    <div>
-                        <h2 class="text-xl font-semibold text-gray-800 mb-6">Using Master CV</h2>
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-6">
-                            <div class="flex items-center mb-4">
-                                <svg class="h-6 w-6 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span class="text-green-800 font-medium">Master CV Selected</span>
-                            </div>
-                            <div class="space-y-2">
-                                <p class="text-gray-700"><strong>Title:</strong> <span x-text="masterCVDetails.title"></span></p>
-                                <p class="text-gray-700"><strong>Filename:</strong> <span x-text="masterCVDetails.master_filename || 'N/A'"></span></p>
-                                <p class="text-gray-700"><strong>File Type:</strong> <span x-text="masterCVDetails.master_file_type || 'N/A'"></span></p>
-                                <p class="text-gray-700"><strong>Last Updated:</strong> <span x-text="new Date(masterCVDetails.master_updated_at).toLocaleDateString()"></span></p>
-                            </div>
-                            <div class="mt-4 p-3 bg-blue-50 rounded-md">
-                                <p class="text-sm text-blue-800">
-                                    <strong>Note:</strong> This resume will be optimized based on the job description you provide below.
-                                </p>
-                            </div>
+        <!-- Upload Section Redesign -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-lg mb-8">
+            <!-- Show master CV info when using master CV -->
+            <template x-if="isUsingMasterCV && masterCVDetails">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800 mb-6">Using Master CV</h2>
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <svg class="h-6 w-6 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="text-green-800 font-medium">Master CV Selected</span>
                         </div>
-                    </div>
-                </template>
-                
-                <!-- Show regular upload interface when not using master CV -->
-                <template x-if="!isUsingMasterCV">
-                    <div>
-                        <h2 class="text-xl font-semibold text-gray-800 mb-6">Upload Your Resume</h2>
-                        
-                        <div class="flex flex-col md:flex-row gap-8">
-                            <!-- Left: Resume Upload -->
-                            <div class="flex-1">
-                                <div 
-                                    class="border-2 border-dashed border-gray-300 rounded-lg px-6 pt-10 pb-10 cursor-pointer bg-white transition-all duration-300 hover:border-blue-400 hover:bg-blue-50"
-                                    :class="{'border-blue-500 bg-blue-50': isDraggingResume, 'border-green-500 bg-green-50': resumeFile}"
-                                    @dragover.prevent="isDraggingResume = true"
-                                    @dragleave.prevent="isDraggingResume = false"
-                                    @drop.prevent="handleResumeDrop($event)">
-                                    
-                                    <div class="space-y-3 text-center">
-                                        <template x-if="!resumeFile">
-                                            <div>
-                                                <svg class="mx-auto h-16 w-16 text-blue-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                </svg>
-                                                <p class="mt-4 text-md text-gray-700 font-medium">
-                                                    Drag and drop your resume here
-                                                </p>
-                                                <p class="mt-2 text-sm text-gray-500">
-                                                    or
-                                                    <label for="resume-file" class="text-blue-600 hover:underline cursor-pointer">browse files</label>
-                                                </p>
-                                                <p class="mt-1 text-xs text-gray-500">PDF, DOCX, MD, TXT (max 5MB)</p>
-                                            </div>
-                                        </template>
-                                        <template x-if="resumeFile">
-                                            <div class="text-center">
-                                                <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                <p class="mt-4 text-md font-medium text-gray-800" x-text="resumeFile.name"></p>
-                                                <p class="mt-1 text-sm text-gray-500" x-text="'Size: ' + (resumeFile.size / 1024).toFixed(2) + ' KB'"></p>
-                                                <button type="button" @click.prevent="resumeFile = null; resumeContent = ''" 
-                                                  class="mt-3 px-3 py-1 text-sm text-white bg-red-500 hover:bg-red-600 rounded-md shadow-sm transition-colors duration-200">
-                                                    Remove file
-                                                </button>
-                                            </div>
-                                        </template>
-                                    </div>
-                                    <input id="resume-file" type="file" accept=".pdf,.docx,.md,.markdown,.txt" class="hidden" @change="handleResumeFileChange">
-                                </div>
-                            </div>
-                            
-                            <!-- Right: Resume Preview -->
-                            <div class="flex-1">
-                                <div class="bg-white border border-gray-200 rounded-lg h-full p-4">
-                                    <h3 class="text-md font-medium text-gray-700 mb-3 flex items-center">
-                                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                        Resume Preview
-                                    </h3>
-                                    <div x-show="!resumeFile" class="text-sm text-gray-500 text-center py-8">
-                                        <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                        Upload your resume to see a preview
-                                    </div>
-
-                                    <!-- Resume Content Preview -->
-                                    <div x-show="resumeFile && resumeContent" class="h-full overflow-hidden">
-                                        <div class="flex items-center justify-between mb-3">
-                                            <h4 class="text-sm font-medium text-gray-700">Resume Preview</h4>
-                                            <span class="text-xs text-gray-500" x-text="resumeContent.length + ' characters'"></span>
-                                        </div>
-                                        <div class="bg-gray-50 border border-gray-200 rounded-md p-3 h-80 overflow-y-auto">
-                                            <pre class="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed" x-text="resumeContent.substring(0, 2000) + (resumeContent.length > 2000 ? '...' : '')"></pre>
-                                        </div>
-                                        <p class="text-xs text-gray-500 mt-2 text-center">
-                                            This is a preview of your uploaded resume content
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="space-y-2">
+                            <p class="text-gray-700"><strong>Title:</strong> <span x-text="masterCVDetails.title"></span></p>
+                            <p class="text-gray-700"><strong>Filename:</strong> <span x-text="masterCVDetails.master_filename || 'N/A'"></span></p>
+                            <p class="text-gray-700"><strong>File Type:</strong> <span x-text="masterCVDetails.master_file_type || 'N/A'"></span></p>
+                            <p class="text-gray-700"><strong>Last Updated:</strong> <span x-text="new Date(masterCVDetails.master_updated_at).toLocaleDateString()"></span></p>
                         </div>
-                    </div>
-                </template>
-            </div>
-            
-            <!-- Job Description Section -->
-            <div class="bg-gradient-to-r from-green-50 to-teal-50 p-8 rounded-lg">
-                <h2 class="text-xl font-semibold text-gray-800 mb-6">Job Description</h2>
-                
-                <div class="bg-white border border-gray-200 rounded-lg p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label for="target-company" class="block text-md font-medium text-gray-700 mb-2">Target Company</label>
-                            <input
-                                type="text"
-                                id="target-company"
-                                class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-200"
-                                placeholder="e.g. Carbon Robotics"
-                                x-model="targetCompany"
-                            >
+                        <div class="mt-4 p-3 bg-blue-50 rounded-md">
+                            <p class="text-sm text-blue-800">
+                                <strong>Note:</strong> This resume will be optimized based on the job description you provide below.
+                            </p>
                         </div>
-                        <div>
-                            <label for="target-role" class="block text-md font-medium text-gray-700 mb-2">Position / Role</label>
-                            <input
-                                type="text"
-                                id="target-role"
-                                class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-200"
-                                placeholder="e.g. Manufacturing Technician"
-                                x-model="targetRole"
-                            >
-                        </div>
-                    </div>
-
-                    
-                    <div>
-                        <label for="job-description" class="block text-md font-medium text-gray-700 mb-2">
-                            Job Description
-                            <span class="text-red-500">*</span>
-                        </label>
-                        <textarea 
-                            id="job-description" 
-                            rows="10"
-                            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-200"
-                            placeholder="Copy and paste the full job description here. The more detailed the description, the better the optimization results."
-                            x-model="jobDescription"
-                        ></textarea>
-                        <p class="mt-1 text-xs text-gray-500">
-                            This will be used to tailor your resume specifically for this position.
-                        </p>
                     </div>
                 </div>
-            </div>
+            </template>
             
-            <div class="mt-8 flex justify-end">
-                <button 
-                    type="button"
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center transition-colors duration-200"
-                    :class="{'opacity-50 cursor-not-allowed': !canProceedToAnalysis(), 'transform hover:-translate-y-1': canProceedToAnalysis()}"
-                    :disabled="!canProceedToAnalysis()"
-                    @click="startAnalysis()">
-                    <span>Analyze Resume</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                </button>
+            <!-- Show regular upload interface when not using master CV -->
+            <template x-if="!isUsingMasterCV">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800 mb-6">Upload Your Resume</h2>
+                    
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <!-- Left: Resume Upload -->
+                        <div class="flex-1">
+                            <div 
+                                class="border-2 border-dashed border-gray-300 rounded-lg px-6 pt-10 pb-10 cursor-pointer bg-white transition-all duration-300 hover:border-blue-400 hover:bg-blue-50"
+                                :class="{'border-blue-500 bg-blue-50': isDraggingResume, 'border-green-500 bg-green-50': resumeFile}"
+                                @dragover.prevent="isDraggingResume = true"
+                                @dragleave.prevent="isDraggingResume = false"
+                                @drop.prevent="handleResumeDrop($event)">
+                                
+                                <div class="space-y-3 text-center">
+                                    <template x-if="!resumeFile">
+                                        <div>
+                                            <svg class="mx-auto h-16 w-16 text-blue-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            <p class="mt-4 text-md text-gray-700 font-medium">
+                                                Drag and drop your resume here
+                                            </p>
+                                            <p class="mt-2 text-sm text-gray-500">
+                                                or
+                                                <label for="resume-file" class="text-blue-600 hover:underline cursor-pointer">browse files</label>
+                                            </p>
+                                            <p class="mt-1 text-xs text-gray-500">PDF, DOCX, MD, TXT (max 5MB)</p>
+                                        </div>
+                                    </template>
+                                    <template x-if="resumeFile">
+                                        <div class="text-center">
+                                            <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <p class="mt-4 text-md font-medium text-gray-800" x-text="resumeFile.name"></p>
+                                            <p class="mt-1 text-sm text-gray-500" x-text="'Size: ' + (resumeFile.size / 1024).toFixed(2) + ' KB'"></p>
+                                            <button type="button" @click.prevent="resumeFile = null; resumeContent = ''" 
+                                              class="mt-3 px-3 py-1 text-sm text-white bg-red-500 hover:bg-red-600 rounded-md shadow-sm transition-colors duration-200">
+                                                Remove file
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                                <input id="resume-file" type="file" accept=".pdf,.docx,.md,.markdown,.txt" class="hidden" @change="handleResumeFileChange">
+                            </div>
+                        </div>
+                        
+                        <!-- Right: Resume Preview -->
+                        <div class="flex-1">
+                            <div class="bg-white border border-gray-200 rounded-lg h-full p-4">
+                                <h3 class="text-md font-medium text-gray-700 mb-3 flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    Resume Preview
+                                </h3>
+                                <div x-show="!resumeFile" class="text-sm text-gray-500 text-center py-8">
+                                    <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Upload your resume to see a preview
+                                </div>
+
+                                <!-- Resume Content Preview -->
+                                <div x-show="resumeFile && resumeContent" class="h-full overflow-hidden">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h4 class="text-sm font-medium text-gray-700">Resume Preview</h4>
+                                        <span class="text-xs text-gray-500" x-text="resumeContent.length + ' characters'"></span>
+                                    </div>
+                                    <div class="bg-gray-50 border border-gray-200 rounded-md p-3 h-80 overflow-y-auto">
+                                        <pre class="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed" x-text="resumeContent.substring(0, 2000) + (resumeContent.length > 2000 ? '...' : '')"></pre>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2 text-center">
+                                        This is a preview of your uploaded resume content
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+        
+        <!-- Job Description Section -->
+        <div class="bg-gradient-to-r from-green-50 to-teal-50 p-8 rounded-lg">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6">Job Description</h2>
+            
+            <div class="bg-white border border-gray-200 rounded-lg p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="target-company" class="block text-md font-medium text-gray-700 mb-2">Target Company</label>
+                        <input
+                            type="text"
+                            id="target-company"
+                            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-200"
+                            placeholder="e.g. Carbon Robotics"
+                            x-model="targetCompany"
+                        >
+                    </div>
+                    <div>
+                        <label for="target-role" class="block text-md font-medium text-gray-700 mb-2">Position / Role</label>
+                        <input
+                            type="text"
+                            id="target-role"
+                            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-200"
+                            placeholder="e.g. Manufacturing Technician"
+                            x-model="targetRole"
+                        >
+                    </div>
+                </div>
+
+                
+                <div>
+                    <label for="job-description" class="block text-md font-medium text-gray-700 mb-2">
+                        Job Description
+                        <span class="text-red-500">*</span>
+                    </label>
+                    <textarea 
+                        id="job-description" 
+                        rows="10"
+                        class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-200"
+                        placeholder="Copy and paste the full job description here. The more detailed the description, the better the optimization results."
+                        x-model="jobDescription"
+                    ></textarea>
+                    <p class="mt-1 text-xs text-gray-500">
+                        This will be used to tailor your resume specifically for this position.
+                    </p>
+                </div>
             </div>
+        </div>
+        
+        <div class="mt-8 flex justify-end">
+            <button 
+                type="button"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center transition-colors duration-200"
+                :class="{'opacity-50 cursor-not-allowed': !canProceedToAnalysis(), 'transform hover:-translate-y-1': canProceedToAnalysis()}"
+                :disabled="!canProceedToAnalysis()"
+                @click="startAnalysis()">
+                <span>Analyze Resume</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
         </div>
         
         <!-- Step 2: Analysis In Progress - Redesigned -->
         <div x-show="currentStep === 2" class="fade-in">
-            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-lg">
-                <div class="max-w-2xl mx-auto">
-                    <!-- Analysis Header -->
-                    <div class="text-center mb-10">
-                        <div class="relative">
-                            <div class="animate-pulse absolute inset-0 rounded-full bg-blue-200 opacity-50 transform scale-110"></div>
-                            <div class="animate-spin relative rounded-full h-20 w-20 border-t-4 border-r-4 border-blue-500 border-opacity-80 mx-auto"></div>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-lg">
+            <div class="max-w-2xl mx-auto">
+                <!-- Analysis Header -->
+                <div class="text-center mb-10">
+                    <div class="relative">
+                        <div class="animate-pulse absolute inset-0 rounded-full bg-blue-200 opacity-50 transform scale-110"></div>
+                        <div class="animate-spin relative rounded-full h-20 w-20 border-t-4 border-r-4 border-blue-500 border-opacity-80 mx-auto"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-2">Optimizing Your Resume</h3>
+                    <p class="text-gray-600 max-w-md mx-auto">
+                        Our AI is analyzing your resume against the job description to create a perfectly tailored version.
+                    </p>
+                </div>
+                
+                <!-- Analysis Progress -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                    <!-- Progress Bar -->
+                    <div class="relative pt-1">
+                        <div class="flex mb-2 items-center justify-between">
+                            <div>
+                                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-100">
+                                    Analysis Progress
+                                </span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs font-semibold inline-block text-blue-600" x-text="`${analysisProgress}%`">
+                                    0%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-blue-100">
+                            <div 
+                                :style="`width: ${analysisProgress}%`" 
+                                class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500 ease-out">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Status Messages -->
+                    <div class="mt-6 space-y-4">
+                        <div class="flex items-center" :class="{'text-gray-400': analysisProgress < 25, 'text-blue-600': analysisProgress >= 25}">
+                            <div class="flex-shrink-0 h-8 w-8 rounded-full border-2 flex items-center justify-center" 
+                                 :class="{'border-gray-300': analysisProgress < 25, 'border-blue-500 bg-blue-50': analysisProgress >= 25}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" 
+                                     :class="{'text-gray-400': analysisProgress < 25, 'text-blue-600': analysisProgress >= 25}">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                                 </svg>
                             </div>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-2">Optimizing Your Resume</h3>
-                        <p class="text-gray-600 max-w-md mx-auto">
-                            Our AI is analyzing your resume against the job description to create a perfectly tailored version.
-                        </p>
-                    </div>
-                    
-                    <!-- Analysis Progress -->
-                    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-                        <!-- Progress Bar -->
-                        <div class="relative pt-1">
-                            <div class="flex mb-2 items-center justify-between">
-                                <div>
-                                    <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-100">
-                                        Analysis Progress
-                                    </span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-xs font-semibold inline-block text-blue-600" x-text="`${analysisProgress}%`">
-                                        0%
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-blue-100">
-                                <div 
-                                    :style="`width: ${analysisProgress}%`" 
-                                    class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500 ease-out">
-                                </div>
-                            </div>
+                            <span class="ml-4 text-sm font-medium">Processing resume text</span>
                         </div>
                         
-                        <!-- Status Messages -->
-                        <div class="mt-6 space-y-4">
-                            <div class="flex items-center" :class="{'text-gray-400': analysisProgress < 25, 'text-blue-600': analysisProgress >= 25}">
-                                <div class="flex-shrink-0 h-8 w-8 rounded-full border-2 flex items-center justify-center" 
-                                     :class="{'border-gray-300': analysisProgress < 25, 'border-blue-500 bg-blue-50': analysisProgress >= 25}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" 
-                                         :class="{'text-gray-400': analysisProgress < 25, 'text-blue-600': analysisProgress >= 25}">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                                    </svg>
-                                </div>
-                                <span class="ml-4 text-sm font-medium">Processing resume text</span>
+                        <div class="flex items-center" :class="{'text-gray-400': analysisProgress < 40, 'text-blue-600': analysisProgress >= 40}">
+                            <div class="flex-shrink-0 h-8 w-8 rounded-full border-2 flex items-center justify-center"
+                                 :class="{'border-gray-300': analysisProgress < 40, 'border-blue-500 bg-blue-50': analysisProgress >= 40}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                     :class="{'text-gray-400': analysisProgress < 40, 'text-blue-600': analysisProgress >= 40}">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                </svg>
                             </div>
-                            
-                            <div class="flex items-center" :class="{'text-gray-400': analysisProgress < 40, 'text-blue-600': analysisProgress >= 40}">
-                                <div class="flex-shrink-0 h-8 w-8 rounded-full border-2 flex items-center justify-center"
-                                     :class="{'border-gray-300': analysisProgress < 40, 'border-blue-500 bg-blue-50': analysisProgress >= 40}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                         :class="{'text-gray-400': analysisProgress < 40, 'text-blue-600': analysisProgress >= 40}">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                                    </svg>
-                                </div>
-                                <span class="ml-4 text-sm font-medium">Analyzing job requirements</span>
-                            </div>
-                            
-                            <div class="flex items-center" :class="{'text-gray-400': analysisProgress < 65, 'text-blue-600': analysisProgress >= 65}">
-                                <div class="flex-shrink-0 h-8 w-8 rounded-full border-2 flex items-center justify-center"
-                                     :class="{'border-gray-300': analysisProgress < 65, 'border-blue-500 bg-blue-50': analysisProgress >= 65}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                         :class="{'text-gray-400': analysisProgress < 65, 'text-blue-600': analysisProgress >= 65}">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                    </svg>
-                                </div>
-                                <span class="ml-4 text-sm font-medium">Optimizing content</span>
-                            </div>
-                            
-                            <div class="flex items-center" :class="{'text-gray-400': analysisProgress < 85, 'text-blue-600': analysisProgress >= 85}">
-                                <div class="flex-shrink-0 h-8 w-8 rounded-full border-2 flex items-center justify-center"
-                                     :class="{'border-gray-300': analysisProgress < 85, 'border-blue-500 bg-blue-50': analysisProgress >= 85}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                         :class="{'text-gray-400': analysisProgress < 85, 'text-blue-600': analysisProgress >= 85}">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </div>
-                                <span class="ml-4 text-sm font-medium">Finalizing your resume</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Current Activity -->
-                    <div class="text-center">
-                        <div class="inline-flex items-center px-4 py-2 bg-white border border-blue-100 rounded-full shadow-sm">
-                            <div class="animate-pulse w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
-                            <p class="text-sm text-gray-700" x-text="analysisProgressMessage">Initializing...</p>
+                            <span class="ml-4 text-sm font-medium">Analyzing job requirements</span>
                         </div>
                         
-                        <div class="mt-6 text-xs text-gray-500">
-                            <p>This typically takes about 30-60 seconds</p>
+                        <div class="flex items-center" :class="{'text-gray-400': analysisProgress < 65, 'text-blue-600': analysisProgress >= 65}">
+                            <div class="flex-shrink-0 h-8 w-8 rounded-full border-2 flex items-center justify-center"
+                                 :class="{'border-gray-300': analysisProgress < 65, 'border-blue-500 bg-blue-50': analysisProgress >= 65}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                     :class="{'text-gray-400': analysisProgress < 65, 'text-blue-600': analysisProgress >= 65}">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                            </div>
+                            <span class="ml-4 text-sm font-medium">Optimizing content</span>
                         </div>
+                        
+                        <div class="flex items-center" :class="{'text-gray-400': analysisProgress < 85, 'text-blue-600': analysisProgress >= 85}">
+                            <div class="flex-shrink-0 h-8 w-8 rounded-full border-2 flex items-center justify-center"
+                                 :class="{'border-gray-300': analysisProgress < 85, 'border-blue-500 bg-blue-50': analysisProgress >= 85}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                     :class="{'text-gray-400': analysisProgress < 85, 'text-blue-600': analysisProgress >= 85}">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <span class="ml-4 text-sm font-medium">Finalizing your resume</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Current Activity -->
+                <div class="text-center">
+                    <div class="inline-flex items-center px-4 py-2 bg-white border border-blue-100 rounded-full shadow-sm">
+                        <div class="animate-pulse w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
+                        <p class="text-sm text-gray-700" x-text="analysisProgressMessage">Initializing...</p>
+                    </div>
+                    
+                    <div class="mt-6 text-xs text-gray-500">
+                        <p>This typically takes about 30-60 seconds</p>
                     </div>
                 </div>
             </div>
         </div>
+        </div>
         
         <!-- Step 3: Initial Analysis Results -->
         <div x-show="currentStep === 3" class="fade-in">
-            <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-lg mb-6">
-                <div class="text-center mb-5">
-                    <svg class="mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
-                    <h3 class="text-xl font-bold text-gray-900 mt-3 mb-1">Initial Resume Analysis</h3>
-                    <p class="text-gray-600 text-sm">Here's how your resume currently matches with the job description.</p>
-                </div>
+        <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-lg mb-6">
+            <div class="text-center mb-5">
+                <svg class="mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <h3 class="text-xl font-bold text-gray-900 mt-3 mb-1">Initial Resume Analysis</h3>
+                <p class="text-gray-600 text-sm">Here's how your resume currently matches with the job description.</p>
+            </div>
 
-                <!-- Results Cards - Grid Layout -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <!-- ATS Score -->
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-                        <div class="bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3">
-                            <h4 class="font-medium text-white">Initial ATS Score</h4>
-                        </div>
-                        <div class="p-4 text-center">
-                            <div class="relative inline-flex items-center justify-center">
-                                <!-- Score Circle -->
-                                <svg class="w-28 h-28">
-                                    <circle
-                                        class="text-gray-200"
-                                        stroke-width="8"
-                                        stroke="currentColor"
-                                        fill="transparent"
-                                        r="50"
-                                        cx="56"
-                                        cy="56"
-                                    />
-                                    <circle
-                                        class="text-amber-500"
-                                        stroke-width="8"
-                                        :stroke-dasharray="calculateCircumference(50)"
-                                        :stroke-dashoffset="calculateCircumference(50) - (calculateCircumference(50) * originalScore) / 100"
-                                        stroke-linecap="round"
-                                        stroke="currentColor"
-                                        fill="transparent"
-                                        r="50"
-                                        cx="56"
-                                        cy="56"
-                                    />
-                                </svg>
-                                <span class="absolute text-2xl font-bold" x-text="`${originalScore}%`"></span>
-                            </div>
-                            <p class="mt-2 text-sm text-gray-600">
-                                <template x-if="originalScore >= 80">
-                                    <span>Your resume already has excellent compatibility!</span>
-                                </template>
-                                <template x-if="originalScore >= 60 && originalScore < 80">
-                                    <span>Your resume has good compatibility, but can be improved.</span>
-                                </template>
-                                <template x-if="originalScore < 60">
-                                    <span>Your resume needs improvement to better match this job.</span>
-                                </template>
-                            </p>
-                        </div>
+            <!-- Results Cards - Grid Layout -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <!-- ATS Score -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+                    <div class="bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3">
+                        <h4 class="font-medium text-white">Initial ATS Score</h4>
                     </div>
-                    
-                    <!-- Matched Skills -->
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-                        <div class="bg-gradient-to-r from-green-500 to-green-600 px-4 py-3">
-                            <h4 class="font-medium text-white">Matched Skills</h4>
+                    <div class="p-4 text-center">
+                        <div class="relative inline-flex items-center justify-center">
+                            <!-- Score Circle -->
+                            <svg class="w-28 h-28">
+                                <circle
+                                    class="text-gray-200"
+                                    stroke-width="8"
+                                    stroke="currentColor"
+                                    fill="transparent"
+                                    r="50"
+                                    cx="56"
+                                    cy="56"
+                                />
+                                <circle
+                                    class="text-amber-500"
+                                    stroke-width="8"
+                                    :stroke-dasharray="calculateCircumference(50)"
+                                    :stroke-dashoffset="calculateCircumference(50) - (calculateCircumference(50) * originalScore) / 100"
+                                    stroke-linecap="round"
+                                    stroke="currentColor"
+                                    fill="transparent"
+                                    r="50"
+                                    cx="56"
+                                    cy="56"
+                                />
+                            </svg>
+                            <span class="absolute text-2xl font-bold" x-text="`${originalScore}%`"></span>
                         </div>
-                        <div class="p-4 h-full">
-                            <div class="flex flex-wrap gap-2">
-                                <template x-for="skill in matchedSkills" :key="skill">
-                                    <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800" x-text="skill"></span>
-                                </template>
-                            </div>
-                            <template x-if="matchedSkills.length === 0">
-                                <p class="text-sm text-gray-500">No skills directly matched.</p>
+                        <p class="mt-2 text-sm text-gray-600">
+                            <template x-if="originalScore >= 80">
+                                <span>Your resume already has excellent compatibility!</span>
+                            </template>
+                            <template x-if="originalScore >= 60 && originalScore < 80">
+                                <span>Your resume has good compatibility, but can be improved.</span>
+                            </template>
+                            <template x-if="originalScore < 60">
+                                <span>Your resume needs improvement to better match this job.</span>
+                            </template>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Matched Skills -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 px-4 py-3">
+                        <h4 class="font-medium text-white">Matched Skills</h4>
+                    </div>
+                    <div class="p-4 h-full">
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="skill in matchedSkills" :key="skill">
+                                <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800" x-text="skill"></span>
                             </template>
                         </div>
+                        <template x-if="matchedSkills.length === 0">
+                            <p class="text-sm text-gray-500">No skills directly matched.</p>
+                        </template>
                     </div>
-                    
-                    <!-- Missing Skills -->
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-                        <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3">
-                            <h4 class="font-medium text-white">Missing Skills</h4>
-                        </div>
-                        <div class="p-4 h-full">
-                            <div class="flex flex-wrap gap-2">
-                                <template x-for="skill in missingSkills" :key="skill">
-                                    <span class="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800" x-text="skill"></span>
-                                </template>
-                            </div>
-                            <template x-if="missingSkills.length === 0">
-                                <p class="text-sm text-gray-500">No critical skills are missing.</p>
+                </div>
+                
+                <!-- Missing Skills -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+                    <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3">
+                        <h4 class="font-medium text-white">Missing Skills</h4>
+                    </div>
+                    <div class="p-4 h-full">
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="skill in missingSkills" :key="skill">
+                                <span class="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800" x-text="skill"></span>
                             </template>
                         </div>
+                        <template x-if="missingSkills.length === 0">
+                            <p class="text-sm text-gray-500">No critical skills are missing.</p>
+                        </template>
                     </div>
-                </div>
-
-                <!-- AI Recommendation and Continue Button -->
-                <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 mb-6">
-                    <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 px-4 py-3">
-                        <h4 class="font-medium text-white">AI Recommendation</h4>
-                    </div>
-                    <div class="p-4">
-                        <p class="text-gray-700 text-sm mb-4" x-text="recommendation || 'Our AI will optimize your resume to improve its compatibility with this job description.'"></p>
-                    </div>
-                </div>
-
-                <!-- Continue to Optimization Button -->
-                <div class="flex justify-center">
-                    <button
-                        type="button"
-                        class="inline-flex items-center justify-center px-6 py-3 border border-transparent font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-                        @click="optimizeResume()">
-                        <span>Optimize My Resume</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                            <path fill-rule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                        </svg>
-                    </button>
                 </div>
             </div>
+
+            <!-- AI Recommendation and Continue Button -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 mb-6">
+                <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 px-4 py-3">
+                    <h4 class="font-medium text-white">AI Recommendation</h4>
+                </div>
+                <div class="p-4">
+                    <p class="text-gray-700 text-sm mb-4" x-text="recommendation || 'Our AI will optimize your resume to improve its compatibility with this job description.'"></p>
+                </div>
+            </div>
+
+            <!-- Continue to Optimization Button -->
+            <div class="flex justify-center">
+                <button
+                    type="button"
+                    class="inline-flex items-center justify-center px-6 py-3 border border-transparent font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                    @click="optimizeResume()">
+                    <span>Optimize My Resume</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
         </div>
         
         <!-- Step 4: Final Optimized Results -->
         <!-- Step 4: Results -->
         <div x-show="currentStep === 4" class="fade-in">
-            <!-- Compact success indicator -->
-            <div class="bg-gradient-to-br from-green-50 to-teal-50 p-6 rounded-lg mb-6">
-                <div class="text-center mb-5">
-                    <!-- Reduced vertical spacing -->
-                    <svg class="checkmark mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" style="height: 40px; width: 40px;">
-                        <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                        <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                    </svg>
-                    <h3 class="text-xl font-bold text-gray-900 mt-3 mb-1">Resume Optimization Complete!</h3>
-                    <p class="text-gray-600 text-sm">Your resume has been optimized to maximize compatibility with the job description.</p>
-                </div>
+        <!-- Compact success indicator -->
+        <div class="bg-gradient-to-br from-green-50 to-teal-50 p-6 rounded-lg mb-6">
+            <div class="text-center mb-5">
+                <!-- Reduced vertical spacing -->
+                <svg class="checkmark mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" style="height: 40px; width: 40px;">
+                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+                <h3 class="text-xl font-bold text-gray-900 mt-3 mb-1">Resume Optimization Complete!</h3>
+                <p class="text-gray-600 text-sm">Your resume has been optimized to maximize compatibility with the job description.</p>
+            </div>
 
-                <!-- Final Score Card -->
-                <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 mb-6 max-w-md mx-auto">
-                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
-                        <h4 class="font-medium text-white">Final ATS Compatibility Score</h4>
-                    </div>
-                    <div class="p-6 text-center">
-                        <div class="flex items-center justify-center mb-4">
-                            <!-- Score Comparison -->
-                            <div class="relative inline-flex items-center justify-center mr-6">
-                                <!-- Original Score Circle -->
-                                <svg class="w-24 h-24">
-                                    <circle
-                                        class="text-gray-200"
-                                        stroke-width="8"
-                                        stroke="currentColor"
-                                        fill="transparent"
-                                        r="42"
-                                        cx="48"
-                                        cy="48"
-                                    />
-                                    <circle
-                                        class="text-amber-400"
-                                        stroke-width="8"
-                                        :stroke-dasharray="calculateCircumference(42)"
-                                        :stroke-dashoffset="calculateCircumference(42) - (calculateCircumference(42) * originalScore) / 100"
-                                        stroke-linecap="round"
-                                        stroke="currentColor"
-                                        fill="transparent"
-                                        r="42"
-                                        cx="48"
-                                        cy="48"
-                                    />
-                                </svg>
-                                <div class="absolute text-center">
-                                    <span class="block text-xl font-bold" x-text="`${originalScore}%`"></span>
-                                    <span class="block text-xs text-gray-500">Original</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Arrow -->
-                            <div class="mx-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            
-                            <!-- Optimized Score Circle -->
-                            <div class="relative inline-flex items-center justify-center ml-6">
-                                <svg class="w-24 h-24">
-                                    <circle
-                                        class="text-gray-200"
-                                        stroke-width="8"
-                                        stroke="currentColor"
-                                        fill="transparent"
-                                        r="42"
-                                        cx="48"
-                                        cy="48"
-                                    />
-                                    <circle
-                                        class="text-green-500"
-                                        stroke-width="8"
-                                        :stroke-dasharray="calculateCircumference(42)"
-                                        :stroke-dashoffset="calculateCircumference(42) - (calculateCircumference(42) * matchScore) / 100"
-                                        stroke-linecap="round"
-                                        stroke="currentColor"
-                                        fill="transparent"
-                                        r="42"
-                                        cx="48"
-                                        cy="48"
-                                    />
-                                </svg>
-                                <div class="absolute text-center">
-                                    <span class="block text-xl font-bold" x-text="`${matchScore}%`"></span>
-                                    <span class="block text-xs text-gray-500">Optimized</span>
-                                </div>
+            <!-- Final Score Card -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 mb-6 max-w-md mx-auto">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
+                    <h4 class="font-medium text-white">Final ATS Compatibility Score</h4>
+                </div>
+                <div class="p-6 text-center">
+                    <div class="flex items-center justify-center mb-4">
+                        <!-- Score Comparison -->
+                        <div class="relative inline-flex items-center justify-center mr-6">
+                            <!-- Original Score Circle -->
+                            <svg class="w-24 h-24">
+                                <circle
+                                    class="text-gray-200"
+                                    stroke-width="8"
+                                    stroke="currentColor"
+                                    fill="transparent"
+                                    r="42"
+                                    cx="48"
+                                    cy="48"
+                                />
+                                <circle
+                                    class="text-amber-400"
+                                    stroke-width="8"
+                                    :stroke-dasharray="calculateCircumference(42)"
+                                    :stroke-dashoffset="calculateCircumference(42) - (calculateCircumference(42) * originalScore) / 100"
+                                    stroke-linecap="round"
+                                    stroke="currentColor"
+                                    fill="transparent"
+                                    r="42"
+                                    cx="48"
+                                    cy="48"
+                                />
+                            </svg>
+                            <div class="absolute text-center">
+                                <span class="block text-xl font-bold" x-text="`${originalScore}%`"></span>
+                                <span class="block text-xs text-gray-500">Original</span>
                             </div>
                         </div>
                         
-                        <div class="mt-4 text-center" x-show="matchScore > originalScore">
-                            <div class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                                </svg>
-                                <span x-text="`+${(matchScore - originalScore).toFixed(0)}% improvement`"></span>
-                            </div>
+                        <!-- Arrow -->
+                        <div class="mx-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
                         </div>
                         
-                        <p class="mt-4 text-sm text-gray-700">
-                            <template x-if="matchScore >= 80">
-                                <span>Excellent! Your optimized resume is highly compatible with this position.</span>
-                            </template>
-                            <template x-if="matchScore >= 60 && matchScore < 80">
-                                <span>Good match! Your optimized resume aligns well with the job requirements.</span>
-                            </template>
-                            <template x-if="matchScore < 60">
-                                <span>Your resume has been improved but may need further customization for this role.</span>
-                            </template>
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Actions Card - Full Width -->
-                <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-                    <div class="bg-gradient-to-r from-gray-100 to-gray-200 px-4 py-3">
-                        <h4 class="font-medium text-gray-700">Actions</h4>
-                    </div>
-                    <div class="p-4 flex flex-col sm:flex-row justify-center gap-4">
-                        <button
-                            type="button"
-                            class="inline-flex items-center justify-center px-6 py-3 border border-transparent font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-                            @click="showTemplateSelection()">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        <!-- Optimized Score Circle -->
+                        <div class="relative inline-flex items-center justify-center ml-6">
+                            <svg class="w-24 h-24">
+                                <circle
+                                    class="text-gray-200"
+                                    stroke-width="8"
+                                    stroke="currentColor"
+                                    fill="transparent"
+                                    r="42"
+                                    cx="48"
+                                    cy="48"
+                                />
+                                <circle
+                                    class="text-green-500"
+                                    stroke-width="8"
+                                    :stroke-dasharray="calculateCircumference(42)"
+                                    :stroke-dashoffset="calculateCircumference(42) - (calculateCircumference(42) * matchScore) / 100"
+                                    stroke-linecap="round"
+                                    stroke="currentColor"
+                                    fill="transparent"
+                                    r="42"
+                                    cx="48"
+                                    cy="48"
+                                />
                             </svg>
-                            Choose Template & Download
-                        </button>
-                        <button
-                            type="button"
-                            class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 shadow-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-                            @click="resetAndStartOver()">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-                            </svg>
-                            Start Over
-                        </button>
+                            <div class="absolute text-center">
+                                <span class="block text-xl font-bold" x-text="`${matchScore}%`"></span>
+                                <span class="block text-xs text-gray-500">Optimized</span>
+                            </div>
+                        </div>
                     </div>
+                    
+                    <div class="mt-4 text-center" x-show="matchScore > originalScore">
+                        <div class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                            </svg>
+                            <span x-text="`+${(matchScore - originalScore).toFixed(0)}% improvement`"></span>
+                        </div>
+                    </div>
+                    
+                    <p class="mt-4 text-sm text-gray-700">
+                        <template x-if="matchScore >= 80">
+                            <span>Excellent! Your optimized resume is highly compatible with this position.</span>
+                        </template>
+                        <template x-if="matchScore >= 60 && matchScore < 80">
+                            <span>Good match! Your optimized resume aligns well with the job requirements.</span>
+                        </template>
+                        <template x-if="matchScore < 60">
+                            <span>Your resume has been improved but may need further customization for this role.</span>
+                        </template>
+                    </p>
                 </div>
             </div>
+
+            <!-- Actions Card - Full Width -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+                <div class="bg-gradient-to-r from-gray-100 to-gray-200 px-4 py-3">
+                    <h4 class="font-medium text-gray-700">Actions</h4>
+                </div>
+                <div class="p-4 flex flex-col sm:flex-row justify-center gap-4">
+                    <button
+                        type="button"
+                        class="inline-flex items-center justify-center px-6 py-3 border border-transparent font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                        @click="showTemplateSelection()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Choose Template & Download
+                    </button>
+                    <button
+                        type="button"
+                        class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 shadow-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                        @click="resetAndStartOver()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                        </svg>
+                        Start Over
+                    </button>
+                </div>
+            </div>
+        </div>
         </div>
     </div>
 </div>
@@ -610,444 +610,442 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('alpine:init', () => {
-    Alpine.data('resumeCreator', () =>
-        return {
-            currentStep: 1,
-            resumeFile: null,
-            resumeContent: '',
-            resumeId: null,
-            jobDescription: '',
-            targetCompany: '',
-            targetRole: '',
-            isDraggingResume: false,
-            isUploading: false,
-            isAnalyzing: false,
-            analysisProgress: 0,
-            analysisProgressMessage: 'Initializing...',
-            matchScore: 0,
-            matchedSkills: [],
-            missingSkills: [],
-            originalScore: 0,
-            recommendation: '',
-            // PDF preview properties
-            resumePreviewLoaded: false,
-            resumePreviewType: 'pdf', // Can be 'pdf' or 'structured'
-            resumePreviewUrl: '',
-            previewData: null,
-            // Master CV properties
-            masterCVId: null,
-            masterCVDetails: null,
-            isUsingMasterCV: false,
+function resumeCreator() {
+    return {
+        currentStep: 1,
+        resumeFile: null,
+        resumeContent: '',
+        resumeId: null,
+        jobDescription: '',
+        targetCompany: '',
+        targetRole: '',
+        isDraggingResume: false,
+        isUploading: false,
+        isAnalyzing: false,
+        analysisProgress: 0,
+        analysisProgressMessage: 'Initializing...',
+        matchScore: 0,
+        matchedSkills: [],
+        missingSkills: [],
+        originalScore: 0,
+        recommendation: '',
+        // PDF preview properties
+        resumePreviewLoaded: false,
+        resumePreviewType: 'pdf', // Can be 'pdf' or 'structured'
+        resumePreviewUrl: '',
+        previewData: null,
+        // Master CV properties
+        masterCVId: null,
+        masterCVDetails: null,
+        isUsingMasterCV: false,
+        
+        init() {
+            // Initialize the component
+            this.resetProgressInterval = null;
             
-            init() {
-                // Initialize the component
-                this.resetProgressInterval = null;
-                
-                // Check if we have a master_cv_id parameter
-                const urlParams = new URLSearchParams(window.location.search);
-                const masterCVId = urlParams.get('master_cv_id');
-                
-                if (masterCVId) {
-                    this.masterCVId = masterCVId;
-                    this.loadMasterCVDetails();
+            // Check if we have a master_cv_id parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const masterCVId = urlParams.get('master_cv_id');
+            
+            if (masterCVId) {
+                this.masterCVId = masterCVId;
+                this.loadMasterCVDetails();
+            }
+            
+            // Listen for escape key to exit full screen PDF view if implemented
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && this.isFullScreenPreview) {
+                    this.isFullScreenPreview = false;
                 }
-                
-                // Listen for escape key to exit full screen PDF view if implemented
-                window.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape' && this.isFullScreenPreview) {
-                        this.isFullScreenPreview = false;
-                    }
-                });
-            },
+            });
+        },
+        
+        // Handle resume file drag & drop and file input
+        handleResumeDrop(event) {
+            this.isDraggingResume = false;
+            const file = event.dataTransfer.files[0];
+            const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/markdown', 'text/plain'];
+            const validExtensions = ['.pdf', '.docx', '.md', '.markdown', '.txt'];
+            const fileName = file.name.toLowerCase();
+            const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
             
-            // Handle resume file drag & drop and file input
-            handleResumeDrop(event) {
-                this.isDraggingResume = false;
-                const file = event.dataTransfer.files[0];
-                const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/markdown', 'text/plain'];
-                const validExtensions = ['.pdf', '.docx', '.md', '.markdown', '.txt'];
-                const fileName = file.name.toLowerCase();
-                const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
-                
-                if (file && (validTypes.includes(file.type) || hasValidExtension) && file.size <= 5 * 1024 * 1024) {
-                    this.resumeFile = file;
-                    this.uploadResumeFile();
-                }
-            },
-            
-            handleResumeFileChange(event) {
-                const file = event.target.files[0];
-                const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/markdown', 'text/plain'];
-                const validExtensions = ['.pdf', '.docx', '.md', '.markdown', '.txt'];
-                const fileName = file.name.toLowerCase();
-                const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
-
-                if (file && (validTypes.includes(file.type) || hasValidExtension) && file.size <= 5 * 1024 * 1024) {
-                    this.resumeFile = file;
-
-                    // For text-based files, show immediate preview
-                    if (file.type === 'text/plain' || file.type === 'text/markdown' ||
-                        fileName.endsWith('.txt') || fileName.endsWith('.md') || fileName.endsWith('.markdown')) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            this.resumeContent = e.target.result;
-                        };
-                        reader.readAsText(file);
-                    }
-
-                    this.uploadResumeFile();
-                }
-            },
-            
-            // Load master CV details when creating a resume from master CV
-            async loadMasterCVDetails() {
-                try {
-                    const response = await fetch(`/api/resume/${this.masterCVId}`);
-                    if (!response.ok) {
-                        throw new Error('Failed to load master CV details');
-                    }
-                    
-                    const masterCV = await response.json();
-                    this.masterCVDetails = masterCV;
-                    this.isUsingMasterCV = true;
-                    this.resumeId = this.masterCVId;
-                    this.resumeContent = masterCV.original_content;
-                    
-                    // Update the UI to show master CV is being used
-                    this.showNotification('Using master CV: ' + masterCV.title, 'success');
-                    
-                } catch (error) {
-                    console.error('Error loading master CV details:', error);
-                    this.showNotification('Failed to load master CV details', 'error');
-                }
-            },
-            
-            // Show notification helper
-            showNotification(message, type = 'info') {
-                // You can implement a toast notification system here
-                console.log(`${type}: ${message}`);
-            },
-            
-            // Upload the resume file to the backend
-            async uploadResumeFile() {
-                if (!this.resumeFile) return;
-                
-                this.isUploading = true;
-                
-                // Create a FormData object to send the file
-                const formData = new FormData();
-                formData.append('file', this.resumeFile);
-                formData.append('title', this.resumeFile.name.replace('.pdf', ''));
-                formData.append('job_description', ''); // Will be updated later when we analyze
-                formData.append('user_id', 'local-user'); // Using local-user for development
-                
-                try {
-                    const response = await fetch('/api/resume/', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('Failed to upload resume');
-                    }
-                    
-                    const data = await response.json();
-                    this.resumeId = data.id;
-                    
-                    // Fetch the resume to get the extracted content
-                    const resumeResponse = await fetch(`/api/resume/${this.resumeId}`);
-                    if (resumeResponse.ok) {
-                        const resumeData = await resumeResponse.json();
-                        this.resumeContent = resumeData.original_content;
-                    }
-                    
-                } catch (error) {
-                    console.error('Error uploading resume:', error);
-                    window.showToast('Failed to upload resume. Please try again.', 'error');
-                } finally {
-                    this.isUploading = false;
-                }
-            },
-            
-            // Check if we can proceed to analysis
-            canProceedToAnalysis() {
-                // Check if we have either a regular file upload or a master CV
-                const hasResume = (this.isUsingMasterCV && this.masterCVDetails && this.resumeContent) || 
-                                (this.resumeFile && this.resumeContent && this.resumeId);
-                return hasResume && this.jobDescription.trim().length > 0 && !this.isUploading;
-            },
-            
-            // Start the analysis process
-            async startAnalysis() {
-                if (!this.canProceedToAnalysis()) return;
-                
-                this.currentStep = 2;
-                this.isAnalyzing = true;
-                
-                // Start progress animation
-                this.startProgressSimulation();
-                
-                // Send the job description for optimization
-                try {
-                    const response = await fetch(`/api/resume/${this.resumeId}/optimize`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            job_description: this.jobDescription,
-                            target_company: this.targetCompany || undefined,
-                            target_role: this.targetRole || undefined
-                        })
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('Failed to optimize resume');
-                    }
-                    
-                    const data = await response.json();
-                    
-                    // Update match score with the optimized ATS score
-                    this.matchScore = data.optimized_ats_score || 65;
-                    
-                    // Use the matching_skills and missing_skills directly from the API response
-                    this.matchedSkills = data.matching_skills || [];
-                    this.missingSkills = data.missing_skills || [];
-                    
-                    // Set up the PDF preview
-                    this.setupResumePreview(data);
-
-                    // Update original score and recommendation
-                    this.originalScore = data.original_ats_score || 50;
-                    this.recommendation = data.recommendation || '';
-                    
-                    // Complete the progress simulation
-                    clearInterval(this.resetProgressInterval);
-                    this.analysisProgress = 100;
-                    this.analysisProgressMessage = 'Analysis complete!';
-                    
-                    // Move to results step after a short delay
-                    setTimeout(() => {
-                        this.currentStep = 3;
-                        this.isAnalyzing = false;
-                    }, 500);
-                    
-                } catch (error) {
-                    console.error('Error optimizing resume:', error);
-                    window.showToast('Failed to upload resume. Please try again.', 'error');
-                    this.currentStep = 1;
-                    this.isAnalyzing = false;
-                    clearInterval(this.resetProgressInterval);
-                }
-            },
-            
-            // Set up the resume preview based on available data
-            setupResumePreview(data) {
-                this.resumePreviewLoaded = false;
-                
-                // Check if PDF is available
-                if (data.optimized_pdf_url) {
-                    this.resumePreviewType = 'pdf';
-                    this.resumePreviewUrl = data.optimized_pdf_url;
-                    
-                    // In development environment, we might not have real PDF URLs,
-                    // so we fallback to the structured view if needed
-                    if (!this.resumePreviewUrl || this.resumePreviewUrl === '#') {
-                        // For demo purposes, you could use a sample PDF if available
-                        this.resumePreviewUrl = `/api/resume/${this.resumeId}/download?use_optimized=true`;
-                        
-                        // Set a timeout to simulate PDF loading
-                        setTimeout(() => {
-                            this.resumePreviewLoaded = true;
-                        }, 1500);
-                    } else {
-                        // Setup onload handler for real PDF URL
-                        // This will happen naturally through the @load directive in the template
-                    }
-                } else if (data.optimized_data) {
-                    // If no PDF but structured data is available
-                    this.resumePreviewType = 'structured';
-                    this.previewData = data.optimized_data;
-                    
-                    // Set a timeout to simulate loading
-                    setTimeout(() => {
-                        this.resumePreviewLoaded = true;
-                    }, 1000);
-                } else {
-                    // Neither available - show error state
-                    this.resumePreviewType = 'structured';
-                    this.previewData = {
-                        user_information: {
-                            name: 'Preview Not Available',
-                            main_job_title: 'Please download the resume to view',
-                            profile_description: 'The resume preview could not be generated. Please use the download button to view your optimized resume.'
-                        }
-                    };
-                    
-                    setTimeout(() => {
-                        this.resumePreviewLoaded = true;
-                    }, 1000);
-                }
-            },
-            
-            // Simulate progress animation during analysis
-            startProgressSimulation() {
-                this.analysisProgress = 0;
-                this.analysisProgressMessage = 'Processing resume text...';
-                
-                this.resetProgressInterval = setInterval(() => {
-                    if (this.analysisProgress < 95) {
-                        this.analysisProgress += Math.floor(Math.random() * 15);
-                        if (this.analysisProgress > 95) this.analysisProgress = 95;
-                        
-                        // Update progress message based on progress
-                        if (this.analysisProgress < 30) {
-                            this.analysisProgressMessage = 'Extracting key information...';
-                        } else if (this.analysisProgress < 60) {
-                            this.analysisProgressMessage = 'Analyzing job requirements...';
-                        } else if (this.analysisProgress < 80) {
-                            this.analysisProgressMessage = 'Optimizing content...';
-                        } else {
-                            this.analysisProgressMessage = 'Finalizing your resume...';
-                        }
-                    }
-                }, 1000);
-            },
-            
-            // Download the optimized resume as PDF
-            async downloadOptimizedResume() {
-                if (!this.resumeId) return;
-                
-                try {
-                    // Open the download URL in a new tab
-                    window.open(`/api/resume/${this.resumeId}/download?use_optimized=true`, '_blank');
-                } catch (error) {
-                    console.error('Error downloading resume:', error);
-                    window.showErrorToast('Failed to download resume. Please try again.');
-                }
-            },
-            
-            // Reset the form and start over
-            resetAndStartOver() {
-                this.currentStep = 1;
-                this.resumeFile = null;
-                this.resumeContent = '';
-                this.jobDescription = '';
-                this.isDraggingResume = false;
-                this.isAnalyzing = false;
-                this.matchScore = 0;
-                this.matchedSkills = [];
-                this.missingSkills = [];
-                this.resumePreviewLoaded = false;
-                this.resumePreviewUrl = '';
-                this.previewData = null;
-            },
-            
-            // Calculate circumference for SVG circle animation
-            calculateCircumference(radius) {
-                return 2 * Math.PI * radius;
-            },
-
-            // Handle optimization action after reviewing initial analysis
-            optimizeResume() {
-                // Show loading state while transitioning to final results
-                this.isAnalyzing = true;
-
-                // We already have all the data from the initial API call,
-                // so we can just transition to the template selection step
-                setTimeout(() => {
-                    this.currentStep = 4;
-                    this.isAnalyzing = false;
-                }, 800); // Small delay for visual feedback
-            },
-
-            // Template selection methods
-            availableTemplates: [],
-            selectedTemplate: 'resume.typ',
-            showTemplateModal: false,
-
-        async showTemplateSelection() {
-            try {
-                const response = await fetch('/api/resume/templates');
-                if (response.ok) {
-                    this.availableTemplates = await response.json();
-                    this.showTemplateModal = true;
-                    // Move to template selection step
-                    this.currentStep = 4;
-                } else {
-                    window.showErrorToast('Failed to load templates. Using default template.');
-                    this.downloadOptimizedResume();
-                }
-            } catch (error) {
-                console.error('Error loading templates:', error);
-                window.showErrorToast('Failed to load templates. Using default template.');
-                this.downloadOptimizedResume();
+            if (file && (validTypes.includes(file.type) || hasValidExtension) && file.size <= 5 * 1024 * 1024) {
+                this.resumeFile = file;
+                this.uploadResumeFile();
             }
         },
+        
+        handleResumeFileChange(event) {
+            const file = event.target.files[0];
+            const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/markdown', 'text/plain'];
+            const validExtensions = ['.pdf', '.docx', '.md', '.markdown', '.txt'];
+            const fileName = file.name.toLowerCase();
+            const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
 
-        downloadOptimizedResume() {
-            if (!this.resumeId) return;
+            if (file && (validTypes.includes(file.type) || hasValidExtension) && file.size <= 5 * 1024 * 1024) {
+                this.resumeFile = file;
 
+                // For text-based files, show immediate preview
+                if (file.type === 'text/plain' || file.type === 'text/markdown' ||
+                    fileName.endsWith('.txt') || fileName.endsWith('.md') || fileName.endsWith('.markdown')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.resumeContent = e.target.result;
+                    };
+                    reader.readAsText(file);
+                }
+
+                this.uploadResumeFile();
+            }
+        },
+        
+        // Load master CV details when creating a resume from master CV
+        async loadMasterCVDetails() {
             try {
-                // Use selected template for download
-                const templateParam = this.selectedTemplate ? `&template=${encodeURIComponent(this.selectedTemplate)}` : '';
-                window.open(`/api/resume/${this.resumeId}/download?use_optimized=true${templateParam}`, '_blank');
-                this.showTemplateModal = false;
+                const response = await fetch(`/api/resume/${this.masterCVId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to load master CV details');
+                }
+                
+                const masterCV = await response.json();
+                this.masterCVDetails = masterCV;
+                this.isUsingMasterCV = true;
+                this.resumeId = this.masterCVId;
+                this.resumeContent = masterCV.original_content;
+                
+                // Update the UI to show master CV is being used
+                this.showNotification('Using master CV: ' + masterCV.title, 'success');
+                
+            } catch (error) {
+                console.error('Error loading master CV details:', error);
+                this.showNotification('Failed to load master CV details', 'error');
+            }
+        },
+        
+        // Show notification helper
+        showNotification(message, type = 'info') {
+            // You can implement a toast notification system here
+            console.log(`${type}: ${message}`);
+        },
+        
+        // Upload the resume file to the backend
+        async uploadResumeFile() {
+            if (!this.resumeFile) return;
+            
+            this.isUploading = true;
+            
+            // Create a FormData object to send the file
+            const formData = new FormData();
+            formData.append('file', this.resumeFile);
+            formData.append('title', this.resumeFile.name.replace('.pdf', ''));
+            formData.append('job_description', ''); // Will be updated later when we analyze
+            formData.append('user_id', 'local-user'); // Using local-user for development
+            
+            try {
+                const response = await fetch('/api/resume/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to upload resume');
+                }
+                
+                const data = await response.json();
+                this.resumeId = data.id;
+                
+                // Fetch the resume to get the extracted content
+                const resumeResponse = await fetch(`/api/resume/${this.resumeId}`);
+                if (resumeResponse.ok) {
+                    const resumeData = await resumeResponse.json();
+                    this.resumeContent = resumeData.original_content;
+                }
+                
+            } catch (error) {
+                console.error('Error uploading resume:', error);
+                window.showToast('Failed to upload resume. Please try again.', 'error');
+            } finally {
+                this.isUploading = false;
+            }
+        },
+        
+        // Check if we can proceed to analysis
+        canProceedToAnalysis() {
+            // Check if we have either a regular file upload or a master CV
+            const hasResume = (this.isUsingMasterCV && this.masterCVDetails && this.resumeContent) || 
+                            (this.resumeFile && this.resumeContent && this.resumeId);
+            return hasResume && this.jobDescription.trim().length > 0 && !this.isUploading;
+        },
+        
+        // Start the analysis process
+        async startAnalysis() {
+            if (!this.canProceedToAnalysis()) return;
+            
+            this.currentStep = 2;
+            this.isAnalyzing = true;
+            
+            // Start progress animation
+            this.startProgressSimulation();
+            
+            // Send the job description for optimization
+            try {
+                const response = await fetch(`/api/resume/${this.resumeId}/optimize`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        job_description: this.jobDescription,
+                        target_company: this.targetCompany || undefined,
+                        target_role: this.targetRole || undefined
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to optimize resume');
+                }
+                
+                const data = await response.json();
+                
+                // Update match score with the optimized ATS score
+                this.matchScore = data.optimized_ats_score || 65;
+                
+                // Use the matching_skills and missing_skills directly from the API response
+                this.matchedSkills = data.matching_skills || [];
+                this.missingSkills = data.missing_skills || [];
+                
+                // Set up the PDF preview
+                this.setupResumePreview(data);
 
-                // Move to final step (Download)
-                this.currentStep = 5;
+                // Update original score and recommendation
+                this.originalScore = data.original_ats_score || 50;
+                this.recommendation = data.recommendation || '';
+                
+                // Complete the progress simulation
+                clearInterval(this.resetProgressInterval);
+                this.analysisProgress = 100;
+                this.analysisProgressMessage = 'Analysis complete!';
+                
+                // Move to results step after a short delay
+                setTimeout(() => {
+                    this.currentStep = 3;
+                    this.isAnalyzing = false;
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error optimizing resume:', error);
+                window.showToast('Failed to upload resume. Please try again.', 'error');
+                this.currentStep = 1;
+                this.isAnalyzing = false;
+                clearInterval(this.resetProgressInterval);
+            }
+        },
+        
+        // Set up the resume preview based on available data
+        setupResumePreview(data) {
+            this.resumePreviewLoaded = false;
+            
+            // Check if PDF is available
+            if (data.optimized_pdf_url) {
+                this.resumePreviewType = 'pdf';
+                this.resumePreviewUrl = data.optimized_pdf_url;
+                
+                // In development environment, we might not have real PDF URLs,
+                // so we fallback to the structured view if needed
+                if (!this.resumePreviewUrl || this.resumePreviewUrl === '#') {
+                    // For demo purposes, you could use a sample PDF if available
+                    this.resumePreviewUrl = `/api/resume/${this.resumeId}/download?use_optimized=true`;
+                    
+                    // Set a timeout to simulate PDF loading
+                    setTimeout(() => {
+                        this.resumePreviewLoaded = true;
+                    }, 1500);
+                } else {
+                    // Setup onload handler for real PDF URL
+                    // This will happen naturally through the @load directive in the template
+                }
+            } else if (data.optimized_data) {
+                // If no PDF but structured data is available
+                this.resumePreviewType = 'structured';
+                this.previewData = data.optimized_data;
+                
+                // Set a timeout to simulate loading
+                setTimeout(() => {
+                    this.resumePreviewLoaded = true;
+                }, 1000);
+            } else {
+                // Neither available - show error state
+                this.resumePreviewType = 'structured';
+                this.previewData = {
+                    user_information: {
+                        name: 'Preview Not Available',
+                        main_job_title: 'Please download the resume to view',
+                        profile_description: 'The resume preview could not be generated. Please use the download button to view your optimized resume.'
+                    }
+                };
+                
+                setTimeout(() => {
+                    this.resumePreviewLoaded = true;
+                }, 1000);
+            }
+        },
+        
+        // Simulate progress animation during analysis
+        startProgressSimulation() {
+            this.analysisProgress = 0;
+            this.analysisProgressMessage = 'Processing resume text...';
+            
+            this.resetProgressInterval = setInterval(() => {
+                if (this.analysisProgress < 95) {
+                    this.analysisProgress += Math.floor(Math.random() * 15);
+                    if (this.analysisProgress > 95) this.analysisProgress = 95;
+                    
+                    // Update progress message based on progress
+                    if (this.analysisProgress < 30) {
+                        this.analysisProgressMessage = 'Extracting key information...';
+                    } else if (this.analysisProgress < 60) {
+                        this.analysisProgressMessage = 'Analyzing job requirements...';
+                    } else if (this.analysisProgress < 80) {
+                        this.analysisProgressMessage = 'Optimizing content...';
+                    } else {
+                        this.analysisProgressMessage = 'Finalizing your resume...';
+                    }
+                }
+            }, 1000);
+        },
+        
+        // Download the optimized resume as PDF
+        async downloadOptimizedResume() {
+            if (!this.resumeId) return;
+            
+            try {
+                // Open the download URL in a new tab
+                window.open(`/api/resume/${this.resumeId}/download?use_optimized=true`, '_blank');
             } catch (error) {
                 console.error('Error downloading resume:', error);
                 window.showErrorToast('Failed to download resume. Please try again.');
             }
+        },
+        
+        // Reset the form and start over
+        resetAndStartOver() {
+            this.currentStep = 1;
+            this.resumeFile = null;
+            this.resumeContent = '';
+            this.jobDescription = '';
+            this.isDraggingResume = false;
+            this.isAnalyzing = false;
+            this.matchScore = 0;
+            this.matchedSkills = [];
+            this.missingSkills = [];
+            this.resumePreviewLoaded = false;
+            this.resumePreviewUrl = '';
+            this.previewData = null;
+        },
+        
+        // Calculate circumference for SVG circle animation
+        calculateCircumference(radius) {
+            return 2 * Math.PI * radius;
+        },
+
+        // Handle optimization action after reviewing initial analysis
+        optimizeResume() {
+            // Show loading state while transitioning to final results
+            this.isAnalyzing = true;
+
+            // We already have all the data from the initial API call,
+            // so we can just transition to the template selection step
+            setTimeout(() => {
+                this.currentStep = 4;
+                this.isAnalyzing = false;
+            }, 800); // Small delay for visual feedback
+        },
+
+        // Template selection methods
+        availableTemplates: [],
+        selectedTemplate: 'resume.typ',
+        showTemplateModal: false,
+
+        async showTemplateSelection() {
+        try {
+            const response = await fetch('/api/resume/templates');
+            if (response.ok) {
+                this.availableTemplates = await response.json();
+                this.showTemplateModal = true;
+                // Move to template selection step
+                this.currentStep = 4;
+            } else {
+                window.showErrorToast('Failed to load templates. Using default template.');
+                this.downloadOptimizedResume();
+            }
+        } catch (error) {
+            console.error('Error loading templates:', error);
+            window.showErrorToast('Failed to load templates. Using default template.');
+            this.downloadOptimizedResume();
         }
-    });
-});
+        },
+
+        downloadOptimizedResume() {
+        if (!this.resumeId) return;
+
+        try {
+            // Use selected template for download
+            const templateParam = this.selectedTemplate ? `&template=${encodeURIComponent(this.selectedTemplate)}` : '';
+            window.open(`/api/resume/${this.resumeId}/download?use_optimized=true${templateParam}`, '_blank');
+            this.showTemplateModal = false;
+
+            // Move to final step (Download)
+            this.currentStep = 5;
+        } catch (error) {
+            console.error('Error downloading resume:', error);
+            window.showErrorToast('Failed to download resume. Please try again.');
+        }
+    }
+}
 </script>
 
 <!-- Template Selection Modal -->
 <div x-show="showTemplateModal" x-cloak class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click.self="showTemplateModal = false">
     <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white fade-in">
         <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Choose Resume Template</h3>
-            <p class="text-sm text-gray-600 mb-6">Select a template for your optimized resume PDF:</p>
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Choose Resume Template</h3>
+        <p class="text-sm text-gray-600 mb-6">Select a template for your optimized resume PDF:</p>
 
-            <div class="space-y-4">
-                <template x-for="template in availableTemplates" :key="template.filename">
-                    <div class="border rounded-lg p-4 cursor-pointer transition-all duration-200"
-                         :class="{'border-blue-500 bg-blue-50': selectedTemplate === template.filename, 'border-gray-200 hover:border-gray-300': selectedTemplate !== template.filename}"
-                         @click="selectedTemplate = template.filename">
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0">
-                                <input type="radio" :value="template.filename" x-model="selectedTemplate"
-                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                            </div>
-                            <div class="ml-3 flex-1">
-                                <h4 class="text-sm font-medium text-gray-900" x-text="template.name"></h4>
-                                <p class="text-sm text-gray-600 mt-1" x-text="template.description"></p>
-                                <div class="flex items-center mt-2 space-x-2">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                          :class="{'bg-blue-100 text-blue-800': template.style === 'Professional', 'bg-purple-100 text-purple-800': template.style === 'Modern'}"
-                                          x-text="template.style"></span>
-                                    <span class="text-xs text-gray-500" x-text="template.margins"></span>
-                                </div>
+        <div class="space-y-4">
+            <template x-for="template in availableTemplates" :key="template.filename">
+                <div class="border rounded-lg p-4 cursor-pointer transition-all duration-200"
+                     :class="{'border-blue-500 bg-blue-50': selectedTemplate === template.filename, 'border-gray-200 hover:border-gray-300': selectedTemplate !== template.filename}"
+                     @click="selectedTemplate = template.filename">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <input type="radio" :value="template.filename" x-model="selectedTemplate"
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h4 class="text-sm font-medium text-gray-900" x-text="template.name"></h4>
+                            <p class="text-sm text-gray-600 mt-1" x-text="template.description"></p>
+                            <div class="flex items-center mt-2 space-x-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                      :class="{'bg-blue-100 text-blue-800': template.style === 'Professional', 'bg-purple-100 text-purple-800': template.style === 'Modern'}"
+                                      x-text="template.style"></span>
+                                <span class="text-xs text-gray-500" x-text="template.margins"></span>
                             </div>
                         </div>
                     </div>
-                </template>
-            </div>
+                </div>
+            </template>
+        </div>
 
-            <div class="mt-6 flex justify-end space-x-3">
-                <button @click="showTemplateModal = false"
-                        class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Cancel
-                </button>
-                <button @click="downloadOptimizedResume()"
-                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Download Resume
-                </button>
-            </div>
+        <div class="mt-6 flex justify-end space-x-3">
+            <button @click="showTemplateModal = false"
+                    class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Cancel
+            </button>
+            <button @click="downloadOptimizedResume()"
+                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Download Resume
+            </button>
+        </div>
         </div>
     </div>
 </div>
