@@ -278,9 +278,9 @@ async def create_resume(
             )
 
         # Store file securely
-        logger.info(f"Storing file for user: {user_id}")
+        logger.info("Storing uploaded file")
         stored_file_path = store_file_securely(file_content, safe_filename, user_id)
-        logger.info(f"File stored successfully at: {stored_file_path}")
+        logger.debug(f"File stored successfully at: {stored_file_path}")
 
         # Create temporary file for text extraction
         with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
