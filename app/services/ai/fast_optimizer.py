@@ -207,7 +207,7 @@ class UltraFastResumeOptimizer:
             Write in FIRST PERSON using "I", "my", "me" (NOT third person).
             Use strong "Power Verbs". Keep it punchy (3-4 sentences).
             Current: {content.get('profile_description', '')}
-
+            
             Return ONLY the rewritten text.
             """
             new_summary = self.llm.invoke(prompt).content.strip()

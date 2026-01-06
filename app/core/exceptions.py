@@ -8,7 +8,7 @@ class ConfigurationError(ValueError):
     be addressed before the application can function properly, such as
     missing API keys, invalid database connections, etc.
     """
-
+    
     def __init__(self, message: str, config_key: str = None, provider: str = None):
         super().__init__(message)
         self.config_key = config_key
@@ -29,7 +29,7 @@ class MissingApiKeyError(ConfigurationError):
     This is a specific type of ConfigurationError for missing API keys,
     allowing calling code to handle this case explicitly.
     """
-
+    
     def __init__(self, config_key: str, provider: str):
         message = (
             f"API key '{config_key}' not found in settings. "

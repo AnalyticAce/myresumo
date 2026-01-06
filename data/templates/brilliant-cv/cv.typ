@@ -66,7 +66,7 @@
       title: experience.job_title,
       date: if experience.end_date != "" {
         experience.start_date + " - " + experience.end_date
-      } else {
+} else {
         experience.start_date + " - Present"
       },
       description: experience.description.split("\n").filter(item => item != ""),
@@ -109,7 +109,7 @@
         project.start_date + " - Present"
       },
       description: project.description.split("\n").filter(item => item != ""),
-    )
+)
   }
 }
 

@@ -168,7 +168,7 @@ async def shutdown_logic(app: FastAPI) -> None:
 app = FastAPI(
     title="PowerCV API",
     summary="",
-    description="""
+    description=""" 
     PowerCV is a resume generation system that adapts resumes to specific job descriptions.
     It leverages AI to provide customized resume content based on user input.
     """,
@@ -259,7 +259,7 @@ async def global_exception_handler(request: Request, exc: Exception):
             "error": "Internal server error",
             "detail": "An unexpected error occurred. Please contact support if this persists."
         }
-    )
+)
 
 
 # Exception handlers
