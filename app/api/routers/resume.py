@@ -288,8 +288,8 @@ async def create_resume(
             temp_file_path = temp_file.name
 
         try:
-            # Extract text based on file type
-            logger.info(f"Extracting text from {file_extension} file at: {temp_file_path}")
+            # Extract text based on file type (avoid logging full temp path for security)
+            logger.info(f"Extracting text from uploaded {file_extension} file")
             resume_text = extract_text_from_file(
                 temp_file_path, file_extension)
             logger.info(f"Text extraction successful, extracted {len(resume_text)} characters")
