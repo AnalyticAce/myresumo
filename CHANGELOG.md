@@ -12,7 +12,7 @@ UI/UX enhancements, template selection, cover letter generation, and code qualit
   - Updated download endpoint to accept `template` query parameter
 
 ### Cover Letter Generation Overhaul
-- **Simplified One-Button Generation**: Completely refactored cover letter page from complex multi-field form to streamlined experience
+- **Simplified One-Button Generation**: Completely refactored cover letter page from a complex multi-field form to a streamlined experience
   - Users select existing resume from dropdown
   - Enter company name and position (optional job description)
   - One-click generation using AI
