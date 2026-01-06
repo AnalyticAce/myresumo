@@ -329,8 +329,6 @@ async def create_resume(
         logger.info(f"Resume created successfully with ID: {resume_id}")
         return {"id": resume_id}
     except HTTPException:
-        raise
-    except HTTPException:
         # Re-raise HTTPExceptions as-is (they're already properly handled)
         raise
     except Exception as e:
