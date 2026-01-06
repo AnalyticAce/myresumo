@@ -802,8 +802,8 @@ async def generate_cover_letter(
         resume_content = resume.get("master_content") or resume.get("original_content", "")
 
         # Initialize AI service for cover letter generation
-        from app.services.cover_letter_gen import CoverLetterGenerator
-        cover_letter_gen = CoverLetterGenerator()
+        from app.services.cover_letter_gen import get_cover_letter_generator
+        cover_letter_gen = get_cover_letter_generator()
 
         # Generate the cover letter
         generated_letter = await cover_letter_gen.generate_cover_letter(

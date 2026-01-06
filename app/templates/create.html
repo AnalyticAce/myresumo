@@ -763,7 +763,7 @@
                     
                 } catch (error) {
                     console.error('Error uploading resume:', error);
-                    window.showErrorToast('Failed to upload resume. Please try again.');
+                    window.showToast('Failed to upload resume. Please try again.', 'error');
                 } finally {
                     this.isUploading = false;
                 }
@@ -834,7 +834,7 @@
                     
                 } catch (error) {
                     console.error('Error optimizing resume:', error);
-                    window.showErrorToast('Failed to upload resume. Please try again.');
+                    window.showToast('Failed to upload resume. Please try again.', 'error');
                     this.currentStep = 1;
                     this.isAnalyzing = false;
                     clearInterval(this.resetProgressInterval);
@@ -960,12 +960,11 @@
                     this.isAnalyzing = false;
                 }, 800); // Small delay for visual feedback
             },
-        },
 
-        // Template selection methods
-        availableTemplates: [],
-        selectedTemplate: 'resume.typ',
-        showTemplateModal: false,
+            // Template selection methods
+            availableTemplates: [],
+            selectedTemplate: 'resume.typ',
+            showTemplateModal: false,
 
         async showTemplateSelection() {
             try {

@@ -1,4 +1,5 @@
 """Cover letter generation service using multi-provider AI."""
+import asyncio
 import json
 import re
 from typing import Dict, List
@@ -8,6 +9,17 @@ from ..prompts.prompt_loader import PromptLoader
 from ..utils.shared_utils import JSONParser, ErrorHandler
 
 logger = logging.getLogger(__name__)
+
+# Singleton instance for reuse
+_cover_letter_generator_instance = None
+
+
+def get_cover_letter_generator() -> CoverLetterGenerator:
+    """Get singleton instance of CoverLetterGenerator to avoid repeated setup."""
+    global _cover_letter_generator_instance
+    if _cover_letter_generator_instance is None:
+        _cover_letter_generator_instance = CoverLetterGenerator()
+    return _cover_letter_generator_instance
 
 
 class CoverLetterGenerator:
@@ -120,16 +132,20 @@ Requirements: {', '.join(job_data.get('requirements', []))}
             logger.info(f"Generating cover letter for {position} at {company}")
 
             # Create a simple prompt for cover letter generation
+            # Limit resume content to first 2000 chars to avoid token limits
+            truncated_resume = resume_content[:2000]
+            truncated_job_desc = job_description[:1000] if job_description else ""
+
             user_message = f"""
 Based on the following resume content, generate a professional cover letter for the position of {position} at {company}.
 
 **RESUME CONTENT:**
-{resume_content[:2000]}  # Limit to first 2000 chars to avoid token limits
+{truncated_resume}
 
 **JOB DETAILS:**
 Company: {company}
 Position: {position}
-{job_description and f"Job Description: {job_description[:1000]}" or ""}
+{f"Job Description: {truncated_job_desc}" if truncated_job_desc else ""}
 
 **INSTRUCTIONS:**
 - Write a compelling, professional cover letter
@@ -142,12 +158,16 @@ Position: {position}
 Generate the complete cover letter text:
 """
 
-            # Call AI API
-            response = self.client.chat_completion(
-                system_prompt="You are an expert career counselor who writes compelling cover letters. Generate well-structured, professional cover letters that highlight relevant experience and skills.",
-                user_message=user_message,
-                temperature=0.7,
-                max_tokens=1000
+            # Call AI API without blocking the event loop
+            loop = asyncio.get_running_loop()
+            response = await loop.run_in_executor(
+                None,
+                lambda: self.client.chat_completion(
+                    system_prompt="You are an expert career counselor who writes compelling cover letters. Generate well-structured, professional cover letters that highlight relevant experience and skills.",
+                    user_message=user_message,
+                    temperature=0.7,
+                    max_tokens=1000,
+                ),
             )
 
             # Extract the cover letter text

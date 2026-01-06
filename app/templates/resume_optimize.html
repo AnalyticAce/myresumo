@@ -527,7 +527,7 @@
                     
                 } catch (error) {
                     console.error('Error fetching resume details:', error);
-                    window.showErrorToast('Failed to load resume details. Please try again.');
+                    window.showToast('Failed to load resume details. Please try again.', 'error');
                 }
             },
             
@@ -589,7 +589,7 @@
                     
                 } catch (error) {
                     console.error('Error optimizing resume:', error);
-                    window.showErrorToast('Failed to optimize resume. Please try again.');
+                    window.showToast('Failed to optimize resume. Please try again.', 'error');
                     this.currentStep = 1;
                     this.isOptimizing = false;
                     clearInterval(this.progressInterval);
@@ -629,7 +629,7 @@
                     window.open(`/api/resume/${this.resumeId}/download?use_optimized=true`, '_blank');
                 } catch (error) {
                     console.error('Error downloading resume:', error);
-                    window.showErrorToast('Failed to download resume. Please try again.');
+                    window.showToast('Failed to download resume. Please try again.', 'error');
                 }
             },
             
