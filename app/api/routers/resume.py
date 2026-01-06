@@ -247,15 +247,23 @@ async def create_resume(
         HTTPException: If the resume creation fails
     """
     try:
-        logger.debug("Resume upload started for incoming resume file")
+        logger.info("Resume upload started", extra={"user_id": user_id, "operation": "resume_upload"})
 
         # Secure file validation
         file_content, safe_filename, file_hash = await SecureFileValidator.validate_upload(file)
-        logger.debug(f"File validation completed - file_hash: {file_hash}, content_length: {len(file_content)}")
+        logger.debug("File validation completed", extra={
+            "content_length": len(file_content),
+            "file_extension": Path(safe_filename).suffix.lower(),
+            "operation": "resume_upload"
+        })
 
         # Ensure file_content is bytes
         if not isinstance(file_content, bytes):
-            logger.error(f"File content is not bytes: {type(file_content)}")
+            logger.error("File content validation failed", extra={
+                "error": "invalid_content_type",
+                "content_type": str(type(file_content)),
+                "operation": "resume_upload"
+            })
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid file content format"
@@ -263,6 +271,10 @@ async def create_resume(
 
         # Validate file size
         if len(file_content) == 0:
+            logger.error("File content validation failed", extra={
+                "error": "empty_file",
+                "operation": "resume_upload"
+            })
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="File is empty"
@@ -272,15 +284,21 @@ async def create_resume(
 
         # Validate file extension
         if file_extension not in SUPPORTED_EXTENSIONS:
+            logger.error("File extension validation failed", extra={
+                "error": "unsupported_extension",
+                "file_extension": file_extension,
+                "supported_extensions": SUPPORTED_EXTENSIONS,
+                "operation": "resume_upload"
+            })
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Unsupported file extension: {file_extension}"
             )
 
         # Store file securely
-        logger.info("Storing uploaded file")
+        logger.info("Storing uploaded file", extra={"operation": "resume_upload", "step": "file_storage"})
         stored_file_path = store_file_securely(file_content, safe_filename, user_id)
-        logger.debug(f"File stored successfully at: {stored_file_path}")
+        logger.debug("File stored successfully", extra={"operation": "resume_upload", "step": "file_storage"})
 
         # Create temporary file for text extraction
         with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
@@ -289,10 +307,18 @@ async def create_resume(
 
         try:
             # Extract text based on file type (avoid logging full temp path for security)
-            logger.info(f"Extracting text from uploaded {file_extension} file")
+            logger.info("Extracting text from uploaded file", extra={
+                "file_extension": file_extension,
+                "operation": "resume_upload",
+                "step": "text_extraction"
+            })
             resume_text = extract_text_from_file(
                 temp_file_path, file_extension)
-            logger.info(f"Text extraction successful, extracted {len(resume_text)} characters")
+            logger.info("Text extraction successful", extra={
+                "characters_extracted": len(resume_text),
+                "operation": "resume_upload",
+                "step": "text_extraction"
+            })
 
             # Check if extraction failed
             if resume_text.startswith("Error:") or resume_text.startswith("Unsupported file format:"):
@@ -318,22 +344,33 @@ async def create_resume(
             master_updated_at=datetime.now(),
         )
 
-        logger.info("Creating resume in database...")
+        logger.info("Creating resume in database", extra={"operation": "resume_upload", "step": "database_save"})
         resume_id = await repo.create_resume(new_resume)
         if not resume_id:
-            logger.error("Database create_resume returned empty ID")
+            logger.error("Database create_resume returned empty ID", extra={
+                "operation": "resume_upload",
+                "step": "database_save",
+                "error": "empty_resume_id"
+            })
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create resume",
             )
-        logger.info(f"Resume created successfully with ID: {resume_id}")
+        logger.info("Resume created successfully", extra={
+            "resume_id": resume_id,
+            "operation": "resume_upload",
+            "step": "database_save"
+        })
         return {"id": resume_id}
     except HTTPException:
         # Re-raise HTTPExceptions as-is (they're already properly handled)
         raise
     except Exception as e:
         # Log unexpected errors before converting to HTTPException
-        logger.error("Unexpected error creating resume", exc_info=True)
+        logger.error("Unexpected error creating resume", exc_info=True, extra={
+            "operation": "resume_upload",
+            "error_type": "unexpected_exception"
+        })
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error creating resume",
