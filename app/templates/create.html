@@ -634,6 +634,7 @@ function resumeCreator() {
         resumePreviewType: 'pdf', // Can be 'pdf' or 'structured'
         resumePreviewUrl: '',
         previewData: null,
+        isFullScreenPreview: false,
         // Master CV properties
         masterCVId: null,
         masterCVDetails: null,
@@ -834,7 +835,7 @@ function resumeCreator() {
                 
             } catch (error) {
                 console.error('Error optimizing resume:', error);
-                window.showToast('Failed to upload resume. Please try again.', 'error');
+                window.showToast('Failed to optimize resume. Please try again.', 'error');
                 this.currentStep = 1;
                 this.isAnalyzing = false;
                 clearInterval(this.resetProgressInterval);
@@ -914,18 +915,6 @@ function resumeCreator() {
             }, 1000);
         },
         
-        // Download the optimized resume as PDF
-        async downloadOptimizedResume() {
-            if (!this.resumeId) return;
-            
-            try {
-                // Open the download URL in a new tab
-                window.open(`/api/resume/${this.resumeId}/download?use_optimized=true`, '_blank');
-            } catch (error) {
-                console.error('Error downloading resume:', error);
-                window.showErrorToast('Failed to download resume. Please try again.');
-            }
-        },
         
         // Reset the form and start over
         resetAndStartOver() {

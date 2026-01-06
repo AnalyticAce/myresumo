@@ -345,29 +345,29 @@
                                     </select>
                                 </td>
                                 <td class="px-2 sm:px-3 py-3 sm:py-4">
-                                    <template x-if="resume.ats_score !== null">
+                                    <template x-if="(resume.ats_score ?? resume.matching_score) != null">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 w-12 sm:w-16">
                                                 <div class="h-1.5 sm:h-2 w-full rounded-full bg-gray-200">
-                                                    <div class="h-1.5 sm:h-2 rounded-full" 
+                                                    <div class="h-1.5 sm:h-2 rounded-full"
                                                          :class="{
-                                                             'bg-red-500': resume.ats_score < 60,
-                                                             'bg-yellow-500': resume.ats_score >= 60 && resume.ats_score < 80,
-                                                             'bg-green-500': resume.ats_score >= 80
-                                                         }" 
-                                                         :style="`width: ${resume.ats_score}%`"></div>
+                                                             'bg-red-500': (resume.ats_score ?? resume.matching_score) < 60,
+                                                             'bg-yellow-500': (resume.ats_score ?? resume.matching_score) >= 60 && (resume.ats_score ?? resume.matching_score) < 80,
+                                                             'bg-green-500': (resume.ats_score ?? resume.matching_score) >= 80
+                                                         }"
+                                                         :style="`width: ${(resume.ats_score ?? resume.matching_score)}%`"></div>
                                                 </div>
                                             </div>
-                                            <span class="ml-2 text-xs font-medium" 
+                                            <span class="ml-2 text-xs font-medium"
                                                   :class="{
-                                                      'text-red-600': resume.ats_score < 60,
-                                                      'text-yellow-600': resume.ats_score >= 60 && resume.ats_score < 80,
-                                                      'text-green-600': resume.ats_score >= 80
-                                                  }" 
-                                                  x-text="resume.ats_score + '%'"></span>
+                                                      'text-red-600': (resume.ats_score ?? resume.matching_score) < 60,
+                                                      'text-yellow-600': (resume.ats_score ?? resume.matching_score) >= 60 && (resume.ats_score ?? resume.matching_score) < 80,
+                                                      'text-green-600': (resume.ats_score ?? resume.matching_score) >= 80
+                                                  }"
+                                                  x-text="(resume.ats_score ?? resume.matching_score) + '%'"></span>
                                         </div>
                                     </template>
-                                    <template x-if="resume.ats_score === null">
+                                    <template x-if="(resume.ats_score ?? resume.matching_score) == null">
                                         <span class="text-xs font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">Not Analyzed</span>
                                     </template>
                                 </td>
@@ -450,11 +450,11 @@
                                         <div>
                                             <div class="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium" 
                                                 :class="{
-                                                    'bg-green-100 text-green-800': resume.ats_score >= 80,
-                                                    'bg-yellow-100 text-yellow-800': resume.ats_score >= 60 && resume.ats_score < 80,
-                                                    'bg-red-100 text-red-800': resume.ats_score < 60
+                                                    'bg-green-100 text-green-800': (resume.ats_score ?? resume.matching_score) >= 80,
+                                                    'bg-yellow-100 text-yellow-800': (resume.ats_score ?? resume.matching_score) >= 60 && (resume.ats_score ?? resume.matching_score) < 80,
+                                                    'bg-red-100 text-red-800': (resume.ats_score ?? resume.matching_score) < 60
                                                 }">
-                                                <span x-text="`${resume.ats_score}%`"></span>
+                                                <span x-text="`${(resume.ats_score ?? resume.matching_score)}%`"></span>
                                             </div>
                                         </div>
                                     </template>
@@ -465,11 +465,11 @@
                                     <div class="w-full bg-gray-100 rounded-full h-1 sm:h-1.5 mb-3 sm:mb-4">
                                         <div class="h-1 sm:h-1.5 rounded-full" 
                                             :class="{
-                                                'bg-green-500': resume.ats_score >= 80,
-                                                'bg-yellow-500': resume.ats_score >= 60 && resume.ats_score < 80,
-                                                'bg-red-500': resume.ats_score < 60
+                                                'bg-green-500': (resume.ats_score ?? resume.matching_score) >= 80,
+                                                'bg-yellow-500': (resume.ats_score ?? resume.matching_score) >= 60 && (resume.ats_score ?? resume.matching_score) < 80,
+                                                'bg-red-500': (resume.ats_score ?? resume.matching_score) < 60
                                             }"
-                                            :style="`width: ${resume.ats_score}%`"></div>
+                                            :style="`width: ${(resume.ats_score ?? resume.matching_score)}%`"></div>
                                     </div>
                                 </template>
                                 
