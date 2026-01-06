@@ -247,11 +247,11 @@ async def create_resume(
         HTTPException: If the resume creation fails
     """
     try:
-        logger.info(f"Resume upload started - filename: {file.filename}, content_type: {file.content_type}")
+        logger.debug("Resume upload started for incoming resume file")
 
         # Secure file validation
         file_content, safe_filename, file_hash = await SecureFileValidator.validate_upload(file)
-        logger.info(f"File validation completed - safe_filename: {safe_filename}, content_length: {len(file_content)}")
+        logger.debug(f"File validation completed - file_hash: {file_hash}, content_length: {len(file_content)}")
 
         # Ensure file_content is bytes
         if not isinstance(file_content, bytes):
@@ -278,9 +278,9 @@ async def create_resume(
             )
 
         # Store file securely
-        logger.info(f"Storing file for user: {user_id}")
+        logger.info("Storing uploaded file")
         stored_file_path = store_file_securely(file_content, safe_filename, user_id)
-        logger.info(f"File stored successfully at: {stored_file_path}")
+        logger.debug(f"File stored successfully at: {stored_file_path}")
 
         # Create temporary file for text extraction
         with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
@@ -288,8 +288,8 @@ async def create_resume(
             temp_file_path = temp_file.name
 
         try:
-            # Extract text based on file type
-            logger.info(f"Extracting text from {file_extension} file at: {temp_file_path}")
+            # Extract text based on file type (avoid logging full temp path for security)
+            logger.info(f"Extracting text from uploaded {file_extension} file")
             resume_text = extract_text_from_file(
                 temp_file_path, file_extension)
             logger.info(f"Text extraction successful, extracted {len(resume_text)} characters")
@@ -330,8 +330,12 @@ async def create_resume(
         return {"id": resume_id}
     except HTTPException:
         raise
+    except HTTPException:
+        # Re-raise HTTPExceptions as-is (they're already properly handled)
+        raise
     except Exception as e:
-        logger.error("Error creating resume", exc_info=True)
+        # Log unexpected errors before converting to HTTPException
+        logger.error("Unexpected error creating resume", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error creating resume",
