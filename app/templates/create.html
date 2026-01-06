@@ -35,11 +35,19 @@
             </div>
             <div class="step-connector" :class="{'active': currentStep >= 4}"></div>
             <div class="flex items-center">
-                <div class="rounded-full h-12 w-12 flex items-center justify-center" 
+                <div class="rounded-full h-12 w-12 flex items-center justify-center"
                      :class="{'bg-blue-500 text-white': currentStep >= 4, 'bg-gray-300 text-gray-600': currentStep < 4}">
                     4
                 </div>
-                <div class="text-sm font-medium ml-2" :class="{'text-gray-900': currentStep >= 4, 'text-gray-500': currentStep < 4}">Results</div>
+                <div class="text-sm font-medium ml-2" :class="{'text-gray-900': currentStep >= 4, 'text-gray-500': currentStep < 4}">Template</div>
+            </div>
+            <div class="step-connector" :class="{'active': currentStep >= 5}"></div>
+            <div class="flex items-center">
+                <div class="rounded-full h-12 w-12 flex items-center justify-center"
+                     :class="{'bg-blue-500 text-white': currentStep >= 5, 'bg-gray-300 text-gray-600': currentStep < 5}">
+                    5
+                </div>
+                <div class="text-sm font-medium ml-2" :class="{'text-gray-900': currentStep >= 5, 'text-gray-500': currentStep < 5}">Download</div>
             </div>
         </div>
         
@@ -132,11 +140,25 @@
                                         </svg>
                                         Resume Preview
                                     </h3>
-                                    <div class="text-sm text-gray-500 text-center py-8">
+                                    <div x-show="!resumeFile" class="text-sm text-gray-500 text-center py-8">
                                         <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
                                         Upload your resume to see a preview
+                                    </div>
+
+                                    <!-- Resume Content Preview -->
+                                    <div x-show="resumeFile && resumeContent" class="h-full overflow-hidden">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="text-sm font-medium text-gray-700">Resume Preview</h4>
+                                            <span class="text-xs text-gray-500" x-text="resumeContent.length + ' characters'"></span>
+                                        </div>
+                                        <div class="bg-gray-50 border border-gray-200 rounded-md p-3 h-80 overflow-y-auto">
+                                            <pre class="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed" x-text="resumeContent.substring(0, 2000) + (resumeContent.length > 2000 ? '...' : '')"></pre>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-2 text-center">
+                                            This is a preview of your uploaded resume content
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -439,6 +461,7 @@
         </div>
         
         <!-- Step 4: Final Optimized Results -->
+        <!-- Step 4: Results -->
         <div x-show="currentStep === 4" class="fade-in">
             <!-- Compact success indicator -->
             <div class="bg-gradient-to-br from-green-50 to-teal-50 p-6 rounded-lg mb-6">
@@ -562,11 +585,11 @@
                         <button
                             type="button"
                             class="inline-flex items-center justify-center px-6 py-3 border border-transparent font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-                            @click="downloadOptimizedResume()">
+                            @click="showTemplateSelection()">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
                             </svg>
-                            Download Optimized Resume
+                            Choose Template & Download
                         </button>
                         <button
                             type="button"
@@ -658,9 +681,20 @@
                 const validExtensions = ['.pdf', '.docx', '.md', '.markdown', '.txt'];
                 const fileName = file.name.toLowerCase();
                 const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
-                
+
                 if (file && (validTypes.includes(file.type) || hasValidExtension) && file.size <= 5 * 1024 * 1024) {
                     this.resumeFile = file;
+
+                    // For text-based files, show immediate preview
+                    if (file.type === 'text/plain' || file.type === 'text/markdown' ||
+                        fileName.endsWith('.txt') || fileName.endsWith('.md') || fileName.endsWith('.markdown')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.resumeContent = e.target.result;
+                        };
+                        reader.readAsText(file);
+                    }
+
                     this.uploadResumeFile();
                 }
             },
@@ -918,15 +952,103 @@
             optimizeResume() {
                 // Show loading state while transitioning to final results
                 this.isAnalyzing = true;
-                
-                // We already have all the data from the initial API call, 
-                // so we can just transition to the results step
+
+                // We already have all the data from the initial API call,
+                // so we can just transition to the template selection step
                 setTimeout(() => {
                     this.currentStep = 4;
                     this.isAnalyzing = false;
                 }, 800); // Small delay for visual feedback
             },
+        },
+
+        // Template selection methods
+        availableTemplates: [],
+        selectedTemplate: 'resume.typ',
+        showTemplateModal: false,
+
+        async showTemplateSelection() {
+            try {
+                const response = await fetch('/api/resume/templates');
+                if (response.ok) {
+                    this.availableTemplates = await response.json();
+                    this.showTemplateModal = true;
+                    // Move to template selection step
+                    this.currentStep = 4;
+                } else {
+                    window.showErrorToast('Failed to load templates. Using default template.');
+                    this.downloadOptimizedResume();
+                }
+            } catch (error) {
+                console.error('Error loading templates:', error);
+                window.showErrorToast('Failed to load templates. Using default template.');
+                this.downloadOptimizedResume();
+            }
+        },
+
+        downloadOptimizedResume() {
+            if (!this.resumeId) return;
+
+            try {
+                // Use selected template for download
+                const templateParam = this.selectedTemplate ? `&template=${encodeURIComponent(this.selectedTemplate)}` : '';
+                window.open(`/api/resume/${this.resumeId}/download?use_optimized=true${templateParam}`, '_blank');
+                this.showTemplateModal = false;
+
+                // Move to final step (Download)
+                this.currentStep = 5;
+            } catch (error) {
+                console.error('Error downloading resume:', error);
+                window.showErrorToast('Failed to download resume. Please try again.');
+            }
         }
     }
 </script>
+
+<!-- Template Selection Modal -->
+<div x-show="showTemplateModal" x-cloak class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click.self="showTemplateModal = false">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white fade-in">
+        <div class="mt-3">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Choose Resume Template</h3>
+            <p class="text-sm text-gray-600 mb-6">Select a template for your optimized resume PDF:</p>
+
+            <div class="space-y-4">
+                <template x-for="template in availableTemplates" :key="template.filename">
+                    <div class="border rounded-lg p-4 cursor-pointer transition-all duration-200"
+                         :class="{'border-blue-500 bg-blue-50': selectedTemplate === template.filename, 'border-gray-200 hover:border-gray-300': selectedTemplate !== template.filename}"
+                         @click="selectedTemplate = template.filename">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <input type="radio" :value="template.filename" x-model="selectedTemplate"
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <h4 class="text-sm font-medium text-gray-900" x-text="template.name"></h4>
+                                <p class="text-sm text-gray-600 mt-1" x-text="template.description"></p>
+                                <div class="flex items-center mt-2 space-x-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                          :class="{'bg-blue-100 text-blue-800': template.style === 'Professional', 'bg-purple-100 text-purple-800': template.style === 'Modern'}"
+                                          x-text="template.style"></span>
+                                    <span class="text-xs text-gray-500" x-text="template.margins"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button @click="showTemplateModal = false"
+                        class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Cancel
+                </button>
+                <button @click="downloadOptimizedResume()"
+                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Download Resume
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

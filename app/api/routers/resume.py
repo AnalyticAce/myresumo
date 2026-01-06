@@ -299,9 +299,6 @@ async def create_resume(
         logger.info("Storing uploaded file", extra={"operation": "resume_upload", "step": "file_storage"})
         stored_file_path = store_file_securely(file_content, safe_filename, user_id)
         logger.debug("File stored successfully", extra={"operation": "resume_upload", "step": "file_storage"})
-        logger.info("Storing uploaded file")
-        stored_file_path = store_file_securely(file_content, safe_filename, user_id)
-        logger.debug(f"File stored successfully at: {stored_file_path}")
 
         # Create temporary file for text extraction
         with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
@@ -764,25 +761,72 @@ async def get_templates(
 )
 async def generate_cover_letter(
     resume_id: str,
-    request: Request,
+    cover_letter_request: Dict[str, str] = Body(..., description="Cover letter generation parameters"),
     repo: ResumeRepository = Depends(get_resume_repository),
 ):
-    """Generate a professional cover letter based on the resume and job description.
+    """Generate a professional cover letter based on the resume and job details.
 
     Args:
         resume_id: ID of the resume to retrieve
-        request: The incoming request
+        cover_letter_request: Dictionary containing company, position, and optional job description
         repo: Resume repository instance
 
     Returns:
     -------
         Dict containing the generated cover letter
     """
-    # This is a placeholder. Actual implementation would involve:
-    # 1. Retrieving the resume and job description (if available)
-    # 2. Using an LLM to generate the cover letter
-    # 3. Storing or returning the generated cover letter
-    return {"cover_letter": "This is a placeholder cover letter for resume ID: " + resume_id}
+    try:
+        # Validate resume_id format to prevent NoSQL injection
+        validated_resume_id = validate_object_id(resume_id)
+
+        # Retrieve the resume
+        resume = await repo.get_resume_by_id(str(validated_resume_id))
+        if not resume:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Resume with ID {resume_id} not found",
+            )
+
+        # Extract job details
+        company = cover_letter_request.get("company", "")
+        position = cover_letter_request.get("position", "")
+        job_description = cover_letter_request.get("job_description", "")
+
+        if not company or not position:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Company and position are required",
+            )
+
+        # Get resume content
+        resume_content = resume.get("master_content") or resume.get("original_content", "")
+
+        # Initialize AI service for cover letter generation
+        from app.services.cover_letter_gen import CoverLetterGenerator
+        cover_letter_gen = CoverLetterGenerator()
+
+        # Generate the cover letter
+        generated_letter = await cover_letter_gen.generate_cover_letter(
+            resume_content=resume_content,
+            company=company,
+            position=position,
+            job_description=job_description
+        )
+
+        return {
+            "cover_letter": generated_letter,
+            "company": company,
+            "position": position
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating cover letter: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating cover letter: {str(e)}",
+        )
 
 
 @resume_router.get(

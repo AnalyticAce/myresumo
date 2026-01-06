@@ -91,10 +91,18 @@ document.addEventListener('alpine:init', () => {
             this.resumeStats.total_resumes = this.resumes.length;
             
             // Calculate average matching score for all resumes
-            // Treat missing or null scores as 0 for the average calculation
+            // Use ats_score for optimized resumes, fallback to matching_score for backward compatibility
             if (this.resumes.length > 0) {
-                const totalScore = this.resumes.reduce((sum, r) => sum + (r.matching_score || 0), 0);
-                this.averageScore = Math.round(totalScore / this.resumes.length);
+                const validScores = this.resumes
+                    .map(r => r.ats_score || r.matching_score || 0)
+                    .filter(score => score > 0);
+
+                if (validScores.length > 0) {
+                    const totalScore = validScores.reduce((sum, score) => sum + score, 0);
+                    this.averageScore = Math.round(totalScore / validScores.length);
+                } else {
+                    this.averageScore = 0;
+                }
             } else {
                 this.averageScore = 0;
             }
@@ -106,7 +114,8 @@ document.addEventListener('alpine:init', () => {
                     const latestDate = new Date(latest.updated_at || latest.created_at);
                     return resumeDate > latestDate ? resume : latest;
                 });
-                this.lastUpdated = new Date(latestResume.updated_at || latestResume.created_at).toLocaleDateString();
+                const latestDate = new Date(latestResume.updated_at || latestResume.created_at);
+                this.lastUpdated = latestDate.toLocaleDateString();
             } else {
                 this.lastUpdated = 'Never';
             }

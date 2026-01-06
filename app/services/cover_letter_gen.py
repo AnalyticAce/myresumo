@@ -98,6 +98,79 @@ Requirements: {', '.join(job_data.get('requirements', []))}
 
         return "\n".join(f"- {achievement}" for achievement in achievements)
 
+    async def generate_cover_letter(
+        self,
+        resume_content: str,
+        company: str,
+        position: str,
+        job_description: str = ""
+    ) -> str:
+        """Generate a cover letter from resume content and job details.
+
+        Args:
+            resume_content: The full text content of the resume
+            company: Company name
+            position: Job position title
+            job_description: Optional job description text
+
+        Returns:
+            str: Generated cover letter text
+        """
+        try:
+            logger.info(f"Generating cover letter for {position} at {company}")
+
+            # Create a simple prompt for cover letter generation
+            user_message = f"""
+Based on the following resume content, generate a professional cover letter for the position of {position} at {company}.
+
+**RESUME CONTENT:**
+{resume_content[:2000]}  # Limit to first 2000 chars to avoid token limits
+
+**JOB DETAILS:**
+Company: {company}
+Position: {position}
+{job_description and f"Job Description: {job_description[:1000]}" or ""}
+
+**INSTRUCTIONS:**
+- Write a compelling, professional cover letter
+- Highlight relevant skills and experience from the resume
+- Keep it concise (200-300 words)
+- Use a professional tone
+- Address the hiring manager appropriately
+- End with a strong call to action
+
+Generate the complete cover letter text:
+"""
+
+            # Call AI API
+            response = self.client.chat_completion(
+                system_prompt="You are an expert career counselor who writes compelling cover letters. Generate well-structured, professional cover letters that highlight relevant experience and skills.",
+                user_message=user_message,
+                temperature=0.7,
+                max_tokens=1000
+            )
+
+            # Extract the cover letter text
+            if isinstance(response, dict) and 'content' in response:
+                cover_letter = response['content'].strip()
+            else:
+                cover_letter = str(response).strip()
+
+            # Clean up any markdown formatting
+            cover_letter = re.sub(r'^[#*`\[\]]+', '', cover_letter, flags=re.MULTILINE)
+            cover_letter = cover_letter.strip()
+
+            if not cover_letter:
+                cover_letter = f"Dear Hiring Manager,\n\nI am writing to express my interest in the {position} position at {company}. With my background in the relevant field, I am confident I can contribute effectively to your team.\n\nPlease consider my application. I look forward to the opportunity to discuss how my skills and experience align with your needs.\n\nBest regards,\n[Your Name]"
+
+            logger.info(f"Cover letter generated successfully ({len(cover_letter)} chars)")
+            return cover_letter
+
+        except Exception as e:
+            logger.error(f"Error generating cover letter: {str(e)}")
+            # Return a basic fallback cover letter
+            return f"Dear Hiring Manager,\n\nI am excited to apply for the {position} position at {company}. My background and skills make me a strong candidate for this role.\n\nI would welcome the opportunity to discuss how I can contribute to your team.\n\nBest regards,\n[Your Name]"
+
     def _get_fallback_result(self, tone: str) -> Dict:
         """Get fallback result structure.
 
