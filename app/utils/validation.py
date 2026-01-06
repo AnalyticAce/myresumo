@@ -190,7 +190,7 @@ class ValidationHelper:
         if not (cleaned.startswith('+') or re.match(r'^\d{10,15}$', cleaned)):
             raise ValueError("Phone number must start with + (international) or be 10-15 digits")
         
-        return phone
+        return cleaned
     
     @staticmethod
     def validate_file_path(file_path: str, allowed_extensions: List[str]) -> str:
@@ -358,7 +358,7 @@ class ValidationHelper:
         return start_dt, None
 
 
-class ValidationError(Exception):
+class EnhancedValidationError(Exception):
     """Enhanced validation error with field details."""
     
     def __init__(self, field: str, message: str, value: Any = None):
@@ -383,7 +383,7 @@ def validate_pydantic_model(model: BaseModel, data: Dict[str, Any]) -> BaseModel
     """
     try:
         return model(**data)
-    except ValidationError as e:
+    except pydantic.ValidationError as e:
         errors = []
         for error in e.errors():
             field = '.'.join(str(x) for x in error['loc'])

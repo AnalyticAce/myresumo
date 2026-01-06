@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi import FastAPI, Request, HTTPException, Body, Query, status
 from app.utils.shared_utils import ValidationHelper, ErrorHandler
-from app.utils.error_handler import ErrorHandler as EnhancedErrorHandler, ErrorContext, debug_endpoint
+from app.utils.error_handler import ErrorHandler, DetailedError, ErrorContext, debug_endpoint
 from app.services.master_cv import MasterCV
 from app.services.scraper import fetch_job_description, extract_keywords_from_jd
 from app.services.cover_letter_gen import CoverLetterGenerator
@@ -461,7 +461,7 @@ async def optimize_cv_v2(request: OptimizationRequest):
             return result
     except Exception as e:
         logger.error(f"Optimization error: {str(e)}", exc_info=True)
-        raise EnhancedErrorHandler.handle_ai_api_error(
+        raise ErrorHandler.handle_ai_api_error(
             e, 
             provider="workflow_orchestrator", 
             operation="cv_optimization",
@@ -487,7 +487,7 @@ async def analyze_cv_v2(request: OptimizationRequest):
             return analysis
     except Exception as e:
         logger.error(f"Analysis error: {str(e)}", exc_info=True)
-        raise EnhancedErrorHandler.handle_ai_api_error(
+        raise ErrorHandler.handle_ai_api_error(
             e, 
             provider="cv_analyzer", 
             operation="cv_analysis",
@@ -516,7 +516,7 @@ async def generate_cover_letter_v2(request: CoverLetterRequest):
             return result
     except Exception as e:
         logger.error(f"Cover letter generation error: {str(e)}", exc_info=True)
-        raise EnhancedErrorHandler.handle_ai_api_error(
+        raise ErrorHandler.handle_ai_api_error(
             e, 
             provider="cover_letter_generator", 
             operation="cover_letter_generation",

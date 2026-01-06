@@ -130,6 +130,119 @@ class TestErrorHandler:
         assert "Rate limit" in str(http_exception.detail)
 
 
+class TestValidationHelperSecurity:
+    """Test security and robustness features of ValidationHelper."""
+    
+    def test_validate_text_input_allows_safe_text(self):
+        """Text input: accepts normal, non-malicious content."""
+        safe_text = "This is a normal job description with no scripts."
+        result = ValidationHelper.validate_text_input(safe_text, 1000, "test_field")
+        assert result == safe_text
+    
+    def test_validate_text_input_rejects_malicious_html(self):
+        """Text input: rejects XSS / script-like content."""
+        malicious_text = '<script>alert("xss")</script> Click this link'
+        with pytest.raises(ValueError) as exc_info:
+            ValidationHelper.validate_text_input(malicious_text, 1000, "test_field")
+        assert "malicious" in str(exc_info.value).lower() or "xss" in str(exc_info.value).lower()
+    
+    def test_validate_text_input_repetition_warning(self):
+        """Text input: detects excessive repetition / spammy content."""
+        repetitive_text = "spam " * 200
+        with pytest.raises(ValueError) as exc_info:
+            ValidationHelper.validate_text_input(repetitive_text, 1000, "test_field")
+        assert "repetition" in str(exc_info.value).lower() or "spam" in str(exc_info.value).lower()
+    
+    def test_validate_file_path_valid(self):
+        """File path: accepts a valid, safe path."""
+        path = "uploads/resumes/candidate_123.pdf"
+        allowed_extensions = [".pdf", ".doc", ".docx"]
+        result = ValidationHelper.validate_file_path(path, allowed_extensions)
+        assert result == path
+    
+    def test_validate_file_path_rejects_traversal(self):
+        """File path: rejects path traversal attempts."""
+        path = "../etc/passwd"
+        allowed_extensions = [".pdf", ".doc", ".docx"]
+        with pytest.raises(ValueError) as exc_info:
+            ValidationHelper.validate_file_path(path, allowed_extensions)
+        assert "traversal" in str(exc_info.value).lower() or "unsafe" in str(exc_info.value).lower()
+    
+    def test_validate_file_path_rejects_disallowed_extension(self):
+        """File path: rejects disallowed file extensions."""
+        path = "uploads/resumes/candidate_123.exe"
+        allowed_extensions = [".pdf", ".doc", ".docx"]
+        with pytest.raises(ValueError) as exc_info:
+            ValidationHelper.validate_file_path(path, allowed_extensions)
+        assert "extension" in str(exc_info.value).lower() or "allowed" in str(exc_info.value).lower()
+    
+    def test_validate_skill_list_from_string(self):
+        """Skill list: accepts a comma-separated string and normalizes it."""
+        skills = " Python ,  Django,REST "
+        result = ValidationHelper.validate_skill_list(skills)
+        assert isinstance(result, list)
+        assert result == ["Python", "Django", "REST"]
+    
+    def test_validate_skill_list_from_list(self):
+        """Skill list: accepts a list and trims entries."""
+        skills = [" Python ", "Django  ", "  REST"]
+        result = ValidationHelper.validate_skill_list(skills)
+        assert result == ["Python", "Django", "REST"]
+    
+    def test_validate_skill_list_empty_or_invalid(self):
+        """Skill list: rejects empty or invalid lists."""
+        with pytest.raises(ValueError):
+            ValidationHelper.validate_skill_list([])
+        with pytest.raises(ValueError):
+            ValidationHelper.validate_skill_list(["   ", ""])
+    
+    def test_validate_skill_list_length_limit(self):
+        """Skill list: enforces maximum length / number of skills."""
+        long_list = [f"skill{i}" for i in range(0, 200)]
+        with pytest.raises(ValueError):
+            ValidationHelper.validate_skill_list(long_list)
+    
+    def test_validate_json_structure_non_dict_payload(self):
+        """JSON structure: rejects non-dict payloads."""
+        payload = ["not", "a", "dict"]
+        with pytest.raises(ValueError):
+            ValidationHelper.validate_json_structure(payload, required_fields=["id"])
+    
+    def test_validate_json_structure_invalid_json_string(self):
+        """JSON structure: rejects invalid JSON strings."""
+        payload = '{"id": 123, "name": "test",}'  # trailing comma makes it invalid
+        with pytest.raises(ValueError):
+            ValidationHelper.validate_json_structure(payload, required_fields=["id"])
+    
+    def test_validate_json_structure_missing_required_fields(self):
+        """JSON structure: rejects payloads missing required fields."""
+        payload = {"id": 123}
+        with pytest.raises(ValueError):
+            ValidationHelper.validate_json_structure(payload, required_fields=["id", "name"])
+    
+    def test_validate_json_structure_valid(self):
+        """JSON structure: accepts valid payloads with required fields."""
+        payload = {"id": 123, "name": "test"}
+        result = ValidationHelper.validate_json_structure(payload, required_fields=["id", "name"])
+        assert result == payload
+    
+    def test_validate_date_range_invalid_format(self):
+        """Date range: rejects invalid date formats."""
+        with pytest.raises(ValueError):
+            ValidationHelper.validate_date_range("2024/01/01", "2024-01-31")
+    
+    def test_validate_date_range_end_before_start(self):
+        """Date range: rejects when end date is before start date."""
+        with pytest.raises(ValueError):
+            ValidationHelper.validate_date_range("2024-02-01", "2024-01-31")
+    
+    def test_validate_date_range_open_ended(self):
+        """Date range: supports open-ended ranges when end is None/empty."""
+        start_dt, end_dt = ValidationHelper.validate_date_range("2024-01-01", None)
+        assert start_dt is not None
+        assert end_dt is None
+
+
 class TestValidationHelper:
     """Test ValidationHelper class."""
     
@@ -183,14 +296,14 @@ class TestValidationHelper:
     def test_validate_phone_valid(self):
         """Test valid phone number."""
         phone = "+1234567890"
-        result = ValidationHelper.validate_phone(phone)
+        result = ValidationHelper.validate_phone_number(phone)
         assert result == phone
     
     def test_validate_phone_invalid(self):
         """Test invalid phone number."""
         phone = "123"
         with pytest.raises(ValueError, match="too short"):
-            ValidationHelper.validate_phone(phone)
+            ValidationHelper.validate_phone_number(phone)
     
     def test_validate_template_name_valid(self):
         """Test valid template name."""
