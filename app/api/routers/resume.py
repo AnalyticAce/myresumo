@@ -299,6 +299,9 @@ async def create_resume(
         logger.info("Storing uploaded file", extra={"operation": "resume_upload", "step": "file_storage"})
         stored_file_path = store_file_securely(file_content, safe_filename, user_id)
         logger.debug("File stored successfully", extra={"operation": "resume_upload", "step": "file_storage"})
+        logger.info("Storing uploaded file")
+        stored_file_path = store_file_securely(file_content, safe_filename, user_id)
+        logger.debug(f"File stored successfully at: {stored_file_path}")
 
         # Create temporary file for text extraction
         with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
@@ -312,6 +315,7 @@ async def create_resume(
                 "operation": "resume_upload",
                 "step": "text_extraction"
             })
+            logger.info(f"Extracting text from uploaded {file_extension} file")
             resume_text = extract_text_from_file(
                 temp_file_path, file_extension)
             logger.info("Text extraction successful", extra={
