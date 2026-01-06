@@ -247,8 +247,11 @@ async def create_resume(
         HTTPException: If the resume creation fails
     """
     try:
+        logger.info(f"Resume upload started - filename: {file.filename}, content_type: {file.content_type}")
+
         # Secure file validation
         file_content, safe_filename, file_hash = await SecureFileValidator.validate_upload(file)
+        logger.info(f"File validation completed - safe_filename: {safe_filename}, content_length: {len(file_content)}")
 
         # Ensure file_content is bytes
         if not isinstance(file_content, bytes):
@@ -275,7 +278,9 @@ async def create_resume(
             )
 
         # Store file securely
+        logger.info("Storing uploaded file")
         stored_file_path = store_file_securely(file_content, safe_filename, user_id)
+        logger.debug(f"File stored successfully at: {stored_file_path}")
 
         # Create temporary file for text extraction
         with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
@@ -283,9 +288,11 @@ async def create_resume(
             temp_file_path = temp_file.name
 
         try:
-            # Extract text based on file type
+            # Extract text based on file type (avoid logging full temp path for security)
+            logger.info(f"Extracting text from uploaded {file_extension} file")
             resume_text = extract_text_from_file(
                 temp_file_path, file_extension)
+            logger.info(f"Text extraction successful, extracted {len(resume_text)} characters")
 
             # Check if extraction failed
             if resume_text.startswith("Error:") or resume_text.startswith("Unsupported file format:"):
@@ -311,12 +318,15 @@ async def create_resume(
             master_updated_at=datetime.now(),
         )
 
+        logger.info("Creating resume in database...")
         resume_id = await repo.create_resume(new_resume)
         if not resume_id:
+            logger.error("Database create_resume returned empty ID")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create resume",
             )
+        logger.info(f"Resume created successfully with ID: {resume_id}")
         return {"id": resume_id}
     except HTTPException:
         raise
