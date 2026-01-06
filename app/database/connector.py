@@ -132,9 +132,9 @@ class MongoConnectionManager:
         """
         if self._client is None:
             try:
-            self._client = motor.motor_asyncio.AsyncIOMotorClient(
-                MONGODB_URI, **self.MONGO_CONFIG
-            )
+                self._client = motor.motor_asyncio.AsyncIOMotorClient(
+                    MONGODB_URI, **self.MONGO_CONFIG
+                )
                 logger.info(f"MongoDB client created: {sanitize_mongodb_uri_for_logging(MONGODB_URI)}")
             except Exception as e:
                 logger.error("Failed to create MongoDB client")
