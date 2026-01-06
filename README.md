@@ -345,3 +345,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Ilnar Nizametdinov** - [LinkedIn](https://www.linkedin.com/in/illnar/) - [GitHub](https://github.com/ILLnar-Nizami)
 
 Project Link: [https://github.com/ILLnar-Nizami/PowerCV](https://github.com/ILLnar-Nizami/PowerCV)
+# Test auth fix
