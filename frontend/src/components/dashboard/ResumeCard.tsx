@@ -4,25 +4,31 @@ import { Button } from '@/components/ui/button'
 import { StatusBadge } from './StatusBadge'
 import { Download, Mail, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
+import { useDownloadResume, useDownloadCoverLetter, useDeleteResume } from '@/hooks/useResumes'
 
 interface ResumeCardProps {
   resume: Resume
 }
 
 export function ResumeCard({ resume }: ResumeCardProps) {
+  const downloadResume = useDownloadResume()
+  const downloadCoverLetter = useDownloadCoverLetter()
+  const deleteResume = useDeleteResume()
+
   const handleDownload = () => {
-    // TODO: Implement download functionality
-    console.log('Download resume:', resume.id)
+    downloadResume.mutate(resume.id)
   }
 
   const handleDownloadCoverLetter = () => {
-    // TODO: Implement cover letter download
-    console.log('Download cover letter:', resume.id)
+    if (resume.hasCoverLetter) {
+      downloadCoverLetter.mutate(resume.id)
+    }
   }
 
   const handleDelete = () => {
-    // TODO: Implement delete functionality
-    console.log('Delete resume:', resume.id)
+    if (window.confirm('Are you sure you want to delete this resume?')) {
+      deleteResume.mutate(resume.id)
+    }
   }
 
   return (
@@ -64,6 +70,7 @@ export function ResumeCard({ resume }: ResumeCardProps) {
           variant="outline"
           className="flex-1"
           onClick={handleDownload}
+          disabled={downloadResume.isPending}
         >
           <Download className="mr-2 h-4 w-4" />
           Resume
@@ -73,7 +80,7 @@ export function ResumeCard({ resume }: ResumeCardProps) {
           size="sm"
           variant="outline"
           onClick={handleDownloadCoverLetter}
-          disabled={!resume.hasCoverLetter}
+          disabled={!resume.hasCoverLetter || downloadCoverLetter.isPending}
           className={resume.hasCoverLetter ? '' : 'opacity-50 cursor-not-allowed'}
         >
           <Mail className="h-4 w-4" />
@@ -83,6 +90,7 @@ export function ResumeCard({ resume }: ResumeCardProps) {
           size="sm"
           variant="ghost"
           onClick={handleDelete}
+          disabled={deleteResume.isPending}
         >
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>

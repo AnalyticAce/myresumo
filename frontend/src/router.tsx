@@ -1,6 +1,11 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { OptimizePage } from '@/pages/OptimizePage'
+import { AnalysisPage } from '@/pages/AnalysisPage'
+import { ResultsPage } from '@/pages/ResultsPage'
+import { MasterCVPage } from '@/pages/MasterCVPage'
+import { CoverLetterPage } from '@/pages/CoverLetterPage'
 
 export const router = createBrowserRouter([
   {
@@ -21,15 +26,23 @@ export const router = createBrowserRouter([
       },
       {
         path: 'optimize',
-        element: <div>Optimize Resume - Coming Soon</div>,
+        element: <OptimizePage />,
+      },
+      {
+        path: 'analysis',
+        element: <AnalysisPage />,
+      },
+      {
+        path: 'results',
+        element: <ResultsPage />,
       },
       {
         path: 'master-cv',
-        element: <div>Master CV Management - Coming Soon</div>,
+        element: <MasterCVPage />,
       },
       {
         path: 'cover-letter',
-        element: <div>Cover Letters - Coming Soon</div>,
+        element: <CoverLetterPage />,
       },
     ],
   },
