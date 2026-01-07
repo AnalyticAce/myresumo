@@ -4,7 +4,7 @@ import time
 import logging
 from typing import Callable
 from fastapi import Request, Response
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.base import RequestResponseEndpoint
 import uuid
 

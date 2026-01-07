@@ -1,3 +1,6 @@
+// Global flag to prevent duplicate analysis requests
+window.isAnalysisInProgress = false;
+
 // Toast notification system
 document.addEventListener('DOMContentLoaded', function() {
     window.showToast = function(message, type = 'info', duration = 5000) {
@@ -248,8 +251,284 @@ function optimizeResumeFromScore() {
     window.location.href = `/resume/${window.currentResumeId}/optimize`;
 }
 
+// Resume Creator functions
+function resumeCreator() {
+    return {
+        // Initialize and get store reference
+        init: function() {
+            console.log('resumeCreator initialized');
+            this.store = Alpine.store('app');
+            window.currentStep = 1;
+            
+            // Check for master CV from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const masterCvId = urlParams.get('master_cv_id');
+            
+            if (masterCvId) {
+                this.loadMasterCV(masterCvId);
+            }
+        },
+        
+        // Load master CV details
+        loadMasterCV: async function(masterCvId) {
+            try {
+                const response = await fetch(`/api/resume/master-cv/${masterCvId}`);
+                if (response.ok) {
+                    const masterCV = await response.json();
+                    this.store.isUsingMasterCV = true;
+                    this.store.masterCVDetails = masterCV;
+                    this.store.resumeFile = masterCV.file_path;
+                    this.store.resumeContent = masterCV.master_content || '';
+                }
+            } catch (error) {
+                console.error('Error loading master CV:', error);
+            }
+        },
+        
+        // File handling functions
+        handleResumeFileChange: function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                this.store.resumeFile = file;
+                this.store.isUsingMasterCV = false;
+                this.store.masterCVDetails = null;
+                
+                // Read file content
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.store.resumeContent = e.target.result;
+                };
+                reader.readAsText(file);
+            }
+        },
+        
+        handleResumeDrop: function(event) {
+            event.preventDefault();
+            this.store.isDraggingResume = false;
+            
+            const file = event.dataTransfer.files[0];
+            if (file) {
+                this.store.resumeFile = file;
+                this.store.isUsingMasterCV = false;
+                this.store.masterCVDetails = null;
+                
+                // Read file content
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.store.resumeContent = e.target.result;
+                };
+                reader.readAsText(file);
+            }
+        },
+        
+        handleResumeDragOver: function(event) {
+            event.preventDefault();
+            this.store.isDraggingResume = true;
+        },
+        
+        handleResumeDragLeave: function(event) {
+            event.preventDefault();
+            this.store.isDraggingResume = false;
+        },
+        
+        // Step management
+        nextStep: function() {
+            console.log('Moving to next step');
+            if (window.currentStep < 5) {
+                window.currentStep++;
+            }
+        },
+        
+        prevStep: function() {
+            console.log('Moving to previous step');
+            if (window.currentStep > 1) {
+                window.currentStep--;
+            }
+        },
+        
+        setStep: function(step) {
+            console.log('Setting step to:', step);
+            window.currentStep = step;
+        },
+        
+        // Analysis validation
+        canProceedToAnalysis: function() {
+            return this.store.targetCompany && 
+                   this.store.targetRole && 
+                   this.store.jobDescription && 
+                   (this.store.resumeFile || this.store.isUsingMasterCV);
+        },
+        
+        // Start analysis
+        startAnalysis: async function() {
+            // Prevent duplicate requests
+            if (window.isAnalysisInProgress) {
+                console.log('Analysis already in progress, ignoring request');
+                return;
+            }
+            
+            window.isAnalysisInProgress = true;
+            
+            try {
+                // Reset analysis state
+                this.store.analysisProgress = 0;
+                this.store.analysisProgressMessage = 'Starting analysis...';
+                this.store.originalScore = 0;
+                this.store.matchedSkills = [];
+                this.store.missingSkills = [];
+                this.store.recommendation = '';
+                this.store.matchScore = 0;
+                
+                // Validate inputs
+                if (!this.store.jobDescription || !this.store.resumeContent) {
+                    showToast('Please fill in all required fields and upload your resume', 'error');
+                    return;
+                }
+                
+                console.log('Starting ATS analysis...');
+                
+                // Simulate progress
+                const progressInterval = setInterval(() => {
+                    if (this.store.analysisProgress < 90) {
+                        this.store.analysisProgress += 10;
+                        if (this.store.analysisProgress <= 25) {
+                            this.store.analysisProgressMessage = 'Analyzing resume content...';
+                        } else if (this.store.analysisProgress <= 40) {
+                            this.store.analysisProgressMessage = 'Matching skills with job description...';
+                        } else if (this.store.analysisProgress <= 65) {
+                            this.store.analysisProgressMessage = 'Calculating ATS compatibility...';
+                        } else if (this.store.analysisProgress <= 85) {
+                            this.store.analysisProgressMessage = 'Generating optimization recommendations...';
+                        }
+                    }
+                }, 200);
+                
+                // Make API call for analysis
+                const requestData = {
+                    job_description: this.store.jobDescription,
+                    resume_text: this.store.resumeContent
+                };
+                
+                const response = await fetch('/api/comprehensive/analyze/ats', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                clearInterval(progressInterval);
+                this.store.analysisProgress = 100;
+                this.store.analysisProgressMessage = 'Analysis complete!';
+                
+                if (response.ok) {
+                    const results = await response.json();
+                    console.log('ATS Analysis Results:', results);
+                    console.log('Results keys:', Object.keys(results));
+                    console.log('Original score:', results.ats_score);
+                    console.log('Matched skills:', results.matching_skills);
+                    
+                    // Map results flexibly since ATS analysis returns different structure
+                    this.store.originalScore = results.ats_score || results.score || 0;
+                    this.store.matchedSkills = results.matching_skills || results.matched_keywords || results.keywords || [];
+                    this.store.missingSkills = results.missing_skills || results.gaps || [];
+                    this.store.recommendation = results.recommendation || results.recommendations || '';
+                    this.store.matchScore = results.optimized_score || results.ats_score || results.score || 0;
+                    
+                    console.log('Store updated - Original Score:', this.store.originalScore);
+                    console.log('Store updated - Matched Skills:', this.store.matchedSkills);
+                    console.log('Store updated - Missing Skills:', this.store.missingSkills);
+                    console.log('Store updated - Recommendation:', this.store.recommendation);
+                    
+                    // Move to results step
+                    console.log('Moving to step 3...');
+                    setTimeout(() => {
+                        // Update Alpine component's currentStep, not window.currentStep
+                        const alpineData = document.querySelector('[x-data]').__x.$data;
+                        if (alpineData && alpineData.currentStep !== undefined) {
+                            alpineData.currentStep = 3;
+                        } else {
+                            // Fallback to window.currentStep if Alpine data not found
+                            window.currentStep = 3;
+                        }
+                        console.log('Step changed to:', window.currentStep);
+                    }, 1000);
+                } else {
+                    // Get error details from response
+                    const errorText = await response.text();
+                    console.error('Analysis failed with status:', response.status);
+                    console.error('Error response:', errorText);
+                    
+                    // Handle rate limiting specifically
+                    if (response.status === 429) {
+                        showToast('Rate limit exceeded. Please wait a moment before trying again.', 'error');
+                        return;
+                    }
+                    
+                    throw new Error(`Analysis failed: ${response.status} - ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Analysis error:', error);
+                console.error('Error details:', error.message);
+                console.error('Error stack:', error.stack);
+                
+                // Try to get more details from response if available
+                if (error.response) {
+                    console.error('Response status:', error.response.status);
+                    console.error('Response text:', await error.response.text());
+                }
+                
+                showToast('Analysis failed. Please try again.', 'error');
+                this.store.analysisProgress = 0;
+            } finally {
+                // Reset the flag when done
+                window.isAnalysisInProgress = false;
+            }
+        },
+        
+        // Calculate circumference for score circles
+        calculateCircumference: function(score) {
+            return Math.round(2 * Math.PI * Math.sqrt(score / 100));
+        },
+        
+        // Getters for all store variables
+        get currentStep() { return window.currentStep; },
+        get isUsingMasterCV() { return this.store?.isUsingMasterCV || false; },
+        get masterCVDetails() { return this.store?.masterCVDetails || null; },
+        get resumeFile() { return this.store?.resumeFile || null; },
+        get resumeContent() { return this.store?.resumeContent || ''; },
+        get isDraggingResume() { return this.store?.isDraggingResume || false; },
+        get targetCompany() { return this.store?.targetCompany || ''; },
+        get targetRole() { return this.store?.targetRole || ''; },
+        get jobDescription() { return this.store?.jobDescription || ''; },
+        get analysisProgress() { return this.store?.analysisProgress || 0; },
+        get analysisProgressMessage() { return this.store?.analysisProgressMessage || ''; },
+        get originalScore() { return this.store?.originalScore || 0; },
+        get matchedSkills() { return this.store?.matchedSkills || []; },
+        get missingSkills() { return this.store?.missingSkills || []; },
+        get recommendation() { return this.store?.recommendation || ''; },
+        get matchScore() { return this.store?.matchScore || 0; },
+        get selectedTemplate() { return this.store?.selectedTemplate || 'modern'; },
+        
+        // Setters for store variables
+        set targetCompany(value) { if (this.store) this.store.targetCompany = value; },
+        set targetRole(value) { if (this.store) this.store.targetRole = value; },
+        set jobDescription(value) { if (this.store) this.store.jobDescription = value; },
+        set selectedTemplate(value) { if (this.store) this.store.selectedTemplate = value; },
+        set resumeContent(value) { if (this.store) this.store.resumeContent = value; }
+    };
+}
+
+// Analysis functions
+function calculateCircumference(score) {
+    return Math.round(2 * Math.PI * Math.sqrt(score / 100));
+}
+
 // Add Alpine store for managing global state
 document.addEventListener('alpine:init', () => {
+    // Add global state for preventing duplicate requests
+    window.isAnalysisInProgress = false;
+    
     Alpine.store('app', {
         // Score modal state
         showScoreModal: false,
@@ -262,6 +541,36 @@ document.addEventListener('alpine:init', () => {
             matching_skills: [],
             missing_skills: [],
             recommendation: ''
-        }
+        },
+        
+        // Resume optimization state
+        currentStep: 1,  // Initialize to step 1 (Upload)
+        isUsingMasterCV: false,
+        masterCVDetails: null,
+        
+        // File upload state
+        resumeFile: null,
+        resumeContent: '',
+        isDraggingResume: false,
+        
+        // Analysis state
+        targetCompany: '',
+        targetRole: '',
+        jobDescription: '',
+        canProceedToAnalysis: false,
+        
+        // Analysis progress
+        analysisProgress: 0,
+        analysisProgressMessage: '',
+        
+        // Analysis results
+        originalScore: 0,
+        matchedSkills: [],
+        missingSkills: [],
+        recommendation: '',
+        matchScore: 0,
+        
+        // Template selection
+        selectedTemplate: 'modern'
     });
 });

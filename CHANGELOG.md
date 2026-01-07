@@ -5,7 +5,7 @@ UI/UX enhancements, template selection, cover letter generation, and code qualit
 ## 🎨 Frontend UI/UX Enhancements (2026-01-06)
 
 ### Template Selection System
-- **Resume Template Selection**: Added interactive template selection modal on the create page
+- **Resume Template Selection**: Added interactive template selection modal on create page
   - Users can now choose between "Classic" and "Modern" resume templates before downloading
   - Modal displays template previews, descriptions, and style information
   - Integrated with Typst template system (`resume.typ`, `modern.typ`)

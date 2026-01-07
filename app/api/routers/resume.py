@@ -627,6 +627,62 @@ async def get_master_cvs(
 
 
 @resume_router.get(
+    "/master-cv/{master_cv_id}",
+    response_model=Dict[str, Any],
+    summary="Get master CV by ID",
+    response_description="Master CV retrieved successfully",
+)
+async def get_master_cv_by_id(
+    master_cv_id: str,
+    request: Request,
+    repo: ResumeRepository = Depends(get_resume_repository),
+):
+    """Get a specific master CV by ID.
+
+    This endpoint retrieves a single master CV with all its details.
+
+    Args:
+        master_cv_id: ID of the master CV to retrieve
+        request: The incoming request
+        repo: Resume repository instance
+
+    Returns:
+    -------
+    Dict containing master CV details
+
+    Raises:
+    ------
+    HTTPException: If master CV is not found or retrieval fails
+    """
+    try:
+        # Get master CV by ID
+        master_cv = await repo.get_resume_by_id(master_cv_id)
+        if not master_cv or not master_cv.get("master_content"):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Master CV not found"
+            )
+
+        return {
+            "id": str(master_cv.get("_id")),
+            "title": master_cv.get("title"),
+            "master_filename": master_cv.get("master_filename"),
+            "master_file_type": master_cv.get("master_file_type"),
+            "master_file_path": master_cv.get("master_file_path"),
+            "master_content": master_cv.get("master_content"),
+            "master_updated_at": master_cv.get("master_updated_at"),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving master CV: {str(e)}",
+        )
+
+
+@resume_router.get(
     "/test-master-cv",
     response_model=Dict[str, str],
     summary="Test master CV endpoint",

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Resume Analyzer - Modern Frontend</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div id="app"></div>
+    
+    <script>
+        class ATSAnalyzer {
+            constructor() {
+                this.state = {
+                    currentStep: 1,
+                    targetCompany: '',
+                    targetRole: '',
+                    jobDescription: '',
+                    resumeFile: null,
+                    resumeContent: '',
+                    isAnalyzing: false,
+                    analysisProgress: 0,
+                    analysisResults: null,
+                    error: null,
+                    isDragging: false
+                };
+                this.app = document.getElementById('app');
+                this.init();
+            }
+
+            init() {
+                this.render();
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                // File upload handlers
+                const fileInput = document.getElementById('file-upload');
+                const dropZone = document.getElementById('drop-zone');
+                
+                if (fileInput) {
+                    fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+                }
+                
+                if (dropZone) {
+                    dropZone.addEventListener('dragover', (e) => this.handleDragOver(e));
+                    dropZone.addEventListener('drop', (e) => this.handleDrop(e));
+                    dropZone.addEventListener('dragleave', () => this.handleDragLeave());
+                }
+
+                // Form inputs
+                const inputs = ['target-company', 'target-role', 'job-description'];
+                inputs.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('input', (e) => this.handleInputChange(id, e.target.value));
+                    }
+                });
+
+                // Buttons
+                const startBtn = document.getElementById('start-analysis');
+                if (startBtn) {
+                    startBtn.addEventListener('click', () => this.startAnalysis());
+                }
+
+                const resetBtn = document.getElementById('reset-analysis');
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', () => this.resetAnalysis());
+                }
+            }
+
+            handleInputChange(id, value) {
+                const stateKey = id.replace('-', '');
+                this.setState({ [stateKey]: value });
+            }
+
+            handleFileSelect(e) {
+                const file = e.target.files[0];
+                this.handleFileUpload(file);
+            }
+
+            handleFileUpload(file) {
+                if (file && file.type === 'text/plain') {
+                    this.setState({ resumeFile: file });
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.setState({ resumeContent: e.target.result });
+                    };
+                    reader.readAsText(file);
+                } else {
+                    this.setState({ error: 'Please upload a text file (.txt)' });
+                }
+            }
+
+            handleDragOver(e) {
+                e.preventDefault();
+                this.setState({ isDragging: true });
+            }
+
+            handleDragLeave() {
+                this.setState({ isDragging: false });
+            }
+
+            handleDrop(e) {
+                e.preventDefault();
+                this.setState({ isDragging: false });
+                const file = e.dataTransfer.files[0];
+                this.handleFileUpload(file);
+            }
+
+            async startAnalysis() {
+                const { jobDescription, resumeContent } = this.state;
+                
+                if (!jobDescription || !resumeContent) {
+                    this.setState({ error: 'Please fill in all required fields and upload your resume' });
+                    return;
+                }
+
+                this.setState({ 
+                    isAnalyzing: true, 
+                    error: null, 
+                    currentStep: 2, 
+                    analysisProgress: 0 
+                });
+
+                try {
+                    // Simulate progress
+                    const progressInterval = setInterval(() => {
+                        this.setState(prev => {
+                            if (prev.analysisProgress >= 90) return prev;
+                            return { analysisProgress: prev.analysisProgress + 10 };
+                        });
+                    }, 200);
+
+                    const response = await axios.post('http://127.0.0.1:8080/api/comprehensive/analyze/ats', {
+                        job_description: jobDescription,
+                        resume_text: resumeContent
+                    });
+
+                    clearInterval(progressInterval);
+                    this.setState({ analysisProgress: 100 });
+
+                    if (response.data) {
+                        this.setState({ 
+                            analysisResults: response.data, 
+                            currentStep: 3 
+                        });
+                    }
+                } catch (err) {
+                    console.error('Analysis error:', err);
+                    this.setState({ 
+                        error: 'Analysis failed. Please try again.', 
+                        currentStep: 1 
+                    });
+                } finally {
+                    this.setState({ 
+                        isAnalyzing: false, 
+                        analysisProgress: 0 
+                    });
+                }
+            }
+
+            resetAnalysis() {
+                this.setState({
+                    currentStep: 1,
+                    analysisResults: null,
+                    error: null,
+                    analysisProgress: 0
+                });
+            }
+
+            setState(updates) {
+                Object.assign(this.state, updates);
+                this.render();
+            }
+
+            render() {
+                const { state } = this;
+                
+                const html = `
+                    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+                        <div class="max-w-4xl mx-auto">
+                            <!-- Header -->
+                            <div class="text-center mb-8">
+                                <h1 class="text-4xl font-bold text-gray-900 mb-2">ATS Resume Analyzer</h1>
+                                <p class="text-gray-600">Modern Frontend - No More Alpine.js Bugs! 🚀</p>
+                            </div>
+
+                            <!-- Progress Steps -->
+                            <div class="flex items-center justify-center mb-8">
+                                <div class="flex items-center space-x-4">
+                                    <div class="flex items-center justify-center w-8 h-8 rounded-full ${state.currentStep >= 1 ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'}">
+                                        1
+                                    </div>
+                                    <span class="text-sm ${state.currentStep >= 1 ? 'text-blue-600' : 'text-gray-500'}">Upload</span>
+                                    
+                                    <div class="w-4 h-4 text-gray-400">→</div>
+                                    
+                                    <div class="flex items-center justify-center w-8 h-8 rounded-full ${state.currentStep >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'}">
+                                        2
+                                    </div>
+                                    <span class="text-sm ${state.currentStep >= 2 ? 'text-blue-600' : 'text-gray-500'}">Analyze</span>
+                                    
+                                    <div class="w-4 h-4 text-gray-400">→</div>
+                                    
+                                    <div class="flex items-center justify-center w-8 h-8 rounded-full ${state.currentStep >= 3 ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'}">
+                                        3
+                                    </div>
+                                    <span class="text-sm ${state.currentStep >= 3 ? 'text-blue-600' : 'text-gray-500'}">Results</span>
+                                </div>
+                            </div>
+
+                            <!-- Error Alert -->
+                            ${state.error ? `
+                                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
+                                    <span class="text-red-700">⚠️ ${state.error}</span>
+                                </div>
+                            ` : ''}
+
+                            <!-- Step 1: Upload and Input -->
+                            ${state.currentStep === 1 ? this.renderStep1() : ''}
+
+                            <!-- Step 2: Analysis Progress -->
+                            ${state.currentStep === 2 ? this.renderStep2() : ''}
+
+                            <!-- Step 3: Results -->
+                            ${state.currentStep === 3 ? this.renderStep3() : ''}
+                        </div>
+                    </div>
+                `;
+
+                this.app.innerHTML = html;
+                this.setupEventListeners();
+            }
+
+            renderStep1() {
+                const { state } = this;
+                return `
+                    <div class="bg-white rounded-xl shadow-lg p-8">
+                        <h2 class="text-2xl font-semibold mb-6">Job Details & Resume</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Target Company</label>
+                                <input
+                                    type="text"
+                                    id="target-company"
+                                    value="${state.targetCompany}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="e.g., Stream"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Target Role</label>
+                                <input
+                                    type="text"
+                                    id="target-role"
+                                    value="${state.targetRole}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="e.g., Customer Success Manager"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Job Description</label>
+                            <textarea
+                                id="job-description"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-32"
+                                placeholder="Paste the full job description here..."
+                            >${state.jobDescription}</textarea>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Resume Upload</label>
+                            <div
+                                id="drop-zone"
+                                class="border-2 border-dashed rounded-lg p-8 text-center transition-colors ${state.isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}"
+                            >
+                                <div class="w-12 h-12 mx-auto mb-4 text-gray-400">📁</div>
+                                <p class="text-gray-600 mb-2">
+                                    ${state.resumeFile ? state.resumeFile.name : 'Drop your resume file here or click to browse'}
+                                </p>
+                                <input
+                                    type="file"
+                                    accept=".txt"
+                                    id="file-upload"
+                                    class="hidden"
+                                />
+                                <label
+                                    for="file-upload"
+                                    class="cursor-pointer text-blue-500 hover:text-blue-600"
+                                >
+                                    Browse Files
+                                </label>
+                            </div>
+                        </div>
+
+                        <button
+                            id="start-analysis"
+                            disabled="${!state.jobDescription || !state.resumeContent || state.isAnalyzing}"
+                            class="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                        >
+                            Start Analysis
+                        </button>
+                    </div>
+                `;
+            }
+
+            renderStep2() {
+                const { state } = this;
+                return `
+                    <div class="bg-white rounded-xl shadow-lg p-8">
+                        <div class="text-center">
+                            <div class="w-16 h-16 mx-auto mb-4 text-blue-500 animate-spin">⚙️</div>
+                            <h2 class="text-2xl font-semibold mb-4">Analyzing Your Resume</h2>
+                            <p class="text-gray-600 mb-6">
+                                ${state.analysisProgress < 25 ? 'Analyzing resume content...' :
+                                  state.analysisProgress < 50 ? 'Matching skills with job description...' :
+                                  state.analysisProgress < 75 ? 'Calculating ATS compatibility...' :
+                                  'Generating optimization recommendations...'}
+                            </p>
+                            
+                            <div class="w-full bg-gray-200 rounded-full h-3 mb-4">
+                                <div
+                                    class="bg-blue-500 h-3 rounded-full transition-all duration-500"
+                                    style="width: ${state.analysisProgress}%"
+                                ></div>
+                            </div>
+                            
+                            <p class="text-sm text-gray-500">${state.analysisProgress}% Complete</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderStep3() {
+                const { state } = this;
+                if (!state.analysisResults) return '';
+
+                return `
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-xl shadow-lg p-8">
+                            <div class="text-center mb-6">
+                                <div class="w-16 h-16 mx-auto mb-4 text-green-500">✅</div>
+                                <h2 class="text-2xl font-semibold mb-2">Analysis Complete!</h2>
+                                <p class="text-gray-600">Here's how your resume matches with the job description</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                <div class="text-center">
+                                    <div class="text-3xl font-bold text-blue-500 mb-2">${state.analysisResults.ats_score || 0}</div>
+                                    <div class="text-gray-600">ATS Score</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-3xl font-bold text-green-500 mb-2">${(state.analysisResults.matching_skills || []).length}</div>
+                                    <div class="text-gray-600">Matching Skills</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-3xl font-bold text-orange-500 mb-2">${(state.analysisResults.missing_skills || []).length}</div>
+                                    <div class="text-gray-600">Missing Skills</div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h3 class="font-semibold mb-3 text-green-600">✅ Matching Skills</h3>
+                                    <div class="space-y-2">
+                                        ${(state.analysisResults.matching_skills || []).map(skill => `
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-green-500">✓</span>
+                                                <span class="text-sm">${skill}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 class="font-semibold mb-3 text-orange-600">⚠️ Missing Skills</h3>
+                                    <div class="space-y-2">
+                                        ${(state.analysisResults.missing_skills || []).map(skill => `
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-orange-500">!</span>
+                                                <span class="text-sm">${skill}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+
+                            ${state.analysisResults.recommendation ? `
+                                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                                    <h3 class="font-semibold mb-2 text-blue-800">📋 Recommendations</h3>
+                                    <p class="text-sm text-blue-700 whitespace-pre-wrap">${state.analysisResults.recommendation}</p>
+                                </div>
+                            ` : ''}
+
+                            <div class="mt-8 flex space-x-4">
+                                <button
+                                    id="reset-analysis"
+                                    class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors"
+                                >
+                                    Analyze Another Resume
+                                </button>
+                                <button
+                                    class="flex-1 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors"
+                                >
+                                    Download Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize the app when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            new ATSAnalyzer();
+        });
+    </script>
+</body>
+</html>
+
