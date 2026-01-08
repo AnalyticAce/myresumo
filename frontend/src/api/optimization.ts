@@ -1,53 +1,52 @@
 import { apiClient } from './client'
 import { OptimizationRequest, AnalysisResult, OptimizationResult } from '@/types/optimization'
-import { ApiResponse } from '@/types/api'
 
 export const optimizationAPI = {
   analyze: async (request: OptimizationRequest) => {
-    const formData = new FormData()
-    
-    if (request.uploadedFile) {
-      formData.append('file', request.uploadedFile)
-    } else if (request.sourceId) {
-      formData.append('masterCvId', request.sourceId)
+    const cvText = request.uploadedFile ? await request.uploadedFile.text() : ''
+    const payload = {
+      cv_text: cvText,
+      jd_text: request.jobDescription,
+      generate_cover_letter: false,
+      template: 'resume.typ'
     }
-    
-    formData.append('company', request.company)
-    formData.append('position', request.position)
-    formData.append('jobDescription', request.jobDescription)
 
-    const { data } = await apiClient.post<ApiResponse<AnalysisResult>>(
-      '/optimization/analyze',
-      formData,
-      {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      }
+    const { data } = await apiClient.post<AnalysisResult>(
+      '/optimize',
+      payload
     )
-    return data.data!
+    return data
   },
 
   optimize: async (request: OptimizationRequest) => {
-    const formData = new FormData()
-    
-    if (request.uploadedFile) {
-      formData.append('file', request.uploadedFile)
-    } else if (request.sourceId) {
-      formData.append('masterCvId', request.sourceId)
+    const cvText = request.uploadedFile ? await request.uploadedFile.text() : ''
+    const payload = {
+      cv_text: cvText,
+      jd_text: request.jobDescription,
+      generate_cover_letter: request.generateCoverLetter,
+      template: request.template
     }
-    
-    formData.append('company', request.company)
-    formData.append('position', request.position)
-    formData.append('jobDescription', request.jobDescription)
-    formData.append('template', request.template)
-    formData.append('generateCoverLetter', String(request.generateCoverLetter))
 
-    const { data } = await apiClient.post<ApiResponse<OptimizationResult>>(
-      '/optimization/optimize',
-      formData,
-      {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      }
+    const { data } = await apiClient.post<OptimizationResult>(
+      '/optimize',
+      payload
     )
-    return data.data!
+    return data
+  },
+
+  getComprehensiveOptimization: async (request: OptimizationRequest) => {
+    const cvText = request.uploadedFile ? await request.uploadedFile.text() : ''
+    const payload = {
+      cv_text: cvText,
+      jd_text: request.jobDescription,
+      generate_cover_letter: request.generateCoverLetter,
+      template: request.template
+    }
+
+    const { data } = await apiClient.post<Record<string, unknown>>(
+      '/api/comprehensive-optimize',
+      payload
+    )
+    return data
   },
 }

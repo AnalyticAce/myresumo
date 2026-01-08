@@ -1,43 +1,72 @@
 import { apiClient } from './client'
 import { Resume, DashboardFilters } from '@/types/resume'
-import { ApiResponse, PaginatedResponse } from '@/types/api'
+import { PaginatedResponse } from '@/types/api'
 
 export const resumesAPI = {
-  getResumes: async (filters: DashboardFilters, page = 1, pageSize = 20) => {
-    const { data } = await apiClient.get<PaginatedResponse<Resume>>('/resumes', {
-      params: { ...filters, page, pageSize },
+  getResumes: async (_filters: DashboardFilters, page = 1, pageSize = 20) => {
+    const { data } = await apiClient.get<PaginatedResponse<Resume>>('/resume/user/demo-user', {
+      params: { page, pageSize },
     })
     return data
   },
 
   getResume: async (id: string) => {
-    const { data } = await apiClient.get<ApiResponse<Resume>>(`/resumes/${id}`)
-    return data.data!
+    const { data } = await apiClient.get<Resume>(`/resume/${id}`)
+    return data
   },
 
   updateStatus: async (id: string, status: string) => {
-    const { data } = await apiClient.patch<ApiResponse<Resume>>(
-      `/resumes/${id}/status`,
-      { status }
+    const { data } = await apiClient.put<Record<string, unknown>>(
+      `/resume/${id}/status/${status}`
     )
-    return data.data!
+    return data
   },
 
   deleteResume: async (id: string) => {
-    await apiClient.delete(`/resumes/${id}`)
+    await apiClient.delete(`/resume/${id}`)
   },
 
   downloadResume: async (id: string) => {
-    const { data } = await apiClient.get<Blob>(`/resumes/${id}/download`, {
+    const { data } = await apiClient.get<Blob>(`/resume/${id}/download`, {
       responseType: 'blob',
     })
     return data
   },
 
   downloadCoverLetter: async (id: string) => {
-    const { data } = await apiClient.get<Blob>(`/resumes/${id}/cover-letter`, {
+    const { data } = await apiClient.get<Blob>(`/resume/${id}/cover-letter`, {
       responseType: 'blob',
     })
+    return data
+  },
+
+  createResume: async (formData: FormData) => {
+    const { data } = await apiClient.post<Record<string, string>>('/resume', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return data
+  },
+
+  optimizeResume: async (id: string, jobDescription: string, targetCompany?: string, targetRole?: string) => {
+    const { data } = await apiClient.post<Record<string, unknown>>(`/resume/${id}/optimize`, {
+      job_description: jobDescription,
+      target_company: targetCompany,
+      target_role: targetRole,
+    })
+    return data
+  },
+
+  scoreResume: async (id: string, jobDescription: string) => {
+    const { data } = await apiClient.post<Record<string, unknown>>(`/resume/${id}/score`, {
+      job_description: jobDescription,
+    })
+    return data
+  },
+
+  getTemplates: async () => {
+    const { data } = await apiClient.get<Array<Record<string, unknown>>>('/resume/templates')
     return data
   },
 }
