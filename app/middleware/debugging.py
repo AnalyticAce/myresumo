@@ -17,7 +17,9 @@ class DebuggingMiddleware(BaseHTTPMiddleware):
     
     def __init__(self, app, enable_debug: bool = False):
         super().__init__(app)
-        self.enable_debug = enable_debug and os.getenv("ENVIRONMENT", "development") == "development"
+        # Enable debugging in development and beta environments
+        environment = os.getenv("ENVIRONMENT", "development")
+        self.enable_debug = enable_debug and environment in ["development", "beta"]
     
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         """Process request and add debugging information."""
@@ -188,7 +190,7 @@ def setup_debugging_middleware(app, enable_debug: bool = False):
     
     # Get environment from environment variable
     environment = os.getenv("ENVIRONMENT", "development")
-    is_development = environment == "development"
+    is_development_or_beta = environment in ["development", "beta"]
     
     # Add security headers (always enabled)
     app.add_middleware(SecurityHeadersMiddleware)
@@ -196,8 +198,8 @@ def setup_debugging_middleware(app, enable_debug: bool = False):
     # Add performance monitoring (always enabled)
     app.add_middleware(PerformanceMonitoringMiddleware, slow_request_threshold_ms=1000.0)
     
-    # Add debugging middleware (development only)
-    if is_development and enable_debug:
+    # Add debugging middleware (development and beta only)
+    if is_development_or_beta and enable_debug:
         app.add_middleware(RequestLoggingMiddleware, log_body=True, max_body_size=500)
         app.add_middleware(DebuggingMiddleware, enable_debug=True)
     else:
