@@ -20,17 +20,20 @@ jobs:
       with:
         node-version: '20'
         cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
         
     - name: Install dependencies
       run: npm ci
+      working-directory: frontend
       
     - name: Run tests
       run: npm test -- --run
+      working-directory: frontend
       
     - name: Upload coverage reports
       uses: codecov/codecov-action@v3
       with:
-        file: ./coverage/lcov.info
+        file: frontend/coverage/lcov.info
         flags: unittests
         name: codecov-umbrella
 
@@ -48,18 +51,21 @@ jobs:
       with:
         node-version: '20'
         cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
         
     - name: Install dependencies
       run: npm ci
+      working-directory: frontend
       
     - name: Build application
       run: npm run build
+      working-directory: frontend
       
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
         name: build-files
-        path: dist/
+        path: frontend/dist/
         retention-days: 30
 
   deploy-staging:
@@ -79,9 +85,11 @@ jobs:
       with:
         node-version: '20'
         cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
         
     - name: Install dependencies
       run: npm ci
+      working-directory: frontend
       
     - name: Deploy to staging
       run: |
@@ -107,9 +115,11 @@ jobs:
       with:
         node-version: '20'
         cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
         
     - name: Install dependencies
       run: npm ci
+      working-directory: frontend
       
     - name: Deploy to production
       run: |
@@ -129,6 +139,7 @@ jobs:
       
     - name: Run security audit
       run: npm audit --audit-level moderate
+      working-directory: frontend
       
     - name: Run Snyk security scan
       uses: snyk/actions/node@master
