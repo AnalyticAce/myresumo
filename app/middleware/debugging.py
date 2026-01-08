@@ -2,6 +2,7 @@
 
 import time
 import logging
+import os
 from typing import Callable
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -16,10 +17,14 @@ class DebuggingMiddleware(BaseHTTPMiddleware):
     
     def __init__(self, app, enable_debug: bool = False):
         super().__init__(app)
-        self.enable_debug = enable_debug
+        self.enable_debug = enable_debug and os.getenv("ENVIRONMENT", "development") == "development"
     
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         """Process request and add debugging information."""
+        # Skip debugging in production
+        if not self.enable_debug:
+            return await call_next(request)
+            
         # Generate unique request ID
         request_id = str(uuid.uuid4())[:8]
         
@@ -181,14 +186,18 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 def setup_debugging_middleware(app, enable_debug: bool = False):
     """Setup all debugging middleware for the application."""
     
+    # Get environment from environment variable
+    environment = os.getenv("ENVIRONMENT", "development")
+    is_development = environment == "development"
+    
     # Add security headers (always enabled)
     app.add_middleware(SecurityHeadersMiddleware)
     
     # Add performance monitoring (always enabled)
     app.add_middleware(PerformanceMonitoringMiddleware, slow_request_threshold_ms=1000.0)
     
-    # Add request logging (in debug mode)
-    if enable_debug:
+    # Add debugging middleware (development only)
+    if is_development and enable_debug:
         app.add_middleware(RequestLoggingMiddleware, log_body=True, max_body_size=500)
         app.add_middleware(DebuggingMiddleware, enable_debug=True)
     else:

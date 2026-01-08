@@ -9,41 +9,47 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FileUpload } from '@/components/optimization/FileUpload'
 import { TemplateSelector } from '@/components/optimization/TemplateSelector'
 import { ArrowLeft, ArrowRight, FileText, Upload } from 'lucide-react'
-import { OptimizationRequest, TemplateType } from '@/types'
 import { useOptimizationStore } from '@/stores/optimizationStore'
+import { optimizationAPI } from '@/api/optimization'
+import { toast } from 'sonner'
 
 export function OptimizePage() {
   const navigate = useNavigate()
-  const { request, setRequest, setCurrentStep, currentStep } = useOptimizationStore()
+  const { request, setRequest, setCurrentStep, step, setAnalysis } = useOptimizationStore()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
 
   const handleNext = () => {
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1)
+    if (step < 4) {
+      setCurrentStep((step + 1) as 1 | 2 | 3 | 4)
     }
   }
 
   const handlePrevious = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
+    if (step > 1) {
+      setCurrentStep((step - 1) as 1 | 2 | 3 | 4)
     }
   }
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true)
     try {
-      // TODO: Implement analyze API call
-      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate API call
+      const analysisResult = await optimizationAPI.analyze(request)
+      
+      // Store analysis result in store for use in AnalysisPage
+      setAnalysis(analysisResult)
+      
+      toast.success('Analysis completed successfully!')
       navigate('/analysis')
     } catch (error) {
       console.error('Analysis failed:', error)
+      toast.error('Analysis failed. Please try again.')
     } finally {
       setIsAnalyzing(false)
     }
   }
 
   const isStepValid = () => {
-    switch (currentStep) {
+    switch (step) {
       case 1:
         return request.sourceType && (request.sourceId || request.uploadedFile)
       case 2:
@@ -69,21 +75,21 @@ export function OptimizePage() {
       </div>
 
       <div className="flex items-center justify-center space-x-2 mb-8">
-        {[1, 2, 3, 4].map((step) => (
-          <div key={step} className="flex items-center">
+        {[1, 2, 3, 4].map((stepNum) => (
+          <div key={stepNum} className="flex items-center">
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                currentStep >= step
+                step >= stepNum
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground'
               }`}
             >
-              {step}
+              {stepNum}
             </div>
-            {step < 4 && (
+            {stepNum < 4 && (
               <div
                 className={`w-16 h-1 mx-2 ${
-                  currentStep > step ? 'bg-primary' : 'bg-muted'
+                  step > stepNum ? 'bg-primary' : 'bg-muted'
                 }`}
               />
             )}
@@ -94,15 +100,15 @@ export function OptimizePage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            {currentStep === 1 && <Upload className="h-5 w-5" />}
-            {currentStep === 2 && <FileText className="h-5 w-5" />}
-            {currentStep === 3 && <FileText className="h-5 w-5" />}
-            {currentStep === 4 && <FileText className="h-5 w-5" />}
-            Step {currentStep}: {['Select Source', 'Job Details', 'Template', 'Review'][currentStep - 1]}
+            {step === 1 && <Upload className="h-5 w-5" />}
+            {step === 2 && <FileText className="h-5 w-5" />}
+            {step === 3 && <FileText className="h-5 w-5" />}
+            {step === 4 && <FileText className="h-5 w-5" />}
+            Step {step}: {['Select Source', 'Job Details', 'Template', 'Review'][step - 1]}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {currentStep === 1 && (
+          {step === 1 && (
             <div className="space-y-4">
               <div>
                 <Label>Resume Source</Label>
@@ -145,7 +151,7 @@ export function OptimizePage() {
             </div>
           )}
 
-          {currentStep === 2 && (
+          {step === 2 && (
             <div className="space-y-4">
               <div>
                 <Label htmlFor="company">Company</Label>
@@ -173,14 +179,14 @@ export function OptimizePage() {
                   id="jobDescription"
                   value={request.jobDescription || ''}
                   onChange={(e) => setRequest({ ...request, jobDescription: e.target.value })}
-                  placeholder="Paste the full job description here..."
+                  placeholder="Paste full job description here..."
                   rows={8}
                 />
               </div>
             </div>
           )}
 
-          {currentStep === 3 && (
+          {step === 3 && (
             <div className="space-y-4">
               <Label>Choose Template</Label>
               <TemplateSelector
@@ -190,7 +196,7 @@ export function OptimizePage() {
             </div>
           )}
 
-          {currentStep === 4 && (
+          {step === 4 && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Review Your Details</h3>
               <div className="bg-muted p-4 rounded-lg space-y-2">
@@ -207,12 +213,12 @@ export function OptimizePage() {
             <Button
               variant="outline"
               onClick={handlePrevious}
-              disabled={currentStep === 1}
+              disabled={step === 1}
             >
               Previous
             </Button>
 
-            {currentStep === 4 ? (
+            {step === 4 ? (
               <Button onClick={handleAnalyze} disabled={!isStepValid() || isAnalyzing}>
                 {isAnalyzing ? 'Analyzing...' : 'Analyze & Optimize'}
               </Button>
