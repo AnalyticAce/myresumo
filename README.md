@@ -3,9 +3,12 @@
 <div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![Status: Beta](https://img.shields.io/badge/Status-Beta-orange)
+![Status: Production Ready](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.95.0%2B-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-4.4%2B-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![React](https://img.shields.io/badge/React-19.2.0-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-7.2.4-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://makeapullrequest.com)
 
@@ -17,11 +20,16 @@ PowerCV is a platform for resume customization that adapts professional profiles
 
 ## Key Features
 
-- **Resume Customization**: Tailors resume content to match job requirements.
-- **ATS Optimization**: Improves keyword alignment for applicant tracking systems.
-- **Gap Analysis**: Identifies missing skills based on job descriptions.
-- **Resume Generation**: Produces formatted resumes in multiple formats.
-- **Version Tracking**: Manages different resume versions for various applications.
+- **🎯 Resume Customization**: Tailors resume content to match job requirements using AI-powered analysis
+- **🤖 ATS Optimization**: Improves keyword alignment for applicant tracking systems with real-time scoring
+- **📊 Gap Analysis**: Identifies missing skills based on job descriptions with visual analytics
+- **📄 Resume Generation**: Produces formatted resumes in multiple professional templates
+- **📝 Version Tracking**: Manages different resume versions for various applications
+- **🚀 Modern UI/UX**: Built with React 19 and TypeScript for optimal performance
+- **🔧 Real-time Updates**: Live resume editing with instant preview
+- **📱 Responsive Design**: Mobile-first design for seamless cross-device experience
+- **🔍 Advanced Analytics**: Comprehensive resume performance tracking and insights
+- **🛡️ Enterprise Security**: Production-ready security with environment validation
 
 ## Showcase
 
@@ -30,26 +38,85 @@ PowerCV features a comprehensive dashboard for resume management, detailed optim
 
 ## Technologies
 
-- **Backend**: FastAPI, Python 3.8+
-- **Database**: MongoDB
-- **Frontend**: Jinja2 templates, Alpine.js, HTML/CSS
+### Frontend
+- **Framework**: React 19.2.0 with TypeScript 5.0+
+- **Build Tool**: Vite 7.2.4 for fast development and building
+- **UI Library**: TailwindCSS with shadcn/ui components
+- **State Management**: Zustand for lightweight state management
+- **Data Fetching**: TanStack Query for server state management
+- **Routing**: React Router DOM for navigation
+- **HTTP Client**: Axios with interceptors for API communication
+- **Testing**: Vitest with React Testing Library
+- **Form Handling**: React Hook Form with Zod validation
+- **Notifications**: Sonner for toast notifications
+
+### Backend
+- **Framework**: FastAPI, Python 3.8+
+- **Database**: MongoDB with Pydantic models
+- **AI Integration**: Deepseek API, Cerebras AI
 - **PDF Engine**: Typst (Fast, modern Typesetting)
-- **AI Integration**: Deepseek API, Cerebras
-- **Deployment**: Docker
-- **Package Management**: uv
+- **Authentication**: JWT-based auth system
+
+### DevOps & Infrastructure
+- **Containerization**: Docker with multi-stage builds
+- **CI/CD**: GitHub Actions with automated testing and deployment
+- **Code Quality**: ESLint, Prettier, Ruff for linting
+- **Security**: Snyk integration for vulnerability scanning
+- **Monitoring**: Coverage reporting with Codecov
+- **Package Management**: uv (Python), npm (Node.js)
 
 > [!CAUTION]
 > This application uses LLM models, which may generate unpredictable responses. Review AI-generated content before submission. The application is in beta.
+
+## Quick Start
+
+### 1. Start the Backend API
+
+```bash
+# Navigate to project root
+cd /home/illnar/Projects/PowerCV
+
+# Start FastAPI backend
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### 2. Start the Frontend Development Server
+
+```bash
+# Open new terminal
+cd /home/illnar/Projects/PowerCV/frontend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+### 3. Access Your Application
+
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+
+### 4. Environment Configuration
+
+The app is pre-configured with environment files:
+- `.env` - Local development
+- `.env.staging` - Staging environment  
+- `.env.production` - Production environment
+
+Environment variables are automatically validated on startup.
 
 ## Installation and Setup
 
 ### Prerequisites
 
-- Python 3.8+
-- Docker (for containerized deployment)
-- MongoDB
-- Typst CLI (for PDF generation)
-- Deepseek/OpenAI/Cerebras.ai API key
+- **Backend**: Python 3.8+, MongoDB, Docker (for containerized deployment)
+- **Frontend**: Node.js 20+, npm or yarn package manager
+- **AI Services**: Deepseek/OpenAI/Cerebras.ai API key
+- **PDF Generation**: Typst CLI (for PDF generation)
+- **Development**: Git, VS Code (recommended)
 
 ### Setting Up Dependencies
 
@@ -270,11 +337,48 @@ Access the API documentation at:
 
 ## Testing
 
-Run the test suite:
+### Frontend Testing
 
 ```bash
-pytest tests/
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
 ```
+
+### Backend Testing
+
+```bash
+# Run test suite
+pytest tests/
+
+# Run integration tests
+pytest app/tests/test_integration.py -v
+
+# Run specific test
+python app/tests/test_integration.py
+```
+
+### CI/CD Testing
+
+- **Automated Testing**: GitHub Actions runs tests on all pull requests
+- **Coverage Reporting**: Codecov integration for coverage tracking
+- **Security Scanning**: Snyk integration for vulnerability detection
+- **Quality Gates**: Tests must pass before deployment
+
+### Test Coverage
+
+- **Unit Tests**: Component testing with React Testing Library
+- **Integration Tests**: API endpoint testing
+- **E2E Tests**: End-to-end user flow testing (planned)
+- **Performance Tests**: Load testing and performance monitoring
 
 ## Usage Guide
 
@@ -328,13 +432,43 @@ Please check the [contribution guidelines](CONTRIBUTING.md).
 
 ## Roadmap
 
-- [ ] Multi-language support
-- [ ] Resume analytics dashboard
-- [ ] Resume advice through conversational AI
-- [ ] Interview preparation suggestions
-- [ ] Cover letter generation
-- [ ] Integration with job search platforms
-- [ ] PDF parsing and extraction
+### ✅ Completed Features (v2.0)
+
+- [x] **Modern Frontend Stack**: Migrated from Alpine.js to React 19 + TypeScript
+- [x] **Advanced UI/UX**: Built with TailwindCSS and shadcn/ui components
+- [x] **Real-time Updates**: Live resume editing with instant preview
+- [x] **Comprehensive Testing**: Unit and integration tests with Vitest
+- [x] **CI/CD Pipeline**: Automated testing and deployment with GitHub Actions
+- [x] **Environment Management**: Multi-environment configuration with validation
+- [x] **Security Integration**: Automated security scanning and vulnerability detection
+- [x] **Performance Monitoring**: Coverage reporting and quality gates
+- [x] **Mobile Responsive**: Cross-device compatible design
+- [x] **Advanced Analytics**: Resume performance tracking and insights
+
+### 🚧 In Progress
+
+- [ ] **Multi-language Support**: Internationalization (i18n) implementation
+- [ ] **Advanced AI Features**: Enhanced resume analysis with ML models
+- [ ] **Collaboration Tools**: Real-time collaborative editing
+- [ ] **Export Options**: Additional format support (DOCX, HTML)
+
+### 📋 Planned Features
+
+- [ ] **Resume Analytics Dashboard**: Advanced metrics and visualization
+- [ ] **AI Interview Coach**: Interview preparation suggestions
+- [ ] **Job Platform Integration**: Direct integration with LinkedIn, Indeed
+- [ ] **Cover Letter Templates**: Professional template library
+- [ ] **Skill Assessment**: Automated skill gap analysis
+- [ ] **Resume A/B Testing**: Performance comparison tools
+- [ ] **API Rate Limiting**: Enhanced API management
+- [ ] **User Authentication**: OAuth integration (Google, GitHub)
+- [ ] **Team Collaboration**: Multi-user workspace features
+- [ ] **Mobile App**: Native iOS and Android applications
+- [ ] **Browser Extension**: Quick resume optimization from job sites
+- [ ] **PDF Parsing**: Advanced PDF extraction and analysis
+- [ ] **Resume Templates**: Expanded template marketplace
+- [ ] **Custom Branding**: Personal branding tools
+- [ ] **Email Integration**: Automated follow-up reminders
 
 ## License
 
