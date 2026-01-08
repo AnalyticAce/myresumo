@@ -143,7 +143,7 @@ describe('Component Tests', () => {
       })
     })
 
-    it('validates file types', () => {
+    it('validates file types', async () => {
       const mockToast = vi.spyOn(toast, 'error')
       const invalidFile = new File(['test'], 'resume.txt', { type: 'text/plain' })
       
