@@ -1,13 +1,12 @@
 """Debugging middleware for PowerCV application."""
 
-import time
 import logging
 import os
-from typing import Callable
-from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.middleware.base import RequestResponseEndpoint
+import time
 import uuid
+
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +184,6 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
 def setup_debugging_middleware(app, enable_debug: bool = False):
     """Setup all debugging middleware for the application."""
-    
     # Get environment from environment variable
     environment = os.getenv("ENVIRONMENT", "development")
     is_development = environment == "development"

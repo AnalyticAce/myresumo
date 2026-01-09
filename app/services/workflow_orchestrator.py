@@ -1,14 +1,12 @@
 """Orchestrate complete CV optimization workflow."""
-from typing import Dict, List, Optional
 import logging
 import re
-import json
+from typing import Dict, List, Optional
+
+from ..utils.shared_utils import TextProcessor
+from .cover_letter_gen import CoverLetterGenerator
 from .cv_analyzer import CVAnalyzer
 from .cv_optimizer import CVOptimizer
-from .cover_letter_gen import CoverLetterGenerator
-from .ai_client import get_ai_client
-from ..prompts.prompt_loader import PromptLoader
-from ..utils.shared_utils import JSONParser, ErrorHandler, TextProcessor
 
 logger = logging.getLogger(__name__)
 

@@ -54,6 +54,7 @@ REPLACEMENTS = {
     'game changer': 'improvement',
 }
 
+
 def humanize_content(content):
     """Apply humanization patterns to content."""
     # Apply regex patterns
@@ -72,6 +73,7 @@ def humanize_content(content):
 
     return content
 
+
 def process_file(filepath):
     """Process a single file."""
     try:
@@ -88,6 +90,7 @@ def process_file(filepath):
     except Exception as e:
         print(f"Error processing {filepath}: {e}", file=sys.stderr)
         return False
+
 
 def main():
     """Process all markdown and text files."""
@@ -114,6 +117,7 @@ def main():
 
     print(f"\nProcessed {processed_count} files")
     print(f"Modified {modified_count} files")
+
 
 if __name__ == '__main__':
     main()

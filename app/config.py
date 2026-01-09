@@ -1,15 +1,14 @@
-"""
-Configuration settings for PowerCV application.
+"""Configuration settings for PowerCV application.
 
 This module provides centralized configuration management using environment variables
 and sensible defaults. It supports different deployment environments and provides
 type-safe access to configuration values.
 """
 
-import os
 from functools import lru_cache
 from typing import List, Optional
-from pydantic import Field, field_validator, AliasChoices, computed_field
+
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

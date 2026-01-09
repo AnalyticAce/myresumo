@@ -5,9 +5,9 @@ making the application provider-agnostic.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Dict, List, Optional, Union
 
 
 class ProviderType(Enum):

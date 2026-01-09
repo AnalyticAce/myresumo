@@ -1,7 +1,8 @@
 """Validate PowerCV Cerebras integration installation."""
-import sys
 import os
+import sys
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 
@@ -38,9 +39,9 @@ def check_files():
 def check_imports():
     """Check all imports work."""
     try:
-        from app.prompts.prompt_loader import PromptLoader
-        from app.services.cerebras_client import CerebrasClient
-        from app.services.workflow_orchestrator import CVWorkflowOrchestrator
+        from app.prompts.prompt_loader import PromptLoader  # noqa: F401
+        from app.services.cerebras_client import CerebrasClient  # noqa: F401
+        from app.services.workflow_orchestrator import CVWorkflowOrchestrator  # noqa: F401
         print(" All imports successful")
         return True
     except ImportError as e:

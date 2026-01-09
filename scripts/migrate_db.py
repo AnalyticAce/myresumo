@@ -1,7 +1,8 @@
 import asyncio
 import os
-from motor.motor_asyncio import AsyncIOMotorClient
+
 from dotenv import load_dotenv
+from motor.motor_asyncio import AsyncIOMotorClient
 
 
 async def migrate():
@@ -47,6 +48,7 @@ async def migrate():
                 await dst_cl_col.replace_one({"_id": cl["_id"]}, cl)
 
     print("Migration complete.")
+
 
 if __name__ == "__main__":
     asyncio.run(migrate())

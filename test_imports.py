@@ -7,9 +7,9 @@ import pytest
 def test_imports():
     """Test all new modules can be imported."""
     # Import should succeed, otherwise pytest will fail this test.
-    from app.utils.error_handler import ErrorHandler, DetailedError
-    from app.utils.validation import ValidationHelper
     from app.middleware.debugging import DebuggingMiddleware
+    from app.utils.error_handler import DetailedError, ErrorHandler
+    from app.utils.validation import ValidationHelper
     
     # Basic sanity checks so linters don't flag unused imports
     assert ErrorHandler is not None

@@ -13,11 +13,10 @@ The system is designed for European job markets in 2025 with focus on:
 
 import json
 import os
-import re
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
-from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 
 from app.utils.token_tracker import TokenTracker
@@ -344,9 +343,9 @@ Top 3 weaknesses → targeted rewrites → new scores
         
         try:
             prompt = self._get_ats_keyword_prompt_template()
-            print(f"DEBUG: Prompt template retrieved")
+            print("DEBUG: Prompt template retrieved")
             chain = prompt | self.llm | self.output_parser
-            print(f"DEBUG: Chain created")
+            print("DEBUG: Chain created")
             
             result = await chain.ainvoke({
                 "job_description": job_description,
@@ -361,7 +360,7 @@ Top 3 weaknesses → targeted rewrites → new scores
             print(f"DEBUG: Exception occurred: {str(e)}")
             # If JSON parsing fails, try to extract JSON from markdown
             if "Invalid json output" in str(e):
-                print(f"DEBUG: JSON parsing failed, trying fallback")
+                print("DEBUG: JSON parsing failed, trying fallback")
                 # Try again with raw LLM to get markdown, then extract JSON
                 try:
                     prompt = self._get_ats_keyword_prompt_template()
@@ -402,7 +401,7 @@ Top 3 weaknesses → targeted rewrites → new scores
                                 continue
                     
                     # If no JSON found, create a basic structure from markdown
-                    print(f"DEBUG: No JSON found, creating fallback structure")
+                    print("DEBUG: No JSON found, creating fallback structure")
                     print(f"DEBUG: Raw AI content: {content[:1000]}...")  # Debug print
                     return {
                         "keywords": ["analysis", "completed"],

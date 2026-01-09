@@ -1,7 +1,8 @@
 import asyncio
 import os
-from motor.motor_asyncio import AsyncIOMotorClient
+
 from dotenv import load_dotenv
+from motor.motor_asyncio import AsyncIOMotorClient
 
 
 async def check_db():
@@ -25,6 +26,7 @@ async def check_db():
                         f"Sample resume from {db_name}: {sample.get('title')} for user {sample.get('user_id')}")
         except Exception as e:
             print(f"Error checking {db_name}: {e}")
+
 
 if __name__ == "__main__":
     asyncio.run(check_db())

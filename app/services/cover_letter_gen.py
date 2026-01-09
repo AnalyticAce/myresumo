@@ -1,12 +1,12 @@
 """Cover letter generation service using multi-provider AI."""
 import asyncio
-import json
+import logging
 import re
 from typing import Dict, List
-import logging
-from .ai_client import get_ai_client
+
 from ..prompts.prompt_loader import PromptLoader
-from ..utils.shared_utils import JSONParser, ErrorHandler
+from ..utils.shared_utils import JSONParser
+from .ai_client import get_ai_client
 
 logger = logging.getLogger(__name__)
 
@@ -210,7 +210,7 @@ Generate the complete cover letter text:
             dict: Fallback result structure
         """
         return {
-            "cover_letter": f"Unable to generate cover letter due to parsing error.",
+            "cover_letter": "Unable to generate cover letter due to parsing error.",
             "word_count": 0,
             "tone": tone
         }

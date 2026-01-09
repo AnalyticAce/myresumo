@@ -4,9 +4,10 @@ A minimal, provider-agnostic LLM service that works with any provider.
 """
 
 import json
-import re
 import logging
-from typing import Dict, List, Any, Optional, Union
+import re
+from typing import Any, Dict, List, Union
+
 from .factory import get_llm_provider
 
 logger = logging.getLogger(__name__)
@@ -89,6 +90,7 @@ Provide the optimized version."""
 
 # Global instance
 _llm_instance = None
+
 
 def get_llm(**config_overrides) -> UniversalLLM:
     """Get or create the global LLM instance."""

@@ -1,7 +1,7 @@
 """Load system prompts from markdown files."""
 import os
-from typing import Dict
 from pathlib import Path
+from typing import Dict
 
 
 class PromptLoader:

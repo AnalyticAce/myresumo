@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Resume, TemplateType } from '@/types/resume'
+import { Resume, TemplateType, ResumeStatus, ResumeFormat } from '@/types/resume'
 import { AnalysisResult, Recommendation } from '@/types/optimization'
 
 // Mock components
@@ -92,7 +92,7 @@ describe('Component Tests', () => {
       fireEvent.click(downloadButton)
 
       await waitFor(() => {
-        expect(mockDownload).toHaveBeenCalledWith(mockResume.fileUrl)
+        expect(mockDownload).toHaveBeenCalledWith(mockResume.downloadUrl)
       })
     })
 
@@ -144,7 +144,7 @@ describe('Component Tests', () => {
       })
     })
 
-    it('validates file types', () => {
+    it('validates file types', async () => {
       const mockToast = vi.spyOn(toast, 'error')
       const invalidFile = new File(['test'], 'resume.txt', { type: 'text/plain' })
       
@@ -186,7 +186,7 @@ describe('Component Tests', () => {
 
   describe('Analysis Components', () => {
     it('renders ATS score display', () => {
-      render(<ATSScoreDisplay score={mockAnalysis.score} />)
+      render(<ATSScoreDisplay score={mockAnalysis.atsScore} />)
       
       expect(screen.getByText('85')).toBeInTheDocument()
       expect(screen.getByText('Good')).toBeInTheDocument()

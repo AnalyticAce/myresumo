@@ -7,20 +7,22 @@ safe database operations.
 """
 
 import logging
-import os
 import re
 from contextlib import asynccontextmanager
-from typing import Dict, Optional
+from typing import Optional
 
 import motor.motor_asyncio
+
 from app.config import get_settings
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
+
 def sanitize_mongodb_uri_for_logging(uri: str) -> str:
     """Remove credentials from URI for safe logging."""
     return re.sub(r'://([^:]+):([^@]+)@', '://***:***@', uri)
+
 
 def get_secure_mongodb_config():
     """Get secure MongoDB configuration from settings."""
@@ -33,6 +35,7 @@ def get_secure_mongodb_config():
         "uri": settings.mongodb_uri,
         "database": settings.database_name
     }
+
 
 # Initialize configuration
 config = get_secure_mongodb_config()

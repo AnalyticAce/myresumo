@@ -1,10 +1,11 @@
 
-import os
 import json
 import logging
-from enum import Enum
-from typing import Dict, Any, Optional
+import os
 import time
+from enum import Enum
+from typing import Any, Dict
+
 from app.utils.token_tracker import TokenTracker
 
 logger = logging.getLogger(__name__)
@@ -24,8 +25,7 @@ class TaskComplexity(Enum):
 
 
 class ModelRouter:
-    """
-    Routes tasks to the appropriate model based on complexity.
+    """Routes tasks to the appropriate model based on complexity.
     Adapts the user's architectural plan to use Ollama backend.
     """
     _instance = None
@@ -108,8 +108,7 @@ class ModelRouter:
         return self._models[tier]
 
     def route_task(self, task_name: str, **kwargs) -> Dict[str, Any]:
-        """
-        Execute a task using the appropriate model tier.
+        """Execute a task using the appropriate model tier.
         """
         tier = self.task_mapping.get(task_name, ModelTier.BALANCED)
         model = self.get_model(tier)
@@ -408,8 +407,7 @@ class ModelRouter:
 
 
 class CascadeRouter(ModelRouter):
-    """
-    Router that attempts a task with a lower tier first, then escalates based on quality.
+    """Router that attempts a task with a lower tier first, then escalates based on quality.
     """
 
     def route_with_cascade(self, task_name: str, **kwargs) -> Dict[str, Any]:

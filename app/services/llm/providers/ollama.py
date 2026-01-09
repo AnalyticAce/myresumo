@@ -1,10 +1,11 @@
 """Ollama (Local LLM) Provider."""
 
 import time
-import json
+from typing import Any, Dict, List, Optional
+
 import aiohttp
-from typing import List, Dict, Any, Optional
-from ..base import BaseLLMProvider, LLMConfig, LLMResponse, LLMMessage
+
+from ..base import BaseLLMProvider, LLMMessage, LLMResponse
 
 
 class OllamaProvider(BaseLLMProvider):

@@ -4,21 +4,22 @@ This module provides a command-line interface for automating job-seeking tasks
 including CV tailoring and cover letter generation.
 """
 
-from app.utils.shared_utils import ValidationHelper, ErrorHandler
-from app.services.cover_letter_gen import CoverLetterGenerator
-from app.services.workflow_orchestrator import CVWorkflowOrchestrator
-from app.services.scraper import fetch_job_description, extract_keywords_from_jd
 import argparse
 import asyncio
 import json
 import logging
-import os
 import sys
-import yaml
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict
+
+import yaml
 from dotenv import load_dotenv
+
+from app.services.cover_letter_gen import CoverLetterGenerator
+from app.services.scraper import fetch_job_description
+from app.services.workflow_orchestrator import CVWorkflowOrchestrator
+from app.utils.shared_utils import ValidationHelper
 
 # Load environment variables
 load_dotenv()
@@ -317,7 +318,7 @@ class PowerCVCLI:
             f"Matched Skills: {', '.join(result.get('matching_skills', [])[:10])}")
         print(
             f"Missing Skills: {', '.join(result.get('missing_skills', [])[:5])}")
-        print(f"\nFiles generated:")
+        print("\nFiles generated:")
         print(f"  - {cv_output}")
         print(f"  - {cl_output}")
         print(f"  - {analysis_output}")

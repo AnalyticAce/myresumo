@@ -19,6 +19,7 @@ EMOJI_PATTERN = re.compile(
     flags=re.UNICODE
 )
 
+
 def remove_emojis_from_file(filepath):
     """Remove emojis from a single file."""
     try:
@@ -36,6 +37,7 @@ def remove_emojis_from_file(filepath):
     except Exception as e:
         print(f"Error processing {filepath}: {e}", file=sys.stderr)
         return False
+
 
 def main():
     """Process all relevant files in the repository."""
@@ -63,6 +65,7 @@ def main():
 
     print(f"\nProcessed {processed_count} files")
     print(f"Modified {modified_count} files")
+
 
 if __name__ == '__main__':
     main()

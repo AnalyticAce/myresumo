@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Union
 
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_openai import ChatOpenAI
-from langchain_openai import ChatOpenAI
+
 try:
     from langchain_ollama import ChatOllama
     HAS_OLLAMA = True

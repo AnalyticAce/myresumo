@@ -1,11 +1,10 @@
-"""
-Centralized template configuration for PowerCV.
+"""Centralized template configuration for PowerCV.
 
 This module defines all available templates, their validation patterns,
 and alias mappings for consistent template selection across the application.
 """
 
-from typing import Dict, List, Set
+from typing import Dict, List
 
 
 class TemplateConfig:

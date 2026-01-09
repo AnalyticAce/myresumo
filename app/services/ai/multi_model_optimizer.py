@@ -5,17 +5,15 @@ techniques instead of the old multi-model approach.
 """
 
 import logging
-import json
-import time
-from typing import Dict, List, Any
+from typing import Any, Dict
+
 from app.services.resume.advanced_optimizer import AdvancedResumeOptimizer
 
 logger = logging.getLogger(__name__)
 
 
 class MultiModelResumeOptimizer:
-    """
-    Advanced Resume Optimizer using comprehensive prompt engineering.
+    """Advanced Resume Optimizer using comprehensive prompt engineering.
     Replaces the old multi-model approach with sophisticated prompt techniques.
     """
 

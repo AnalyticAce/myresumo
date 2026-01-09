@@ -1,12 +1,14 @@
 """Simple model router using Cerebras AI directly without LangChain."""
 
-import os
 import json
 import logging
-from enum import Enum
-from typing import Dict, Any, Optional
+import os
 import time
+from enum import Enum
+from typing import Any, Dict, Optional
+
 from openai import OpenAI
+
 from app.config import computed_settings as settings
 
 logger = logging.getLogger(__name__)
@@ -26,8 +28,7 @@ class TaskComplexity(Enum):
 
 
 class SimpleModelRouter:
-    """
-    Simple model router that uses Cerebras AI directly.
+    """Simple model router that uses Cerebras AI directly.
     Routes tasks to the appropriate model based on complexity.
     """
     _instance = None
@@ -106,8 +107,7 @@ class SimpleModelRouter:
         return self.tier_config.get(tier, settings.API_MODEL_NAME)
 
     def route_task(self, task_name: str, **kwargs) -> Dict[str, Any]:
-        """
-        Execute a task using the appropriate model tier.
+        """Execute a task using the appropriate model tier.
         """
         tier = self.task_mapping.get(task_name, ModelTier.BALANCED)
         model_name = self.get_model_name(tier)
@@ -254,7 +254,6 @@ Current skills: {existing_skills}"""
 
     def _parse_result(self, task_name: str, result_text: str) -> Dict[str, Any]:
         """Parse the result based on task type."""
-        import json
         import re
         
         try:

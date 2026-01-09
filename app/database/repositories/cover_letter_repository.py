@@ -8,10 +8,11 @@ import logging
 import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+
 from bson import ObjectId
 
 from app.database.connector import MongoConnectionManager
-from app.database.models.cover_letter import CoverLetter, CoverLetterData
+from app.database.models.cover_letter import CoverLetter
 from app.database.repositories.base_repo import BaseRepository
 
 # Set up logging

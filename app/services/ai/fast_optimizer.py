@@ -1,10 +1,11 @@
 
+import hashlib
 import json
 import logging
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Dict, List, Optional
 import time
-import hashlib
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Dict, List
+
 from app.utils.token_tracker import TokenTracker
 
 logger = logging.getLogger(__name__)
@@ -31,8 +32,7 @@ class KeywordCache:
 
 
 class UltraFastResumeOptimizer:
-    """
-    Optimizes resume sections in parallel using ThreadPoolExecutor.
+    """Optimizes resume sections in parallel using ThreadPoolExecutor.
     """
 
     def __init__(self, model_name: str, api_key: str, api_base: str, max_workers: int = 5):
@@ -52,8 +52,7 @@ class UltraFastResumeOptimizer:
         )
 
     def optimize_resume(self, resume_data: Dict, job_description: str) -> Dict:
-        """
-        Main entry point for fast optimization.
+        """Main entry point for fast optimization.
         Breaks the resume into sections and optimizes them concurrently.
         """
         start_time = time.time()
@@ -62,7 +61,7 @@ class UltraFastResumeOptimizer:
         # 1. Extract Keywords (Cached)
         keywords = self._get_keywords(job_description)
         logger.info(
-            f"Keywords extracted: {len(keywords)} in {time.time()-start_time:.2f}s")
+            f"Keywords extracted: {len(keywords)} in {time.time() - start_time:.2f}s")
 
         # 2. Prepare Tasks
         # We need to optimize: Profile Summary, Experience (each job), Projects (each project)

@@ -5,9 +5,10 @@ including master optimization, ATS analysis, hidden achievements extraction,
 three-version creation, and iterative improvement.
 """
 
+from typing import Any, Dict, List
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from typing import Dict, Any, List, Optional
 
 from app.services.ai.comprehensive_optimizer import ComprehensiveResumeOptimizer
 

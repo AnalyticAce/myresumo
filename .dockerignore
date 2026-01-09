@@ -1,41 +1,23 @@
-# Version control
-.git
-.github
-.gitignore
-
-# Environment and configuration files
-.env*
-venv
-env
-__pycache__
-*.pyc
-*.pyo
-*.pyd
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
 .Python
-.pytest_cache
+env/
+venv/
+.env
+.env.local
+*.log
+.git/
+.github/
+node_modules/
+frontend/node_modules/
+frontend/dist/
+*.md
+tests/
+app/tests/
+.pytest_cache/
 .coverage
 htmlcov/
-
-# Development artifacts
-*.log
-logs/
-*.swp
-*.swo
-.DS_Store
-.idea/
-.vscode/
-
-# Project specific
-data/sample_resumes/
-data/sample_descriptions/
-data/sample_responses/
-tests/
-README.md
-CONTRIBUTING.md
-LICENSE
-benchmark/
-
-# Docker
-Dockerfile*
-docker-compose*
-.dockerignore
+pytest.ini
+.ruff_cache/

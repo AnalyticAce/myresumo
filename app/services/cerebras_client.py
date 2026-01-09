@@ -1,9 +1,10 @@
 """Cerebras AI API client wrapper."""
-import os
-import requests
-from typing import Dict, Optional
-from dotenv import load_dotenv
 import logging
+import os
+from typing import Dict, Optional
+
+import requests
+from dotenv import load_dotenv
 
 load_dotenv()
 logger = logging.getLogger(__name__)

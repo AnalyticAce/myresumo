@@ -1,13 +1,15 @@
 """AI-powered cover letter generator using CerebrasAI."""
 
-from typing import Dict, Optional
-from pydantic import BaseModel, Field
+from typing import Optional
+
 from openai import OpenAI
+
 from app.config import computed_settings as settings
 from app.services.llm.prompts.cover_letter_prompts import (
     COVER_LETTER_PROMPT,
-    COVER_LETTER_SYSTEM_PROMPT
+    COVER_LETTER_SYSTEM_PROMPT,
 )
+
 
 class AICoverLetterGenerator:
     """Service for generating cover letters using AI."""

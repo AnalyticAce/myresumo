@@ -1,4 +1,12 @@
-# Use Python 3.12 slim variant for smaller base image
+# Build Frontend
+FROM node:20-slim AS frontend-builder
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+# Builder stage for Python dependencies
 FROM python:3.12-slim AS builder
 
 # Set build arguments
@@ -8,20 +16,20 @@ ARG PIP_DISABLE_PIP_VERSION_CHECK=1
 # Set working directory
 WORKDIR /build
 
-# Install build dependencies for packages that need compilation
+# Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first to leverage Docker layer caching
-COPY ./requirements.txt .
+# Copy requirements
+COPY requirements.txt .
 
 # Install Python dependencies in a virtual environment
 RUN python -m venv /opt/venv && \
-    . /opt/venv/bin/pip install --no-cache-dir --upgrade pip wheel && \
-    pip install --no-cache-dir -r requirements.txt
+    /opt/venv/bin/pip install --upgrade pip wheel && \
+    /opt/venv/bin/pip install -r requirements.txt
 
-# Final stage - minimal runtime image
+# Final stage
 FROM python:3.12-slim
 
 # Set environment variables
@@ -30,15 +38,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PORT=8080 \
     PATH="/opt/venv/bin:$PATH"
 
-# Install minimal runtime dependencies
+# Install runtime dependencies (including Typst and standard utils)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    # TeX Live minimal for PDF generation (if needed)
-    texlive-latex-base \
-    texlive-fonts-recommended \
-    texlive-latex-extra \
-    lmodern \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -48,20 +52,20 @@ COPY --from=builder /opt/venv /opt/venv
 # Copy application code
 COPY ./app /app/app
 
-# Create a non-root user for security
+# Copy built frontend if needed (assuming FastAPI serves it from app/static/frontend)
+# Adjust the destination path as per your FastAPI setup
+COPY --from=frontend-builder /frontend/dist /app/app/static/frontend
+
+# Create a non-root user
 RUN groupadd --system app && \
     useradd --system --gid app --home-dir /app --shell /bin/bash app && \
     chown -R app:app /app
 
-# Switch to non-root user
 USER app
 
-# Expose the port the app runs on
 EXPOSE 8080
 
-# Health check using Python directly (no curl dependency)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')" || exit 1
 
-# Run with uvicorn for production
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "2"]

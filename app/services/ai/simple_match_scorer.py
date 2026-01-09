@@ -6,8 +6,10 @@ to calculate how well a resume matches a job description.
 
 import json
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
+
 from openai import OpenAI
+
 from app.config import computed_settings as settings
 
 

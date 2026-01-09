@@ -5,32 +5,32 @@ and handles application startup and shutdown events. It serves as the central
 coordination point for the entire application.
 """
 
-import logging
+from typing import Any, Dict, Optional
+
 from dotenv import load_dotenv
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field, field_validator, ConfigDict
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Body, FastAPI, HTTPException, Query, Request, status
 from fastapi.exceptions import RequestValidationError
-from fastapi import FastAPI, Request, HTTPException, Body, Query, status
-from app.utils.shared_utils import ValidationHelper, ErrorHandler
-from app.utils.error_handler import ErrorHandler, DetailedError, ErrorContext, debug_endpoint
-from app.services.master_cv import MasterCV
-from app.services.scraper import fetch_job_description, extract_keywords_from_jd
-from app.services.cover_letter_gen import CoverLetterGenerator
-from app.services.cv_analyzer import CVAnalyzer
-from app.services.workflow_orchestrator import CVWorkflowOrchestrator
-from app.routes.n8n_integration import router as n8n_router
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
 from app.api.routers.comprehensive_optimizer import comprehensive_router
 from app.api.routers.cover_letter import cover_letter_router
 from app.api.routers.resume import resume_router
 from app.api.routers.token_usage import router as token_usage_router
 from app.database.connector import MongoConnectionManager
+from app.routes.n8n_integration import router as n8n_router
+from app.services.master_cv import MasterCV
+from app.services.scraper import extract_keywords_from_jd
+from app.services.workflow_orchestrator import CVWorkflowOrchestrator
+from app.utils.error_handler import ErrorContext, ErrorHandler, debug_endpoint
+from app.utils.shared_utils import ErrorHandler
 from app.web.core import core_web_router
 from app.web.dashboard import web_router
+
 # Load environment variables from .env file
 load_dotenv(override=True)
 
@@ -45,9 +45,9 @@ orchestrator = CVWorkflowOrchestrator()
 from app.config.logging_config import logger
 from app.config.settings import get_settings
 from app.config.templates import TemplateConfig
-from app.middleware.rate_limit import init_rate_limiting
-from app.middleware.debugging import setup_debugging_middleware
 from app.core.exceptions import ConfigurationError, MissingApiKeyError
+from app.middleware.debugging import setup_debugging_middleware
+from app.middleware.rate_limit import init_rate_limiting
 
 
 # Request models
@@ -213,9 +213,9 @@ async def startup_event():
     except (ConfigurationError, MissingApiKeyError) as e:
         logger.error(f"Configuration error during startup: {e}")
         error_msg = f"""
-{"="*60}
+{"=" * 60}
 ❌ CONFIGURATION ERROR
-{"="*60}
+{"=" * 60}
 Error: {e}
 
 Please check your environment configuration:
@@ -225,7 +225,7 @@ Please check your environment configuration:
         if hasattr(e, 'provider'):
             error_msg += f"  - For AI provider: {e.provider}\n"
         error_msg += "\nUpdate your .env file or environment variables.\n"
-        error_msg += "="*60
+        error_msg += "=" * 60
 
         logger.error(error_msg)
         # Re-raise as RuntimeError to cause startup failure
@@ -233,12 +233,12 @@ Please check your environment configuration:
 
     except Exception as e:
         logger.error(f"Unexpected error during startup: {e}")
-        logger.error("="*60)
+        logger.error("=" * 60)
         logger.error("❌ STARTUP ERROR")
-        logger.error("="*60)
+        logger.error("=" * 60)
         logger.error(f"Unexpected error: {e}")
         logger.error("Check application logs for details.")
-        logger.error("="*60)
+        logger.error("=" * 60)
         import sys
         sys.exit(1)
 
@@ -442,8 +442,7 @@ def get_orchestrator():
 @app.post("/api/v2/optimize", tags=["CV Optimization v2"], summary="Complete CV optimization workflow")
 @debug_endpoint
 async def optimize_cv_v2(request: OptimizationRequest):
-    """
-    CV optimization endpoint utilizing modular prompts.
+    """CV optimization endpoint utilizing modular prompts.
     """
     try:
         with ErrorContext("cv_optimization_v2", {
@@ -472,8 +471,7 @@ async def optimize_cv_v2(request: OptimizationRequest):
 @app.post("/api/v2/analyze", tags=["CV Analysis v2"], summary="Analyze CV against job description")
 @debug_endpoint
 async def analyze_cv_v2(request: OptimizationRequest):
-    """
-    Analyze CV without optimization.
+    """Analyze CV without optimization.
     Returns ATS score, keyword analysis, and recommendations.
     """
     try:
@@ -498,8 +496,7 @@ async def analyze_cv_v2(request: OptimizationRequest):
 @app.post("/api/v2/cover-letter", tags=["Cover Letter v2"], summary="Generate cover letter")
 @debug_endpoint
 async def generate_cover_letter_v2(request: CoverLetterRequest):
-    """
-    Generate cover letter based on candidate and job data.
+    """Generate cover letter based on candidate and job data.
     """
     try:
         with ErrorContext("cover_letter_generation_v2", {
@@ -528,8 +525,7 @@ async def generate_cover_letter_v2(request: CoverLetterRequest):
 
 @app.post("/api/optimize-resume", response_model=OptimizationResponse)
 async def optimize_resume(request: OptimizationRequest):
-    """
-    Main endpoint for comprehensive resume optimization.
+    """Main endpoint for comprehensive resume optimization.
     """
     try:
         # Log request context for debugging without exposing sensitive data
@@ -562,8 +558,7 @@ async def optimize_resume(request: OptimizationRequest):
 
 @app.post("/api/analyze-cv")
 async def analyze_cv(request: OptimizationRequest):
-    """
-    Standalone endpoint for CV analysis only.
+    """Standalone endpoint for CV analysis only.
     """
     try:
         orchestrator = get_orchestrator()
@@ -577,8 +572,7 @@ async def analyze_cv(request: OptimizationRequest):
 
 @app.post("/api/generate-cover-letter")
 async def generate_cover_letter(request: OptimizationRequest):
-    """
-    Standalone endpoint for cover letter generation.
+    """Standalone endpoint for cover letter generation.
     """
     try:
         orchestrator = get_orchestrator()
@@ -599,8 +593,7 @@ async def generate_cover_letter(request: OptimizationRequest):
 
 @app.post("/api/v1/scrape", tags=["Scraping"], summary="Scrape job description from URL")
 async def scrape_job_description(url: str = Body(..., description="URL to job posting")):
-    """
-    Scrape job description from a LinkedIn, Indeed, or other job board URL.
+    """Scrape job description from a LinkedIn, Indeed, or other job board URL.
 
     Returns extracted job title, company, location, and full description.
     """
@@ -624,8 +617,7 @@ async def scrape_job_description(url: str = Body(..., description="URL to job po
 
 @app.post("/api/v1/extract-keywords", tags=["Analysis"], summary="Extract keywords from job description")
 async def extract_keywords(jd_text: str = Body(..., min_length=50, max_length=5000, description="Job description text")):
-    """
-    Extract skills and requirements from a job description.
+    """Extract skills and requirements from a job description.
 
     Useful for identifying what to highlight in your CV.
     """
@@ -654,8 +646,7 @@ async def optimize_structured_cv(
     generate_cover_letter: bool = Query(
         default=True, description="Whether to generate cover letter")
 ):
-    """
-    Optimize CV using structured master CV format(JSON/YAML).
+    """Optimize CV using structured master CV format(JSON/YAML).
 
     This endpoint reads a structured CV file and generates a tailored version
     for the provided job description.

@@ -4,14 +4,14 @@ This module provides functionality to scrape job descriptions from various job b
 including LinkedIn, Indeed, Glassdoor, and company career pages.
 """
 
-import re
 import logging
+import re
 from abc import ABC, abstractmethod
-from typing import Dict, Optional, List
+from typing import Dict, List
 from urllib.parse import urlparse
+
 import httpx
 from bs4 import BeautifulSoup
-from app.config import settings
 
 logger = logging.getLogger(__name__)
 

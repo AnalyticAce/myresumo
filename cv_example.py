@@ -1,11 +1,11 @@
 # Example Usage: Optimizing CV for Backend Developer Role
 # This shows how to use the PowerCV system with a sample CV
 
-from app.services.workflow_orchestrator import CVWorkflowOrchestrator
-from app.services.cv_analyzer import CVAnalyzer
-from app.services.cv_optimizer import CVOptimizer
 import json
 
+from app.services.cv_analyzer import CVAnalyzer
+from app.services.cv_optimizer import CVOptimizer
+from app.services.workflow_orchestrator import CVWorkflowOrchestrator
 
 # Sample CV text (depersonalized)
 SAMPLE_CV = """
@@ -91,7 +91,7 @@ def example_1_analyze_cv():
     try:
         result = analyzer.analyze(SAMPLE_CV, SAMPLE_JD)
         
-        print(f"\n Analysis completed successfully!")
+        print("\n Analysis completed successfully!")
         print(f"\n ATS Score: {result['ats_score']}/100")
         print(f"\n Summary: {result['summary']}")
         
@@ -254,7 +254,7 @@ def example_4_generate_cover_letter():
         print("\n GENERATED COVER LETTER:")
         print(result['cover_letter'])
         
-        print(f"\n Statistics:")
+        print("\n Statistics:")
         print(f"  • Word count: {result['word_count']}")
         print(f"  • Keywords used: {len(result.get('keywords', []))}")
         
@@ -284,7 +284,7 @@ def example_5_full_workflow():
             generate_cover_letter=True
         )
         
-        print(f"\n Workflow completed!")
+        print("\n Workflow completed!")
         print(f"\n Final ATS Score: {result['ats_score']}/100")
         
         # Save all outputs
@@ -296,9 +296,9 @@ def example_5_full_workflow():
         print("\n" + "=" * 70)
         print("WORKFLOW SUMMARY")
         print("=" * 70)
-        print(f"Analysis:  Completed")
-        print(f"CV Optimization:  Completed")
-        print(f"Cover Letter:  Completed")
+        print("Analysis:  Completed")
+        print("CV Optimization:  Completed")
+        print("Cover Letter:  Completed")
         print(f"ATS Score: {result['ats_score']}/100")
         
     except Exception as e:
@@ -421,9 +421,9 @@ if __name__ == "__main__":
     if choice == 'all':
         for key, (name, func) in examples.items():
             if func:  # Skip 'all' option
-                print(f"\n\n{'='*70}")
+                print(f"\n\n{'=' * 70}")
                 print(f"Running: {name}")
-                print(f"{'='*70}")
+                print(f"{'=' * 70}")
                 func()
                 input("\nPress Enter to continue to next example...")
     

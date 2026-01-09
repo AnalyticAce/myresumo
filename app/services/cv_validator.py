@@ -1,7 +1,7 @@
 """Validate optimized CV against original to prevent data loss and hallucinations."""
-from typing import Dict, List
-import re
 import logging
+import re
+from typing import Dict
 
 logger = logging.getLogger(__name__)
 

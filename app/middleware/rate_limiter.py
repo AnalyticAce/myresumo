@@ -4,16 +4,17 @@ This module provides rate limiting functionality to protect against
 abuse and ensure fair usage of API resources.
 """
 
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
+import json
+import logging
+import time
+from typing import Callable
+
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
+from slowapi import Limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
-import time
-import json
-from typing import Callable, Dict, Any
-import logging
 
 logger = logging.getLogger(__name__)
 

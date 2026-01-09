@@ -4,7 +4,8 @@ Uses comprehensive prompt engineering for professional resume optimization.
 """
 
 import logging
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict
+
 from ..llm.universal import get_llm
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,6 @@ class AdvancedResumeOptimizer:
         seniority: str = "mid-senior"
     ) -> Dict[str, Any]:
         """Run comprehensive resume optimization using the master prompt."""
-        
         master_prompt = f"""You are optimizing a resume for a job application.
 
 TARGET JOB: {job_title} at {company}
@@ -90,7 +90,6 @@ READY FOR INTERVIEW"""
         job_description: str
     ) -> Dict[str, Any]:
         """ATS keyword and gap analysis."""
-        
         prompt = f"""Analyze JD vs resume for ATS gaps:
 
 JD: {job_description}
@@ -124,7 +123,6 @@ Resume: {resume_text}
         job_title: str = ""
     ) -> Dict[str, Any]:
         """Create 3 resume positioning variants."""
-        
         prompt = f"""Create 3 resume positioning variants for this JD:
 
 JD: {job_description}
@@ -161,7 +159,6 @@ Each: summary + 4 bullets + when to use."""
         job_title: str = ""
     ) -> Dict[str, Any]:
         """5-minute ATS pass for emergency applications."""
-        
         prompt = f"""Quick ATS optimization for emergency application:
 
 Role: {job_title}

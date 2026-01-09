@@ -1,11 +1,10 @@
 """CV analysis service using multi-provider AI."""
-import json
-import re
-from typing import Dict, List, Optional
 import logging
-from .ai_client import get_ai_client
+from typing import Dict
+
 from ..prompts.prompt_loader import PromptLoader
-from ..utils.shared_utils import JSONParser, ErrorHandler, MetricsHelper, ValidationHelper
+from ..utils.shared_utils import JSONParser, MetricsHelper, ValidationHelper
+from .ai_client import get_ai_client
 
 logger = logging.getLogger(__name__)
 

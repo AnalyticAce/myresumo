@@ -1,10 +1,10 @@
 """Rate limiting middleware for PowerCV."""
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
-from fastapi import Request, HTTPException, status
-from typing import Callable
 import logging
+
+from fastapi import HTTPException, Request, status
+from slowapi import Limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from app.config import get_settings
 
@@ -17,6 +17,7 @@ limiter = Limiter(key_func=get_remote_address)
 # Stricter limiter for expensive operations
 expensive_limiter = Limiter(key_func=get_remote_address)
 
+
 # User-based limiter (when auth is implemented)
 def get_user_identifier(request: Request) -> str:
     """Get user identifier for rate limiting.
@@ -27,12 +28,12 @@ def get_user_identifier(request: Request) -> str:
     # For now, fall back to IP
     return get_remote_address(request)
 
+
 user_limiter = Limiter(key_func=get_user_identifier)
 
 
 def init_rate_limiting(app):
     """Initialize rate limiting for the FastAPI app."""
-
     # Add rate limit exceeded handler
     app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
@@ -46,7 +47,6 @@ def init_rate_limiting(app):
 
 def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
     """Handle rate limit exceeded errors."""
-
     logger.warning(
         f"Rate limit exceeded for {request.url.path} from {get_remote_address(request)}"
     )

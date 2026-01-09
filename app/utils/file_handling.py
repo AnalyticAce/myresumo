@@ -6,10 +6,6 @@ file management for the PowerCV application.
 """
 
 import os
-import subprocess
-import tempfile
-from pathlib import Path
-from typing import Optional
 
 import PyPDF2
 import pytesseract

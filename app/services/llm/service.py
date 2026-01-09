@@ -5,7 +5,8 @@ throughout the application, making it completely provider-agnostic.
 """
 
 import logging
-from typing import Dict, List, Any, Optional, Union
+from typing import Any, Dict, List, Optional, Union
+
 from .base import BaseLLMProvider, LLMMessage, LLMResponse
 from .factory import get_llm_provider
 
@@ -250,6 +251,7 @@ Provide the optimized version of this section. Make it more impactful while main
 
 # Singleton instance for easy access
 _default_service = None
+
 
 def get_llm_service(**config_overrides) -> UniversalLLMService:
     """Get a universal LLM service instance."""

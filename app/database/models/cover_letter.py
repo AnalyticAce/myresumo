@@ -9,7 +9,7 @@ and API documentation.
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import EmailStr, Field, field_validator
+from pydantic import EmailStr, Field
 
 from app.database.models.base import BaseSchema
 

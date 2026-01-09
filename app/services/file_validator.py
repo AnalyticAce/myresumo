@@ -4,7 +4,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Tuple, Optional
+from typing import Tuple
 
 from fastapi import HTTPException, UploadFile, status
 
@@ -44,11 +44,11 @@ class SecureFileValidator:
     # Dangerous file signatures (magic bytes)
     DANGEROUS_SIGNATURES = [
         b'MZ',      # Windows executable
-        b'\x7fELF', # Linux executable
+        b'\x7fELF',  # Linux executable
         b'#!/',     # Script files
         b'<?php',   # PHP files
         b'<%',      # ASP/JSP files
-        b'<script', # HTML with scripts
+        b'<script',  # HTML with scripts
     ]
 
     @classmethod
@@ -130,7 +130,7 @@ class SecureFileValidator:
         if len(content) > cls.MAX_FILE_SIZE:
             raise HTTPException(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail=f"File too large. Maximum size: {cls.MAX_FILE_SIZE // (1024*1024)}MB"
+                detail=f"File too large. Maximum size: {cls.MAX_FILE_SIZE // (1024 * 1024)}MB"
             )
 
         if len(content) == 0:
@@ -142,7 +142,6 @@ class SecureFileValidator:
     @classmethod
     def _validate_content_type(cls, content: bytes, filename: str) -> None:
         """Validate file content type via magic bytes and extension."""
-
         if not MAGIC_AVAILABLE:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

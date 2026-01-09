@@ -38,4 +38,4 @@ export interface DashboardFilters {
   search?: string
 }
 
-export { TemplateType }
+export { TemplateType, ResumeStatus, ResumeFormat }

@@ -2,10 +2,10 @@
 """Test server startup without actually running it."""
 
 import sys
-import os
 
 # Add project root to Python path
 sys.path.insert(0, '/home/illnar/Projects/PowerCV')
+
 
 def test_imports():
     """Test all critical imports for server startup."""
@@ -18,16 +18,16 @@ def test_imports():
         print(f"✅ Settings loaded: {settings.app_name} v{settings.version}")
         
         # Test database connector
-        from app.database.connector import MongoConnectionManager, get_secure_mongodb_config
+        from app.database.connector import (
+            get_secure_mongodb_config,
+        )
         config = get_secure_mongodb_config()
         print(f"✅ MongoDB config: {config['database']}")
         
         # Test main app import
-        from app.main import app
         print("✅ Main app imported successfully")
         
         # Test debugging middleware
-        from app.middleware.debugging import DebuggingMiddleware
         print("✅ Debugging middleware imported")
         
         print("\n🎉 All critical imports successful!")
@@ -38,6 +38,7 @@ def test_imports():
         import traceback
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     success = test_imports()

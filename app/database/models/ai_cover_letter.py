@@ -1,7 +1,9 @@
 """AI cover letter generation models."""
 
-from pydantic import BaseModel, Field
 from typing import Optional
+
+from pydantic import BaseModel, Field
+
 
 class AICoverLetterRequest(BaseModel):
     """Request model for generating a cover letter with AI."""

@@ -1,9 +1,10 @@
 """Multi-provider AI client."""
-import os
-import requests
-from typing import Optional
-from dotenv import load_dotenv
 import logging
+import os
+from typing import Optional
+
+import requests
+from dotenv import load_dotenv
 
 from app.config.settings import get_settings
 from app.core.exceptions import MissingApiKeyError

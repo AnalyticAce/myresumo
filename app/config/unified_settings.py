@@ -1,14 +1,13 @@
-"""
-Consolidated configuration settings for PowerCV application.
+"""Consolidated configuration settings for PowerCV application.
 
 This module provides a single, unified configuration management system
 that replaces the duplicate config.py and config/settings.py files.
 """
 
-import os
 import re
 from functools import lru_cache
 from typing import List, Optional
+
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 

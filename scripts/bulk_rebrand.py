@@ -1,5 +1,4 @@
 import os
-import re
 
 
 def replace_in_file(filepath, old_text, new_text):

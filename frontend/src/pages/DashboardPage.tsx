@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ResumeCard } from '@/components/dashboard/ResumeCard'
 import { Plus, Search } from 'lucide-react'
-import { DashboardFilters, ResumeStatus, ResumeFormat, TemplateType } from '@/types'
+import { ResumeStatus, ResumeFormat, TemplateType } from '@/types'
 
 // Mock data for now
 const mockResumes = [

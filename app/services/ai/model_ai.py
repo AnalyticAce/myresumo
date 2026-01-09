@@ -10,8 +10,8 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
-from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 
 from app.services.ai.ats_scoring import ATSScorerLLM

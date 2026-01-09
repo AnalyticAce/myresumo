@@ -1,28 +1,15 @@
 """Shared utilities for PowerCV services."""
 
 import json
-import re
 import logging
-from typing import Dict, Any, Optional, List
+import re
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from app.utils.validation import ValidationHelper as EnhancedValidationHelper
+# ValidationHelper is imported directly from app.utils.validation
+from app.utils.validation import ValidationHelper
 
 logger = logging.getLogger(__name__)
-
-
-class ValidationHelper:
-    """Enhanced validation helper with backward compatibility."""
-    
-    @staticmethod
-    def validate_url(url: str) -> str:
-        """Validate URL with enhanced error handling."""
-        return EnhancedValidationHelper.validate_url(url)
-    
-    @staticmethod
-    def validate_text_input(text: str, max_length: int, field_name: str, min_length: int = 10) -> str:
-        """Validate text input with enhanced error handling."""
-        return EnhancedValidationHelper.validate_text_input(text, max_length, field_name, min_length)
 
 
 class JSONParser:
@@ -74,7 +61,7 @@ class JSONParser:
             # If no structure found, return as is (might be raw string)
             return response.strip()
 
-        response = response[start_idx:json_end+1]
+        response = response[start_idx:json_end + 1]
         response = response.strip()
 
         # Fix common JSON issues safely
@@ -106,8 +93,7 @@ class JSONParser:
             str: Repaired JSON string
         """
         # Count open braces/brackets
-        open_braces = json_str.count('{') - json_str.count('}')
-        open_brackets = json_str.count('[') - json_str.count(']')
+        open_braces = json_str.count('{') - json_str.count('}')  # noqa: F841
 
         # Determine last open char to decide closing order (heuristic)
         # This is a simple stack-based approach
@@ -164,7 +150,8 @@ class JSONParser:
         try:
             cleaned = JSONParser.clean_json_response(response)
             parsed = json.loads(cleaned)
-            logger.debug(f"Successfully parsed JSON response ({len(str(parsed))} chars)")
+            logger.debug(
+                f"Successfully parsed JSON response ({len(str(parsed))} chars)")
             return parsed
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse JSON response: {str(e)}")
@@ -185,20 +172,22 @@ class JSONParser:
 
             # Return minimal fallback with more context
             return {
-                "error": "JSON Parse Error", 
+                "error": "JSON Parse Error",
                 "error_details": str(e),
                 "error_line": e.lineno,
                 "error_column": e.colno,
                 "raw_response": response[:500]
             }
         except Exception as e:
-            logger.error(f"Unexpected error during JSON parsing: {type(e).__name__}: {str(e)}")
+            logger.error(
+                f"Unexpected error during JSON parsing: {type(e).__name__}: {str(e)}")
             if fallback_structure is not None:
-                logger.warning("Using fallback structure due to unexpected error")
+                logger.warning(
+                    "Using fallback structure due to unexpected error")
                 return fallback_structure.copy() if hasattr(fallback_structure, 'copy') else fallback_structure
-            
+
             return {
-                "error": "Unexpected JSON Parsing Error", 
+                "error": "Unexpected JSON Parsing Error",
                 "error_type": type(e).__name__,
                 "error_details": str(e),
                 "raw_response": response[:500]
@@ -336,7 +325,7 @@ class TextProcessor:
                     break
             elif found_contact and not line_stripped:
                 # Empty line might end contact section, but allow one empty line if short
-                if len(contact_lines) > 0 and i < len(lines) - 1 and lines[i+1].strip():
+                if len(contact_lines) > 0 and i < len(lines) - 1 and lines[i + 1].strip():
                     continue
                 break
 
@@ -344,81 +333,6 @@ class TextProcessor:
             return '\n'.join(contact_lines).strip()
 
         return None
-
-
-class ValidationHelper:
-    """Utility class for input validation."""
-
-    @staticmethod
-    def validate_text_input(text: str, max_length: int = 10000, field_name: str = "input") -> str:
-        """Validate text input.
-
-        Args:
-            text: Text to validate
-            max_length: Maximum allowed length
-            field_name: Name of the field for error messages
-
-        Returns:
-            str: Validated text
-
-        Raises:
-            ValueError: If validation fails
-        """
-        if not text or not text.strip():
-            raise ValueError(f"{field_name} cannot be empty")
-
-        if len(text) > max_length:
-            raise ValueError(
-                f"{field_name} exceeds maximum length of {max_length} characters")
-
-        return text.strip()
-
-    @staticmethod
-    def validate_url(url: str) -> str:
-        """Validate URL format.
-
-        Args:
-            url: URL to validate
-
-        Returns:
-            str: Validated URL
-
-        Raises:
-            ValueError: If URL is invalid
-        """
-        if not url or not url.strip():
-            raise ValueError("URL cannot be empty")
-
-        url = url.strip()
-        if not (url.startswith('http://') or url.startswith('https://')):
-            raise ValueError("URL must start with http:// or https://")
-
-        return url
-
-    @staticmethod
-    def sanitize_filename(filename: str) -> str:
-        """Sanitize filename for safe file system usage.
-
-        Args:
-            filename: Original filename
-
-        Returns:
-            str: Sanitized filename
-        """
-        # Remove or replace unsafe characters
-        safe_chars = []
-        for char in filename:
-            if char.isalnum() or char in "-_ .":
-                safe_chars.append(char)
-            else:
-                safe_chars.append("_")
-
-        # Remove multiple consecutive underscores/spaces
-        sanitized = "".join(safe_chars)
-        sanitized = re.sub(r'[_\s]+', '_', sanitized)
-
-        # Limit length
-        return sanitized[:100].strip('_')
 
 
 class ErrorHandler:

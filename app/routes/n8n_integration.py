@@ -1,13 +1,14 @@
 """n8n-friendly API endpoints."""
-from fastapi import APIRouter, HTTPException, Header, Depends
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
 import logging
 import os
+from typing import Optional
 
+from fastapi import APIRouter, Depends, Header, HTTPException
+from pydantic import BaseModel, Field
+
+from app.services.ai_client import get_ai_client
 from app.services.cv_analyzer import CVAnalyzer
 from app.services.workflow_orchestrator import CVWorkflowOrchestrator
-from app.services.ai_client import get_ai_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/n8n", tags=["n8n"])
@@ -65,8 +66,7 @@ async def analyze_cv(
     request: CVAnalysisRequest,
     api_key: str = Depends(verify_api_key)
 ):
-    """
-    Analyze CV against job description.
+    """Analyze CV against job description.
     Returns quick analysis for n8n workflows.
     """
     try:
@@ -95,8 +95,7 @@ async def optimize_cv(
     request: CVOptimizationRequest,
     api_key: str = Depends(verify_api_key)
 ):
-    """
-    Full CV optimization workflow for n8n.
+    """Full CV optimization workflow for n8n.
     Returns structured JSON for easy n8n processing.
     """
     try:
@@ -135,8 +134,7 @@ async def switch_ai_provider(
     request: ProviderSwitchRequest,
     api_key: str = Depends(verify_api_key)
 ):
-    """
-    Switch AI provider dynamically.
+    """Switch AI provider dynamically.
     Useful for A/B testing in n8n workflows.
     """
     try:
@@ -144,7 +142,7 @@ async def switch_ai_provider(
         if request.provider not in ['cerebras', 'openai']:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid provider. Choose: cerebras, openai"
+                detail="Invalid provider. Choose: cerebras, openai"
             )
 
         # Set environment variable
@@ -194,8 +192,7 @@ async def switch_ai_provider(
 
 @router.get("/providers")
 async def list_providers(api_key: str = Depends(verify_api_key)):
-    """
-    Get current AI provider information and available providers.
+    """Get current AI provider information and available providers.
     """
     try:
         client = get_ai_client()

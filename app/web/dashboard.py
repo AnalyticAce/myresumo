@@ -5,7 +5,7 @@ views such as resume management, profile settings, and personalized features
 that require user context.
 """
 
-from fastapi import Path, Request, Query
+from fastapi import Path, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 

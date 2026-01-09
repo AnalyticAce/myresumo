@@ -8,23 +8,26 @@ AI-powered cover letter generation services.
 
 import logging
 import tempfile
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from fastapi import (
     APIRouter,
+    BackgroundTasks,
     Body,
     Depends,
     HTTPException,
     Query,
     Request,
     status,
-    BackgroundTasks,
 )
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, EmailStr, Field
 
+from app.config import computed_settings as settings
+from app.database.models.ai_cover_letter import (
+    AICoverLetterRequest,
+    AICoverLetterResponse,
+)
 from app.database.models.cover_letter import (
     CoverLetter,
     CoverLetterData,
@@ -32,11 +35,12 @@ from app.database.models.cover_letter import (
     CoverLetterRequest,
     CoverLetterSummary,
 )
-from app.database.models.ai_cover_letter import AICoverLetterRequest, AICoverLetterResponse
 from app.database.repositories.cover_letter_repository import CoverLetterRepository
-from app.services.cover_letter import CoverLetterTemplateGenerator, AICoverLetterGenerator
+from app.services.cover_letter import (
+    AICoverLetterGenerator,
+    CoverLetterTemplateGenerator,
+)
 from app.services.resume.typst_generator import TypstGenerator
-from app.config import computed_settings as settings
 
 # Configure logging
 logging.basicConfig(

@@ -1,7 +1,8 @@
 import asyncio
 import os
-from motor.motor_asyncio import AsyncIOMotorClient
+
 from dotenv import load_dotenv
+from motor.motor_asyncio import AsyncIOMotorClient
 
 
 async def inspect():
@@ -18,6 +19,7 @@ async def inspect():
             print(f"- {k}: {type(v)}")
     else:
         print("No resumes found in powercv.")
+
 
 if __name__ == "__main__":
     asyncio.run(inspect())

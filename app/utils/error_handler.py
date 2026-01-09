@@ -2,11 +2,11 @@
 
 import logging
 import traceback
-from typing import Dict, Any, Optional, List
 from datetime import datetime
 from functools import wraps
+from typing import Any, Dict
+
 from fastapi import HTTPException, status
-import json
 
 logger = logging.getLogger(__name__)
 

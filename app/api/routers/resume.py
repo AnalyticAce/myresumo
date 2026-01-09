@@ -9,13 +9,14 @@ AI-powered resume optimization services.
 import json
 import logging
 import os
-import secrets
 import tempfile
 import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from bson import ObjectId
+from bson.errors import InvalidId
 from fastapi import (
     APIRouter,
     Body,
@@ -31,17 +32,14 @@ from fastapi import (
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, EmailStr, Field
 
+from app.config.templates import TemplateConfig
 from app.database.models.resume import Resume, ResumeData
 from app.database.repositories.resume_repository import ResumeRepository
-from app.services.resume.universal_scorer import UniversalResumeScorer
-from app.services.ai.model_ai import AtsResumeOptimizer
-from app.services.resume.typst_generator import TypstGenerator
+from app.middleware.rate_limit import heavy_limit, light_limit
 from app.services.file_validator import SecureFileValidator, store_file_securely
+from app.services.resume.typst_generator import TypstGenerator
+from app.services.resume.universal_scorer import UniversalResumeScorer
 from app.utils.file_handling import extract_text_from_file
-from app.config.templates import TemplateConfig
-from app.middleware.rate_limit import light_limit, heavy_limit
-from bson import ObjectId
-from bson.errors import InvalidId
 
 # Configure logging
 logging.basicConfig(
@@ -366,7 +364,7 @@ async def create_resume(
     except HTTPException:
         # Re-raise HTTPExceptions as-is (they're already properly handled)
         raise
-    except Exception as e:
+    except Exception:
         # Log unexpected errors before converting to HTTPException
         logger.error("Unexpected error creating resume", exc_info=True, extra={
             "operation": "resume_upload",
@@ -777,7 +775,6 @@ async def get_templates(
         HTTPException: If template retrieval fails
     """
     try:
-        import os
         template_dir = "data/sample_latex_templates"
         templates = []
 

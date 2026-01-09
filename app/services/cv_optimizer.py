@@ -1,10 +1,11 @@
 import json
+import logging
 import re
 from typing import Dict, List, Optional
-import logging
-from .ai_client import get_ai_client
+
 from ..prompts.prompt_loader import PromptLoader
-from ..utils.shared_utils import JSONParser, ErrorHandler, TextProcessor
+from ..utils.shared_utils import JSONParser
+from .ai_client import get_ai_client
 from .cv_validator import CVValidator
 
 # Compiled regex for email extraction to avoid recompilation on every call

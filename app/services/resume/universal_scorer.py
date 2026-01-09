@@ -4,7 +4,8 @@ Provider-agnostic resume scoring using the universal LLM interface.
 """
 
 import logging
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
+
 from ..llm.universal import get_llm
 
 logger = logging.getLogger(__name__)
