@@ -3,18 +3,19 @@ import { ResumeStatus, ResumeFormat, TemplateType } from './enums'
 export interface Resume {
   id: string
   userId: string
-  company: string
-  position: string
+  title?: string
+  company?: string
+  position?: string
   status: ResumeStatus
-  atsScore: number
-  format: ResumeFormat
-  sourceType: 'master_cv' | 'upload'
+  atsScore?: number
+  format?: ResumeFormat
+  sourceType?: 'master_cv' | 'upload'
   sourceId?: string
-  sourceName: string
-  template: TemplateType
-  hasCoverLetter: boolean
-  createdAt: string
-  updatedAt: string
+  sourceName?: string
+  template?: TemplateType
+  hasCoverLetter?: boolean
+  createdAt?: string
+  updatedAt?: string
   downloadUrl?: string
   coverLetterUrl?: string
 }
@@ -36,3 +37,5 @@ export interface DashboardFilters {
   sortOrder: 'asc' | 'desc'
   search?: string
 }
+
+export { TemplateType }
