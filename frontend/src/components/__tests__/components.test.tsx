@@ -19,24 +19,25 @@ const mockResume: Resume = {
   id: '1',
   userId: 'demo-user',
   title: 'Senior Software Engineer Resume',
-  status: 'draft',
-  createdAt: new Date('2024-01-15'),
-  updatedAt: new Date('2024-01-15'),
+  status: ResumeStatus.NOT_APPLIED,
+  createdAt: '2024-01-15T10:00:00Z',
+  updatedAt: '2024-01-15T10:00:00Z',
   atsScore: 85,
-  fileUrl: '/resumes/senior-software-engineer.pdf',
+  downloadUrl: '/resumes/senior-software-engineer.pdf',
   company: 'TechCorp',
   position: 'Senior Software Engineer',
-  format: 'pdf'
+  format: ResumeFormat.PDF
 }
 
 const mockAnalysis: AnalysisResult = {
-  score: 85,
+  atsScore: 85,
   matchedSkills: ['React', 'TypeScript', 'Node.js'],
   missingSkills: ['Python', 'Docker'],
   recommendations: [
     {
       id: '1',
-      type: 'high',
+      category: 'skills',
+      severity: 'high',
       message: 'Add more quantifiable achievements',
       suggestion: 'Include specific metrics and results'
     } as Recommendation
@@ -162,7 +163,7 @@ describe('Component Tests', () => {
     it('renders template options', () => {
       const mockSelect = vi.fn()
       
-      render(<TemplateSelector selectedTemplate="modern" as TemplateType} onTemplateSelect={mockSelect} />)
+      render(<TemplateSelector selectedTemplate={TemplateType.MODERN} onTemplateSelect={mockSelect} />)
       
       expect(screen.getByText('Modern')).toBeInTheDocument()
       expect(screen.getByText('Professional')).toBeInTheDocument()
@@ -172,7 +173,7 @@ describe('Component Tests', () => {
     it('handles template selection', async () => {
       const mockSelect = vi.fn()
       
-      render(<TemplateSelector selectedTemplate="modern" as TemplateType} onTemplateSelect={mockSelect} />)
+      render(<TemplateSelector selectedTemplate={TemplateType.MODERN} onTemplateSelect={mockSelect} />)
       
       const professionalTemplate = screen.getByText('Professional')
       fireEvent.click(professionalTemplate)
@@ -192,7 +193,7 @@ describe('Component Tests', () => {
     })
 
     it('renders skills match', () => {
-      render(<SkillsMatch analysis={mockAnalysis} />)
+      render(<SkillsMatch matchedSkills={mockAnalysis.matchedSkills} missingSkills={mockAnalysis.missingSkills} />)
       
       expect(screen.getByText('React')).toBeInTheDocument()
       expect(screen.getByText('TypeScript')).toBeInTheDocument()
