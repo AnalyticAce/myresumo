@@ -31,10 +31,13 @@ class CoverLetterRepository(BaseRepository):
     cover letter records in the database, as well as querying and filtering operations.
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        db_name: str = os.getenv("DB_NAME", "powercv"),
+        collection_name: str = "cover_letters",
+    ):
         """Initialize the cover letter repository with database connection."""
-        self.connection_manager = MongoConnectionManager.get_instance()
-        self.collection_name = "cover_letters"
+        super().__init__(db_name, collection_name)
 
     async def create_cover_letter(self, cover_letter: CoverLetter) -> Optional[str]:
         """Create a new cover letter in the database.
@@ -49,27 +52,28 @@ class CoverLetterRepository(BaseRepository):
             Exception: If database operation fails
         """
         try:
-            connection_manager = MongoConnectionManager.get_instance()
+            db_name = get_db_name()
             cover_letter_dict = cover_letter.model_dump()
 
             # Convert datetime objects to ISO format for MongoDB
-            if "created_at" in cover_letter_dict:
+            if "created_at" in cover_letter_dict and cover_letter_dict["created_at"]:
                 cover_letter_dict["created_at"] = cover_letter_dict["created_at"].isoformat(
                 )
-            if "updated_at" in cover_letter_dict:
+            if "updated_at" in cover_letter_dict and cover_letter_dict["updated_at"]:
                 cover_letter_dict["updated_at"] = cover_letter_dict["updated_at"].isoformat(
                 )
 
-            # Convert content_data to dict
-            if "content_data" in cover_letter_dict:
+            # Convert content_data to dict if it's a Pydantic model
+            if "content_data" in cover_letter_dict and hasattr(cover_letter_dict["content_data"], "model_dump"):
                 cover_letter_dict["content_data"] = cover_letter_dict["content_data"].model_dump(
                 )
 
-            async with connection_manager.get_collection(get_db_name(), self.collection_name) as collection:
+            async with self.connection_manager.get_collection(db_name, self.collection_name) as collection:
                 result = await collection.insert_one(cover_letter_dict)
-            return str(result.inserted_id) if result else None
+                return str(result.inserted_id) if result else None
 
         except Exception as e:
+            logger.error(f"Failed to create cover letter: {str(e)}")
             raise Exception(f"Failed to create cover letter: {str(e)}")
 
     async def get_cover_letter_by_id(self, cover_letter_id: str) -> Optional[Dict[str, Any]]:
@@ -155,8 +159,7 @@ class CoverLetterRepository(BaseRepository):
             Exception: If database operation fails
         """
         try:
-            connection_manager = MongoConnectionManager.get_instance()
-
+            db_name = get_db_name()
             # Add updated timestamp
             update_data["updated_at"] = datetime.now().isoformat()
 
@@ -164,14 +167,16 @@ class CoverLetterRepository(BaseRepository):
             if "content_data" in update_data and hasattr(update_data["content_data"], "model_dump"):
                 update_data["content_data"] = update_data["content_data"].model_dump()
 
-            async with connection_manager.get_collection("myresumo", self.collection_name) as collection:
+            async with self.connection_manager.get_collection(db_name, self.collection_name) as collection:
                 result = await collection.update_one(
                     {"_id": ObjectId(cover_letter_id)},
                     {"$set": update_data}
                 )
-            return result.modified_count > 0
+                return result.modified_count > 0
 
         except Exception as e:
+            logger.error(
+                f"Failed to update cover letter {cover_letter_id}: {str(e)}")
             raise Exception(f"Failed to update cover letter: {str(e)}")
 
     async def delete_cover_letter(self, cover_letter_id: str) -> bool:
@@ -208,14 +213,19 @@ class CoverLetterRepository(BaseRepository):
             Exception: If database operation fails
         """
         try:
-            connection_manager = MongoConnectionManager.get_instance()
-            async with connection_manager.get_collection("myresumo", self.collection_name) as collection:
+            db_name = get_db_name()
+            async with self.connection_manager.get_collection(db_name, self.collection_name) as collection:
                 cursor = collection.find(
                     {"resume_id": resume_id}).sort("created_at", -1)
                 cover_letters = await cursor.to_list(length=None)
-            return cover_letters or []
+                # Convert ObjectId to string
+                for cl in cover_letters:
+                    cl["_id"] = str(cl["_id"])
+                return cover_letters
 
         except Exception as e:
+            logger.error(
+                f"Failed to retrieve cover letters for resume {resume_id}: {str(e)}")
             raise Exception(
                 f"Failed to retrieve cover letters for resume: {str(e)}")
 
@@ -233,7 +243,7 @@ class CoverLetterRepository(BaseRepository):
             Exception: If database operation fails
         """
         try:
-            connection_manager = MongoConnectionManager.get_instance()
+            db_name = get_db_name()
             search_filter = {
                 "user_id": user_id,
                 "$or": [
@@ -244,12 +254,16 @@ class CoverLetterRepository(BaseRepository):
                 ]
             }
 
-            async with connection_manager.get_collection("myresumo", self.collection_name) as collection:
+            async with self.connection_manager.get_collection(db_name, self.collection_name) as collection:
                 cursor = collection.find(search_filter).sort("created_at", -1)
                 cover_letters = await cursor.to_list(length=None)
-            return cover_letters or []
+                for cl in cover_letters:
+                    cl["_id"] = str(cl["_id"])
+                return cover_letters
 
         except Exception as e:
+            logger.error(
+                f"Failed to search cover letters for user {user_id}: {str(e)}")
             raise Exception(f"Failed to search cover letters: {str(e)}")
 
     async def get_cover_letter_statistics(self, user_id: str) -> Dict[str, Any]:
@@ -265,9 +279,9 @@ class CoverLetterRepository(BaseRepository):
             Exception: If database operation fails
         """
         try:
-            connection_manager = MongoConnectionManager.get_instance()
+            db_name = get_db_name()
 
-            async with connection_manager.get_collection("myresumo", self.collection_name) as collection:
+            async with self.connection_manager.get_collection(db_name, self.collection_name) as collection:
                 # Total cover letters
                 total_count = await collection.count_documents({"user_id": user_id})
 
@@ -285,12 +299,14 @@ class CoverLetterRepository(BaseRepository):
                 ]
                 company_stats = await collection.aggregate(pipeline).to_list(length=None)
 
-            return {
-                "total_cover_letters": total_count,
-                "generated_cover_letters": generated_count,
-                "draft_cover_letters": total_count - generated_count,
-                "top_companies": list(company_stats)
-            }
+                return {
+                    "total_cover_letters": total_count,
+                    "generated_cover_letters": generated_count,
+                    "draft_cover_letters": total_count - generated_count,
+                    "top_companies": list(company_stats)
+                }
 
         except Exception as e:
+            logger.error(
+                f"Failed to get cover letter stats for user {user_id}: {str(e)}")
             raise Exception(f"Failed to get cover letter statistics: {str(e)}")

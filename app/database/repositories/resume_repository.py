@@ -135,7 +135,12 @@ class ResumeRepository(BaseRepository):
                 # Calculate corrected improvement
                 corrected_improvement = corrected_ats_score - original_ats_score
             else:
-                corrected_improvement = score_improvement
+                if score_improvement is not None:
+                    corrected_improvement = score_improvement
+                elif original_ats_score is not None:
+                    corrected_improvement = ats_score - original_ats_score
+                else:
+                    corrected_improvement = None
 
             update_dict = {
                 "optimized_data": optimized_data.model_dump(),
