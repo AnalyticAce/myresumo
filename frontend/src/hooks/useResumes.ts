@@ -3,14 +3,14 @@ import { resumesAPI } from '@/api/resumes'
 import { DashboardFilters } from '@/types/resume'
 import { toast } from 'sonner'
 
-export function useResumes(filters: DashboardFilters, search?: string): any {
+export function useResumes(filters: DashboardFilters, search?: string) {
   return useQuery({
     queryKey: ['resumes', filters, search],
     queryFn: () => resumesAPI.getResumes({ ...filters, search }),
   })
 }
 
-export function useResume(id: string): any {
+export function useResume(id: string) {
   return useQuery({
     queryKey: ['resume', id],
     queryFn: () => resumesAPI.getResume(id),
