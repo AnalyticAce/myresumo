@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Union
 from urllib.parse import urlparse
 
+import pydantic
 from fastapi import HTTPException, status
 from pydantic import BaseModel
-import pydantic
 
 logger = logging.getLogger(__name__)
 

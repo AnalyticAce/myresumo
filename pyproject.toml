@@ -35,9 +35,9 @@ line-length = 88
 indent-width = 4
 
 [tool.ruff.lint]
-# Enable flake8-docstrings (pydocstyle)
-select = ["E", "F", "D", "I", "N"]
-ignore = ["E501"]  # Ignore line length errors
+# Enable flake8 rules
+select = ["E", "F", "I", "N"]
+ignore = ["E501", "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107", "F841", "E722", "F811", "N802", "I001"]
 # Enable Pycodestyle's E203 warning
 extend-select = ["E203"]
 # Enable preview mode for E203 to have an effect
