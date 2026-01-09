@@ -1,3 +1,28 @@
+# Changelog - Test Fixes 2026-01-09
+
+Fixed CI failures in repository and service tests by correcting async mock configurations.
+
+## 🧪 Test Mock Fixes (2026-01-09)
+
+### Repository Tests (`app/tests/test_repositories.py`)
+- **Fixed async mock configurations**: Properly set up `AsyncMock` for all async database operations
+  - Changed `MagicMock()` to `AsyncMock()` for async methods (`find_one`, `insert_one`, `update_one`, `delete_one`)
+  - Fixed cursor mocking for `find()` and `to_list()` operations
+  - Added proper context manager support with `__aenter__` and `__aexit__`
+- **Corrected return value handling**: Used `AsyncMock(return_value=...)` for methods that are awaited
+- **Fixed patch paths**: Corrected import paths for `MongoConnectionManager` in `ResumeRepository` tests
+
+### Service Tests (`app/tests/test_services.py`)
+- **Fixed validation issue**: Updated `test_analyze` to use valid input text (at least 10 characters)
+
+### Test Results
+- All 93 tests passing (1 skipped)
+- Repository tests: 16/16 passing
+- Service tests: 28/28 passing
+- Full test suite runs successfully
+
+---
+
 # Changelog - Test Coverage Improvements 2026-01-09
 
 Backend test coverage increased from 36% to 44% through comprehensive test suite implementation.
