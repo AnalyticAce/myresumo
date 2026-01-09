@@ -11,6 +11,7 @@ import { useDownloadResume, useDeleteResume } from '@/hooks/useResumes'
 // Mock hooks
 vi.mock('@/hooks/useResumes', () => ({
   useDownloadResume: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+  useDownloadCoverLetter: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
   useDeleteResume: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
 }))
 

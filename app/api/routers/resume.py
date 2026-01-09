@@ -245,7 +245,8 @@ async def create_resume(
         HTTPException: If the resume creation fails
     """
     try:
-        logger.info("Resume upload started", extra={"user_id": user_id, "operation": "resume_upload"})
+        logger.info("Resume upload started", extra={
+                    "user_id": user_id, "operation": "resume_upload"})
 
         # Secure file validation
         file_content, safe_filename, file_hash = await SecureFileValidator.validate_upload(file)
@@ -294,9 +295,12 @@ async def create_resume(
             )
 
         # Store file securely
-        logger.info("Storing uploaded file", extra={"operation": "resume_upload", "step": "file_storage"})
-        stored_file_path = store_file_securely(file_content, safe_filename, user_id)
-        logger.debug("File stored successfully", extra={"operation": "resume_upload", "step": "file_storage"})
+        logger.info("Storing uploaded file", extra={
+                    "operation": "resume_upload", "step": "file_storage"})
+        stored_file_path = store_file_securely(
+            file_content, safe_filename, user_id)
+        logger.debug("File stored successfully", extra={
+                     "operation": "resume_upload", "step": "file_storage"})
 
         # Create temporary file for text extraction
         with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
@@ -343,7 +347,8 @@ async def create_resume(
             master_updated_at=datetime.now(),
         )
 
-        logger.info("Creating resume in database", extra={"operation": "resume_upload", "step": "database_save"})
+        logger.info("Creating resume in database", extra={
+                    "operation": "resume_upload", "step": "database_save"})
         resume_id = await repo.create_resume(new_resume)
         if not resume_id:
             logger.error("Database create_resume returned empty ID", extra={
@@ -814,7 +819,8 @@ async def get_templates(
 )
 async def generate_cover_letter(
     resume_id: str,
-    cover_letter_request: Dict[str, str] = Body(..., description="Cover letter generation parameters"),
+    cover_letter_request: Dict[str, str] = Body(
+        ..., description="Cover letter generation parameters"),
     repo: ResumeRepository = Depends(get_resume_repository),
 ):
     """Generate a professional cover letter based on the resume and job details.
@@ -852,7 +858,8 @@ async def generate_cover_letter(
             )
 
         # Get resume content
-        resume_content = resume.get("master_content") or resume.get("original_content", "")
+        resume_content = resume.get(
+            "master_content") or resume.get("original_content", "")
 
         # Initialize AI service for cover letter generation
         from app.services.cover_letter_gen import get_cover_letter_generator
@@ -1266,7 +1273,8 @@ async def optimize_resume(
     # Validate resume_id format to prevent NoSQL injection
     validated_resume_id = validate_object_id(resume_id)
 
-    logger.info(f"Starting resume optimization for resume_id: {validated_resume_id}")
+    logger.info(
+        f"Starting resume optimization for resume_id: {validated_resume_id}")
 
     # 1. Retrieve resume
     logger.info(f"Retrieving resume with ID: {validated_resume_id}")
@@ -1649,7 +1657,8 @@ async def score_resume(
     # Validate resume_id format to prevent NoSQL injection
     validated_resume_id = validate_object_id(resume_id)
 
-    logger.info(f"Starting resume scoring for resume_id: {validated_resume_id}")
+    logger.info(
+        f"Starting resume scoring for resume_id: {validated_resume_id}")
 
     # Retrieve resume
     logger.info(f"Retrieving resume with ID: {validated_resume_id}")
@@ -2157,7 +2166,8 @@ async def submit_contact_form(
         # Store contact message (implementation pending)
         # TODO: Implement proper email notification system with templates
         # Current implementation: Log the message for manual follow-up
-        logger.info(f"Contact form submission from {contact_data.email}: {contact_data.message[:100]}...")
+        logger.info(
+            f"Contact form submission from {request.email}: {request.message[:100]}...")
 
         return ContactFormResponse(
             success=True,

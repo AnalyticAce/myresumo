@@ -21,13 +21,18 @@ from app.api.routers.comprehensive_optimizer import comprehensive_router
 from app.api.routers.cover_letter import cover_letter_router
 from app.api.routers.resume import resume_router
 from app.api.routers.token_usage import router as token_usage_router
+from app.config.logging_config import logger
+from app.config.settings import get_settings
+from app.config.templates import TemplateConfig
+from app.core.exceptions import ConfigurationError, MissingApiKeyError
 from app.database.connector import MongoConnectionManager
+from app.middleware.debugging import setup_debugging_middleware
+from app.middleware.rate_limit import init_rate_limiting
 from app.routes.n8n_integration import router as n8n_router
 from app.services.master_cv import MasterCV
 from app.services.scraper import extract_keywords_from_jd
 from app.services.workflow_orchestrator import CVWorkflowOrchestrator
 from app.utils.error_handler import ErrorContext, ErrorHandler, debug_endpoint
-from app.utils.shared_utils import ErrorHandler
 from app.web.core import core_web_router
 from app.web.dashboard import web_router
 
@@ -42,12 +47,6 @@ templates = Jinja2Templates(directory="app/templates")
 orchestrator = CVWorkflowOrchestrator()
 
 # Configure secure logging and settings
-from app.config.logging_config import logger
-from app.config.settings import get_settings
-from app.config.templates import TemplateConfig
-from app.core.exceptions import ConfigurationError, MissingApiKeyError
-from app.middleware.debugging import setup_debugging_middleware
-from app.middleware.rate_limit import init_rate_limiting
 
 
 # Request models
@@ -199,15 +198,18 @@ async def startup_event():
         # Check if AI provider is configured (optional for development)
         from app.config import get_settings
         settings = get_settings()
-        ai_provider_configured = bool(settings.cerebras_api_key or settings.api_key or settings.openai_api_key)
+        ai_provider_configured = bool(
+            settings.cerebras_api_key or settings.api_key or settings.openai_api_key)
 
         if ai_provider_configured:
             # Test AI client configuration only if API keys are present
             from app.services.ai_providers import AIClient
             AIClient()
-            logger.info("Application startup completed successfully with AI providers")
+            logger.info(
+                "Application startup completed successfully with AI providers")
         else:
-            logger.warning("No AI provider API keys configured - AI features will be unavailable")
+            logger.warning(
+                "No AI provider API keys configured - AI features will be unavailable")
             logger.info("Application startup completed (development mode)")
 
     except (ConfigurationError, MissingApiKeyError) as e:
@@ -256,7 +258,8 @@ async def global_exception_handler(request: Request, exc: Exception):
         JSON response with sanitized error
     """
     # Log the full error securely (sensitive data is filtered by SensitiveDataFilter)
-    logger.error(f"Unhandled exception on {request.url.path}: {type(exc).__name__}")
+    logger.error(
+        f"Unhandled exception on {request.url.path}: {type(exc).__name__}")
 
     # NEVER expose internal error details in production
     return JSONResponse(
@@ -265,7 +268,7 @@ async def global_exception_handler(request: Request, exc: Exception):
             "error": "Internal server error",
             "detail": "An unexpected error occurred. Please contact support if this persists."
         }
-)
+    )
 
 
 # Exception handlers
@@ -323,7 +326,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         JSON response for API routes or template response for web routes
     """
     # Log validation errors securely (don't expose sensitive input data)
-    logger.warning(f"Validation error on {request.url.path}: {len(exc.errors())} errors")
+    logger.warning(
+        f"Validation error on {request.url.path}: {len(exc.errors())} errors")
 
     # For API routes, return sanitized error
     if request.url.path.startswith("/api"):
@@ -461,8 +465,8 @@ async def optimize_cv_v2(request: OptimizationRequest):
     except Exception as e:
         logger.error(f"Optimization error: {str(e)}", exc_info=True)
         raise ErrorHandler.handle_ai_api_error(
-            e, 
-            provider="workflow_orchestrator", 
+            e,
+            provider="workflow_orchestrator",
             operation="cv_optimization",
             context={"template": request.template}
         )
@@ -486,8 +490,8 @@ async def analyze_cv_v2(request: OptimizationRequest):
     except Exception as e:
         logger.error(f"Analysis error: {str(e)}", exc_info=True)
         raise ErrorHandler.handle_ai_api_error(
-            e, 
-            provider="cv_analyzer", 
+            e,
+            provider="cv_analyzer",
             operation="cv_analysis",
             context={"cv_length": len(request.cv_text)}
         )
@@ -514,8 +518,8 @@ async def generate_cover_letter_v2(request: CoverLetterRequest):
     except Exception as e:
         logger.error(f"Cover letter generation error: {str(e)}", exc_info=True)
         raise ErrorHandler.handle_ai_api_error(
-            e, 
-            provider="cover_letter_generator", 
+            e,
+            provider="cover_letter_generator",
             operation="cover_letter_generation",
             context={"tone": request.tone}
         )

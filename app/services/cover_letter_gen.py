@@ -15,22 +15,6 @@ _cover_letter_generator_instance = None
 _cover_letter_generator_lock = asyncio.Lock()
 
 
-async def get_cover_letter_generator() -> CoverLetterGenerator:
-    """Get singleton instance of CoverLetterGenerator to avoid repeated setup.
-
-    Uses async lock to ensure thread-safe initialization under concurrent load.
-    """
-    global _cover_letter_generator_instance
-
-    if _cover_letter_generator_instance is None:
-        async with _cover_letter_generator_lock:
-            # Double-check pattern to avoid race conditions
-            if _cover_letter_generator_instance is None:
-                _cover_letter_generator_instance = CoverLetterGenerator()
-
-    return _cover_letter_generator_instance
-
-
 class CoverLetterGenerator:
     """Generate cover letters using multi-provider AI."""
 
@@ -143,7 +127,8 @@ Requirements: {', '.join(job_data.get('requirements', []))}
             # Create a simple prompt for cover letter generation
             # Limit resume content to first 2000 chars to avoid token limits
             truncated_resume = resume_content[:2000]
-            truncated_job_desc = job_description[:1000] if job_description else ""
+            truncated_job_desc = job_description[:
+                                                 1000] if job_description else ""
 
             user_message = f"""
 Based on the following resume content, generate a professional cover letter for the position of {position} at {company}.
@@ -186,13 +171,15 @@ Generate the complete cover letter text:
                 cover_letter = str(response).strip()
 
             # Clean up any markdown formatting
-            cover_letter = re.sub(r'^[#*`\[\]]+', '', cover_letter, flags=re.MULTILINE)
+            cover_letter = re.sub(r'^[#*`\[\]]+', '',
+                                  cover_letter, flags=re.MULTILINE)
             cover_letter = cover_letter.strip()
 
             if not cover_letter:
                 cover_letter = f"Dear Hiring Manager,\n\nI am writing to express my interest in the {position} position at {company}. With my background in the relevant field, I am confident I can contribute effectively to your team.\n\nPlease consider my application. I look forward to the opportunity to discuss how my skills and experience align with your needs.\n\nBest regards,\n[Your Name]"
 
-            logger.info(f"Cover letter generated successfully ({len(cover_letter)} chars)")
+            logger.info(
+                f"Cover letter generated successfully ({len(cover_letter)} chars)")
             return cover_letter
 
         except Exception as e:
@@ -214,3 +201,19 @@ Generate the complete cover letter text:
             "word_count": 0,
             "tone": tone
         }
+
+
+async def get_cover_letter_generator() -> CoverLetterGenerator:
+    """Get singleton instance of CoverLetterGenerator to avoid repeated setup.
+
+    Uses async lock to ensure thread-safe initialization under concurrent load.
+    """
+    global _cover_letter_generator_instance
+
+    if _cover_letter_generator_instance is None:
+        async with _cover_letter_generator_lock:
+            # Double-check pattern to avoid race conditions
+            if _cover_letter_generator_instance is None:
+                _cover_letter_generator_instance = CoverLetterGenerator()
+
+    return _cover_letter_generator_instance
