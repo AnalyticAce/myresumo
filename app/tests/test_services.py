@@ -33,9 +33,10 @@ class TestWorkflowOrchestrator:
         orch = CVWorkflowOrchestrator()
         assert orch is not None
 
+    @patch('app.services.workflow_orchestrator.CoverLetterGenerator')
     @patch('app.services.workflow_orchestrator.CVAnalyzer')
     @patch('app.services.workflow_orchestrator.CVOptimizer')
-    def test_optimize_cv_for_job(self, mock_opt_cls, mock_analyzer_cls):
+    def test_optimize_cv_for_job(self, mock_opt_cls, mock_analyzer_cls, mock_cl_cls):
         """Test CV optimization workflow."""
         mock_analyzer = MagicMock()
         mock_analyzer_cls.return_value = mock_analyzer
@@ -50,6 +51,11 @@ class TestWorkflowOrchestrator:
         mock_opt.optimize_comprehensive.return_value = {
             "user_information": {"name": "Test", "email": "test@test.com"}
         }
+
+        # Mock CoverLetterGenerator to prevent AI client initialization
+        mock_cl_gen = MagicMock()
+        mock_cl_gen.generate.return_value = {"content": "Test cover letter"}
+        mock_cl_cls.return_value = mock_cl_gen
 
         orch = CVWorkflowOrchestrator()
         result = orch.optimize_cv_for_job("CV text", "JD text")
