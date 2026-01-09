@@ -4,16 +4,14 @@ import '@testing-library/jest-dom'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
-import { toast } from 'sonner'
 import { Resume, TemplateType, ResumeStatus, ResumeFormat } from '@/types/resume'
 import { AnalysisResult, Recommendation } from '@/types/optimization'
-import { useDownloadResume, useDeleteResume, useDownloadCoverLetter } from '@/hooks/useResumes'
+import { useDownloadResume, useDeleteResume } from '@/hooks/useResumes'
 
 // Mock hooks
 vi.mock('@/hooks/useResumes', () => ({
   useDownloadResume: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
   useDeleteResume: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
-  useDownloadCoverLetter: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
 }))
 
 // Mock components
@@ -85,6 +83,7 @@ describe('Component Tests', () => {
 
     it('handles download click', async () => {
       const mockMutate = vi.fn()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(useDownloadResume).mockReturnValue({ mutate: mockMutate, isPending: false } as any)
 
       const queryClient = createTestQueryClient()
@@ -105,6 +104,7 @@ describe('Component Tests', () => {
 
     it('handles delete click', async () => {
       const mockMutate = vi.fn()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(useDeleteResume).mockReturnValue({ mutate: mockMutate, isPending: false } as any)
       window.confirm = vi.fn(() => true)
 
@@ -151,7 +151,6 @@ describe('Component Tests', () => {
     })
 
     it('validates file types', async () => {
-      const mockToast = vi.spyOn(toast, 'error')
       const invalidFile = new File(['test'], 'resume.txt', { type: 'text/plain' })
       
       const { container } = render(<FileUpload onFileSelect={vi.fn()} />)
