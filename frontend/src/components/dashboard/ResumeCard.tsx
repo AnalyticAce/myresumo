@@ -91,6 +91,7 @@ export function ResumeCard({ resume }: ResumeCardProps) {
           variant="ghost"
           onClick={handleDelete}
           disabled={deleteResume.isPending}
+          aria-label="Delete resume"
         >
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>

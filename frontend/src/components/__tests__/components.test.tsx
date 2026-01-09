@@ -1,10 +1,20 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import '@testing-library/jest-dom'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Resume, TemplateType, ResumeStatus, ResumeFormat } from '@/types/resume'
 import { AnalysisResult, Recommendation } from '@/types/optimization'
+import { useDownloadResume, useDeleteResume, useDownloadCoverLetter } from '@/hooks/useResumes'
+
+// Mock hooks
+vi.mock('@/hooks/useResumes', () => ({
+  useDownloadResume: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+  useDeleteResume: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+  useDownloadCoverLetter: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+}))
 
 // Mock components
 import { ResumeCard } from '@/components/dashboard/ResumeCard'
@@ -69,14 +79,13 @@ describe('Component Tests', () => {
         </QueryClientProvider>
       )
 
-      expect(screen.getByText('Senior Software Engineer Resume')).toBeInTheDocument()
-      expect(screen.getByText('85')).toBeInTheDocument()
+      expect(screen.getByText(mockResume.position!)).toBeInTheDocument()
+      expect(screen.getByText(/85/)).toBeInTheDocument()
     })
 
     it('handles download click', async () => {
-      const mockDownload = vi.fn()
-      vi.mocked(global).URL.createObjectURL = vi.fn()
-      vi.mocked(global).URL.revokeObjectURL = vi.fn()
+      const mockMutate = vi.fn()
+      vi.mocked(useDownloadResume).mockReturnValue({ mutate: mockMutate, isPending: false } as any)
 
       const queryClient = createTestQueryClient()
       
@@ -88,16 +97,15 @@ describe('Component Tests', () => {
         </QueryClientProvider>
       )
 
-      const downloadButton = screen.getByRole('button', { name: /download resume/i })
+      const downloadButton = screen.getByRole('button', { name: 'Resume' }) // Exact match
       fireEvent.click(downloadButton)
 
-      await waitFor(() => {
-        expect(mockDownload).toHaveBeenCalledWith(mockResume.downloadUrl)
-      })
+      expect(mockMutate).toHaveBeenCalledWith(mockResume.id)
     })
 
     it('handles delete click', async () => {
-      const mockDelete = vi.fn()
+      const mockMutate = vi.fn()
+      vi.mocked(useDeleteResume).mockReturnValue({ mutate: mockMutate, isPending: false } as any)
       window.confirm = vi.fn(() => true)
 
       const queryClient = createTestQueryClient()
@@ -110,15 +118,13 @@ describe('Component Tests', () => {
         </QueryClientProvider>
       )
 
-      const deleteButton = screen.getByRole('button', { name: /delete resume/i })
+      const deleteButton = screen.getByRole('button', { name: 'Delete resume' })
       fireEvent.click(deleteButton)
 
-      await waitFor(() => {
-        expect(window.confirm).toHaveBeenCalledWith(
-          'Are you sure you want to delete this resume?'
-        )
-        expect(mockDelete).toHaveBeenCalledWith(mockResume.id)
-      })
+      expect(window.confirm).toHaveBeenCalledWith(
+        'Are you sure you want to delete this resume?'
+      )
+      expect(mockMutate).toHaveBeenCalledWith(mockResume.id)
     })
   })
 
@@ -134,9 +140,9 @@ describe('Component Tests', () => {
       const mockFileSelect = vi.fn()
       const file = new File(['test'], 'resume.pdf', { type: 'application/pdf' })
       
-      render(<FileUpload onFileSelect={mockFileSelect} />)
+      const { container } = render(<FileUpload onFileSelect={mockFileSelect} />)
       
-      const input = screen.getByRole('button', { name: /choose file/i })
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement
       fireEvent.change(input, { target: { files: [file] } })
 
       await waitFor(() => {
@@ -148,13 +154,13 @@ describe('Component Tests', () => {
       const mockToast = vi.spyOn(toast, 'error')
       const invalidFile = new File(['test'], 'resume.txt', { type: 'text/plain' })
       
-      render(<FileUpload onFileSelect={vi.fn()} />)
+      const { container } = render(<FileUpload onFileSelect={vi.fn()} />)
       
-      const input = screen.getByRole('button', { name: /choose file/i })
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement
       fireEvent.change(input, { target: { files: [invalidFile] } })
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith('Invalid file type. Please upload PDF, DOCX, DOC, TXT, or MD files.')
+        expect(screen.getByText(/File type must be one of/)).toBeInTheDocument()
       })
     })
   })
@@ -165,7 +171,7 @@ describe('Component Tests', () => {
       
       render(<TemplateSelector selectedTemplate={TemplateType.MODERN} onTemplateSelect={mockSelect} />)
       
-      expect(screen.getByText('Modern')).toBeInTheDocument()
+      expect(screen.getAllByText('Modern')[0]).toBeInTheDocument()
       expect(screen.getByText('Professional')).toBeInTheDocument()
       expect(screen.getByText('Creative')).toBeInTheDocument()
     })
@@ -188,7 +194,7 @@ describe('Component Tests', () => {
     it('renders ATS score display', () => {
       render(<ATSScoreDisplay score={mockAnalysis.atsScore} />)
       
-      expect(screen.getByText('85')).toBeInTheDocument()
+      expect(screen.getAllByText(/85/)[0]).toBeInTheDocument()
       expect(screen.getByText('Good')).toBeInTheDocument()
     })
 

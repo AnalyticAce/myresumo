@@ -30,7 +30,15 @@ export function FileUpload({
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
     accept: accept.reduce((acc, type) => {
-      acc[type] = [type]
+      const extensions = {
+        [FILE_TYPES.PDF]: ['.pdf'],
+        [FILE_TYPES.DOCX]: ['.docx'],
+        [FILE_TYPES.DOC]: ['.doc'],
+        'text/plain': ['.txt', '.text'],
+        'application/json': ['.json'],
+        'text/markdown': ['.md']
+      }[type] || []
+      acc[type] = extensions
       return acc
     }, {} as Record<string, string[]>),
     maxSize,

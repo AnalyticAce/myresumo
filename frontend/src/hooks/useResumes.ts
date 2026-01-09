@@ -49,7 +49,7 @@ export function useDeleteResume() {
   })
 }
 
-export function useDownloadResume(): unknown {
+export function useDownloadResume() {
   return useMutation({
     mutationFn: (id: string) => resumesAPI.downloadResume(id),
     onSuccess: (blob, id) => {
@@ -67,7 +67,7 @@ export function useDownloadResume(): unknown {
   })
 }
 
-export function useDownloadCoverLetter(): unknown {
+export function useDownloadCoverLetter() {
   return useMutation({
     mutationFn: (id: string) => resumesAPI.downloadCoverLetter(id),
     onSuccess: (blob, id) => {
