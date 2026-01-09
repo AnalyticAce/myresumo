@@ -1,16 +1,13 @@
 import { fileURLToPath } from "url"
-import path from "path"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vitest/config"
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: [
-      { find: "@", replacement: path.join(__dirname, "src") },
-    ],
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+    },
   },
   server: {
     port: 3000,
