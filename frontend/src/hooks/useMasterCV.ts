@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { masterCVAPI } from '@/api/masterCV'
-import { MasterCV } from '@/types/resume'
 import { toast } from 'sonner'
 
 export function useMasterCVs() {
@@ -55,7 +54,7 @@ export function useDownloadMasterCV() {
       console.log('Download Master CV:', cv)
       return cv
     }),
-    onSuccess: (cv) => {
+    onSuccess: () => {
       // TODO: Implement actual download
       toast.success('Master CV downloaded successfully')
     },

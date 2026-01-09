@@ -1,16 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resumesAPI } from '@/api/resumes'
-import { Resume, DashboardFilters } from '@/types/resume'
+import { DashboardFilters } from '@/types/resume'
 import { toast } from 'sonner'
 
-export function useResumes(filters: DashboardFilters, search?: string) {
+export function useResumes(filters: DashboardFilters, search?: string): any {
   return useQuery({
     queryKey: ['resumes', filters, search],
     queryFn: () => resumesAPI.getResumes({ ...filters, search }),
   })
 }
 
-export function useResume(id: string) {
+export function useResume(id: string): any {
   return useQuery({
     queryKey: ['resume', id],
     queryFn: () => resumesAPI.getResume(id),
