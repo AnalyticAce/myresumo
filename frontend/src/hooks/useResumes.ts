@@ -18,7 +18,7 @@ export function useResume(id: string) {
   })
 }
 
-export function useUpdateResumeStatus(): any {
+export function useUpdateResumeStatus() {
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -34,7 +34,7 @@ export function useUpdateResumeStatus(): any {
   })
 }
 
-export function useDeleteResume(): any {
+export function useDeleteResume() {
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -49,7 +49,7 @@ export function useDeleteResume(): any {
   })
 }
 
-export function useDownloadResume(): any {
+export function useDownloadResume(): unknown {
   return useMutation({
     mutationFn: (id: string) => resumesAPI.downloadResume(id),
     onSuccess: (blob, id) => {
@@ -67,7 +67,7 @@ export function useDownloadResume(): any {
   })
 }
 
-export function useDownloadCoverLetter(): any {
+export function useDownloadCoverLetter(): unknown {
   return useMutation({
     mutationFn: (id: string) => resumesAPI.downloadCoverLetter(id),
     onSuccess: (blob, id) => {
