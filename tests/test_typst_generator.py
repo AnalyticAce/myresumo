@@ -1,5 +1,6 @@
 """Test Typst PDF generation."""
 from app.services.resume.typst_generator import TypstGenerator
+import pytest
 import sys
 import os
 import json
@@ -62,8 +63,8 @@ def test_typst_pdf_generation():
 
     # Check if binary found
     if not generator.typst_bin:
-        print("FAIL: Typst binary not found by generator")
-        sys.exit(1)
+        pytest.skip(
+            "Typst binary not found by generator. Skipping PDF generation test.")
     print(f"Typst binary found at: {generator.typst_bin}")
 
     templates_to_test = ["resume.typ", "modern.typ"]
