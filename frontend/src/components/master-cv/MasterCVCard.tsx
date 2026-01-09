@@ -2,8 +2,8 @@ import { MasterCV } from '@/types/resume'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Download, Trash2, Eye, Calendar, TrendingUp } from 'lucide-react'
-import { formatDateTime, formatFileSize } from '@/utils/formatters'
+import { Download, Trash2, Eye, TrendingUp } from 'lucide-react'
+import { formatDateTime } from '@/utils/formatters'
 import { useDownloadMasterCV, useDeleteMasterCV } from '@/hooks/useMasterCV'
 
 interface MasterCVCardProps {
@@ -15,17 +15,17 @@ export function MasterCVCard({ masterCV, className = '' }: MasterCVCardProps) {
   const downloadMasterCV = useDownloadMasterCV()
   const deleteMasterCV = useDeleteMasterCV()
 
-  const handleDownload = () => {
+  const handleDownload = (): void => {
     downloadMasterCV.mutate(masterCV.id)
   }
 
-  const handleDelete = () => {
+  const handleDelete = (): void => {
     if (window.confirm('Are you sure you want to delete this Master CV?')) {
       deleteMasterCV.mutate(masterCV.id)
     }
   }
 
-  const handlePreview = () => {
+  const handlePreview = (): void => {
     // TODO: Implement preview functionality
     window.open(masterCV.fileUrl, '_blank')
   }
