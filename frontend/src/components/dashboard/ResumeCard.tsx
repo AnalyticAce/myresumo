@@ -59,8 +59,8 @@ export function ResumeCard({ resume }: ResumeCardProps) {
           <span className="uppercase">{resume.format}</span>
         </div>
 
-        <div className="text-xs text-muted-foreground">
-          Created {format(new Date(resume.createdAt), 'MMM d, yyyy')}
+        <div className="flex items-center gap-1">
+          Created {resume.createdAt ? format(new Date(resume.createdAt), 'MMM d, yyyy') : 'N/A'}
         </div>
       </CardContent>
 

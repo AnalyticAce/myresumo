@@ -11,6 +11,7 @@ import { TemplateSelector } from '@/components/optimization/TemplateSelector'
 import { ArrowLeft, ArrowRight, FileText, Upload } from 'lucide-react'
 import { useOptimizationStore } from '@/stores/optimizationStore'
 import { optimizationAPI } from '@/api/optimization'
+import { OptimizationRequest } from '@/types/optimization'
 import { toast } from 'sonner'
 
 export function OptimizePage() {
@@ -33,7 +34,7 @@ export function OptimizePage() {
   const handleAnalyze = async () => {
     setIsAnalyzing(true)
     try {
-      const analysisResult = await optimizationAPI.analyze(request)
+      const analysisResult = await optimizationAPI.analyze(request as OptimizationRequest)
       
       // Store analysis result in store for use in AnalysisPage
       setAnalysis(analysisResult)
@@ -130,7 +131,7 @@ export function OptimizePage() {
 
               {request.sourceType === 'upload' ? (
                 <FileUpload
-                  onFileSelect={(file) => setRequest({ ...request, uploadedFile: file })}
+                  onFileSelect={(file) => setRequest({ ...request, uploadedFile: file || undefined })}
                   selectedFile={request.uploadedFile}
                 />
               ) : (
