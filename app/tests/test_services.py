@@ -1,8 +1,5 @@
 """Comprehensive tests for PowerCV services."""
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch, PropertyMock
-from datetime import datetime
-import json
+from unittest.mock import MagicMock, patch
 
 from app.services.cv_optimizer import CVOptimizer
 from app.services.workflow_orchestrator import CVWorkflowOrchestrator
