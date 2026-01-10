@@ -7,7 +7,7 @@ import json
 from app.services.cv_optimizer import CVOptimizer
 from app.services.workflow_orchestrator import CVWorkflowOrchestrator
 from app.services.cv_analyzer import CVAnalyzer
-from app.utils.shared_utils import JSONParser, TextProcessor, MetricsHelper, UtilsErrorHandler
+from app.utils.shared_utils import JSONParser, TextProcessor, MetricsHelper, ErrorHandler
 
 
 class TestJSONParser:
@@ -141,12 +141,12 @@ class TestMetricsHelper:
         assert result == 100
 
 
-class TestUtilsErrorHandler:
-    """Test UtilsErrorHandler utility class."""
+class TestErrorHandler:
+    """Test ErrorHandler utility class."""
 
     def test_create_error_response(self):
         """Test creating standardized error response."""
-        result = UtilsErrorHandler.create_error_response("Test error", "TEST_ERROR")
+        result = ErrorHandler.create_error_response("Test error", "TEST_ERROR")
         assert result["error"] is True
         assert result["error_code"] == "TEST_ERROR"
         assert result["message"] == "Test error"
