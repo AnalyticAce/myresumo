@@ -5,7 +5,7 @@
 
 ## Recommended File Structure
 
-``
+`
 PowerCV/
  app/
  prompts/
@@ -38,7 +38,6 @@ PowerCV/
  # Your existing data folder.env
  requirements.txt
  README.md
-`
 
 ---
 
@@ -47,17 +46,15 @@ PowerCV/
 ### Step 1: Install Dependencies
 
 Add to requirements.txt:
-`txt
+txt
 requests>=2.31.0
 python-dotenv>=1.0.0
 pydantic>=2.0.0
 jinja2>=3.1.2
-`
 
 Install:
-`bash
+bash
 pip install -r requirements.txt
-`
 
 ---
 
@@ -65,7 +62,7 @@ pip install -r requirements.txt
 
 **File: app/services/cerebras_client.py**
 
-`python
+python
 import os
 import requests
 from typing import Dict, List, Optional
@@ -119,7 +116,6 @@ class CerebrasClient:
  
  except requests.exceptions.RequestException as e:
  raise Exception(f"Cerebras API error: {str(e)}")
-`
 
 ---
 
@@ -127,7 +123,7 @@ class CerebrasClient:
 
 **File: app/prompts/prompt_loader.py**
 
-`python
+python
 import os
 from typing import Dict
 from pathlib import Path
@@ -157,7 +153,6 @@ class PromptLoader:
  'optimizer': self.load_prompt('cv_optimizer'),
  'cover_letter': self.load_prompt('cover_letter')
  }
-`
 
 ---
 
@@ -165,7 +160,7 @@ class PromptLoader:
 
 **File: app/services/cv_analyzer.py**
 
-`python
+python
 import json
 from typing import Dict
 from.cerebras_client import CerebrasClient
@@ -212,21 +207,20 @@ class CVAnalyzer:
  """Remove markdown code fences from JSON"""
  response = response.strip()
  
- # Remove `json and ` markers
- if response.startswith('`'):
+ # Remove json and markers
+ if response.startswith(''):
  lines = response.split('\n')
- if lines[0].startswith('`'):
+ if lines[0].startswith(''):
  lines = lines[1:]
- if lines and lines[-1].strip() == '`':
+ if lines and lines[-1].strip() == '':
  lines = lines[:-1]
  response = '\n'.join(lines)
  
  return response.strip()
-`
 
 **File: app/services/cv_optimizer.py**
 
-`python
+python
 from typing import Dict, List
 from.cerebras_client import CerebrasClient
 from..prompts.prompt_loader import PromptLoader
@@ -351,11 +345,10 @@ Create 3-4 sentence professional summary emphasizing backend development experti
  """Calculate years of experience from CV data"""
  # Implement based on your CV structure
  return "2+" # Default
-`
 
 **File: app/services/cover_letter_gen.py**
 
-`python
+python
 from typing import Dict, List
 from.cerebras_client import CerebrasClient
 from..prompts.prompt_loader import PromptLoader
@@ -429,7 +422,6 @@ class CoverLetterGenerator:
  result['word_count'] = len(result['cover_letter'].split())
  
  return result
-`
 
 ---
 
@@ -437,7 +429,7 @@ class CoverLetterGenerator:
 
 **File: app/services/workflow_orchestrator.py**
 
-`python
+python
 from typing import Dict, List
 from.cv_analyzer import CVAnalyzer
 from.cv_optimizer import CVOptimizer
@@ -528,7 +520,6 @@ class CVWorkflowOrchestrator:
  }
  
  return self.cover_letter_gen.generate(candidate_data, job_data)
-`
 
 ---
 
@@ -536,7 +527,7 @@ class CVWorkflowOrchestrator:
 
 **File: app/main.py** (FastAPI example)
 
-`python
+python
 from fastapi import FastAPI, HTTPException, File, UploadFile
 from pydantic import BaseModel
 from typing import Optional
@@ -580,7 +571,6 @@ async def analyze_cv(request: OptimizationRequest):
 if __name__ == "__main__":
  import uvicorn
  uvicorn.run(app, host="0.0.0.0", port=8080)
-`
 
 ---
 
@@ -588,7 +578,7 @@ if __name__ == "__main__":
 
 **File:.env**
 
-`env
+env
 # Cerebras API Configuration
 CEREBRAS_API_KEY=your_cerebras_api_key_here
 CEREBRAS_API_BASE=https://api.cerebras.ai/v1
@@ -600,7 +590,6 @@ MONGODB_URI=mongodb://localhost:27017/powercv
 # Application Settings
 DEBUG=True
 LOG_LEVEL=INFO
-`
 
 ---
 
@@ -608,7 +597,7 @@ LOG_LEVEL=INFO
 
 **File: app/tests/test_integration.py**
 
-`python
+python
 import pytest
 from app.services.workflow_orchestrator import CVWorkflowOrchestrator
 
@@ -635,18 +624,16 @@ def test_full_workflow():
  assert result['analysis']['ats_score'] > 0
  
  print(f"ATS Score: {result['ats_score']}")
-`
 
 Run tests:
-`bash
+bash
 pytest app/tests/ -v
-`
 
 ---
 
 ## Quick Start Commands
 
-`bash
+bash
 # 1. Install dependencies
 pip install -r requirements.txt
 
@@ -665,7 +652,6 @@ python -m app.tests.test_prompts
 python -m app.main
 # or
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
-`
 
 ---
 
@@ -694,7 +680,7 @@ Expected performance with Cerebras models:
 **Solution:** Ensure JD is detailed. Add more context in user message.
 
 ### Issue: Slow Responses
-**Solution:** Check model choice. Use llama3.1-8b` for speed, larger models for quality.
+**Solution:** Check model choice. Use llama3.1-8b for speed, larger models for quality.
 
 ---
 

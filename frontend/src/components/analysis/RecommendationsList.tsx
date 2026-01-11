@@ -44,13 +44,13 @@ const getSeverityBadgeColor = (severity: Recommendation['severity']) => {
 const getCategoryIcon = (category: Recommendation['category']) => {
   switch (category) {
     case 'skills':
-      return '🎯'
+      return ''
     case 'experience':
-      return '💼'
+      return ''
     case 'education':
-      return '🎓'
+      return ''
     case 'format':
-      return '📄'
+      return ''
   }
 }
 
@@ -144,7 +144,7 @@ export function RecommendationsList({ recommendations, className = '' }: Recomme
                       </div>
                       <p className="font-medium">{recommendation.message}</p>
                       <p className="text-sm text-muted-foreground">
-                        💡 {recommendation.suggestion}
+                         {recommendation.suggestion}
                       </p>
                     </div>
                   </div>

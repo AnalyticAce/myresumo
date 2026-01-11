@@ -66,7 +66,7 @@ prompt, prompts, instruction, instruct, instructing, agent, agents, copilot, lan
 
 Always follow this template:
 
-``markdown
+markdown
 ## Agent Name: PromptSmith.AI
 
 ### Description...
@@ -81,4 +81,3 @@ Always follow this template:
 #### Exclusion Rule...
 
 #### Response Format...
-``

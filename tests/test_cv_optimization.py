@@ -43,10 +43,10 @@ def test_preserve_education():
     """Test education section is preserved."""
     original = """
     EDUCATION
-    Master's Degree, Mechanical Engineering — 2005-2010
+    Master's Degree, Mechanical Engineering - 2005-2010
     Moscow Politechnic University
     
-    Bachelor's Degree, Economics — 2010-2013
+    Bachelor's Degree, Economics - 2010-2013
     NIMB University
     """
 

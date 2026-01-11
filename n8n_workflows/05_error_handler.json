@@ -173,7 +173,7 @@
     {
       "parameters": {
         "channel": "=alerts",
-        "text": "=🚨 **PowerCV Workflow Error**\n\n**Workflow:** {{ $workflow.name }}\n**Error:** {{ $error.message }}\n**Node:** {{ $error.node.name }}\n**Execution ID:** {{ $execution.id }}\n\n_This is a critical error that requires attention._",
+        "text": "= **PowerCV Workflow Error**\n\n**Workflow:** {{ $workflow.name }}\n**Error:** {{ $error.message }}\n**Node:** {{ $error.node.name }}\n**Execution ID:** {{ $execution.id }}\n\n_This is a critical error that requires attention._",
         "options": {
           "blocks": true
         }

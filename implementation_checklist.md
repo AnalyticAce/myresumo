@@ -12,7 +12,7 @@
 - [ ] Git repository cloned/forked
 
 ### Environment Setup
-``bash
+bash
 # 1. Create virtual environment
 python -m venv venv
 source venv/bin/activate # or venv\Scripts\activate on Windows
@@ -26,18 +26,16 @@ CEREBRAS_API_KEY=your_api_key_here
 CEREBRAS_API_BASE=https://api.cerebras.ai/v1
 CEREBRAS_MODEL=llama3.1-8b
 EOF
-`
 
 ---
 
 ## Phase 2: Add Prompt Files (10 minutes)
 
 ### Create Directory Structure
-`bash
+bash
 mkdir -p app/prompts
 mkdir -p app/services
 mkdir -p app/tests
-`
 
 ### Copy Prompt Files
 - [ ] Copy **cv_analyzer.md** → app/prompts/cv_analyzer.md
@@ -45,10 +43,9 @@ mkdir -p app/tests
 - [ ] Copy **cover_letter.md** → app/prompts/cover_letter.md
 
 ### Verify Files
-`bash
+bash
 ls -la app/prompts/
 # Should show: cv_analyzer.md, cv_optimizer.md, cover_letter.md
-`
 
 ---
 
@@ -80,7 +77,7 @@ ls -la app/prompts/
 ## Phase 4: Testing (20 minutes)
 
 ### Prepare Test Data
-`bash
+bash
 mkdir -p app/tests/test_data
 
 # Create sample CV
@@ -93,10 +90,9 @@ cat > app/tests/test_data/sample_jd.txt << 'EOF'
 Backend Developer - Python
 Requirements: Python, Flask, Docker, PostgreSQL
 EOF
-`
 
 ### Run Tests
-`bash
+bash
 # 1. Copy testing framework
 cp test_prompts.py app/tests/
 
@@ -105,7 +101,6 @@ python -m app.tests.test_prompts
 
 # 3. Run example scripts
 python app/services/examples.py
-`
 
 ### Expected Results
 - [ ] Analyzer returns valid JSON with ATS score
@@ -118,7 +113,7 @@ python app/services/examples.py
 ## Phase 5: Integration with Existing App (Variable)
 
 ### Option A: FastAPI Integration
-`python
+python
 # In your existing app/main.py
 from app.services.workflow_orchestrator import CVWorkflowOrchestrator
 
@@ -126,13 +121,11 @@ from app.services.workflow_orchestrator import CVWorkflowOrchestrator
 async def optimize_cv_v2(cv_text: str, jd_text: str):
  orchestrator = CVWorkflowOrchestrator()
  return orchestrator.optimize_cv_for_job(cv_text, jd_text)
-`
 
 ### Option B: Standalone Service
-`bash
+bash
 # Run as separate microservice
 uvicorn app.services.api:app --port 8081
-`
 
 ### Option C: Replace Existing Logic
 - [ ] Backup current prompt files
@@ -147,7 +140,7 @@ uvicorn app.services.api:app --port 8081
 
 ### Performance Optimization
 - [ ] Add response caching (Redis)
-`python
+python
 import redis
 r = redis.Redis(host='localhost', port=6379, db=0)
 
@@ -158,17 +151,15 @@ def cached_analysis(cv_hash, jd_hash):
  return json.loads(cached)
  #... run analysis
  r.setex(cache_key, 3600, json.dumps(result)) # Cache 1 hour
-`
 
 - [ ] Implement rate limiting
-`python
+python
 from slowapi import Limiter
 limiter = Limiter(key_func=lambda: request.client.host)
 
 @app.post("/api/optimize")
 @limiter.limit("10/minute") # Max 10 requests per minute
 async def optimize_cv(request: Request):...
-`
 
 ### Error Handling
 - [ ] Add retry logic for API failures
@@ -177,7 +168,7 @@ async def optimize_cv(request: Request):...
 
 ### Logging
 - [ ] Set up structured logging
-`python
+python
 import logging
 logging.basicConfig(
  level=logging.INFO,
@@ -187,22 +178,20 @@ logging.basicConfig(
  logging.StreamHandler()
  ]
 )
-`
 
 ### Monitoring
 - [ ] Add metrics collection
-`python
+python
 from prometheus_client import Counter, Histogram
 api_requests = Counter('api_requests_total', 'Total API requests')
 response_time = Histogram('response_time_seconds', 'Response time')
-`
 
 ---
 
 ## Quick Reference: Key Files
 
 ### File Structure
-`
+
 PowerCV/
  app/
  prompts/
@@ -222,7 +211,6 @@ PowerCV/
  test_prompts.py ← Artifact #4
  test_data/.env ← Create this
  requirements.txt ← Update with dependencies
-`
 
 ---
 
@@ -230,7 +218,7 @@ PowerCV/
 
 ### Issue 1: "Module not found" errors
 **Solution:**
-`bash
+bash
 # Ensure you're in project root
 cd PowerCV/
 
@@ -239,11 +227,10 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 # Or run with -m flag
 python -m app.services.cv_analyzer
-`
 
 ### Issue 2: Cerebras API timeouts
 **Solution:**
-`python
+python
 # In cerebras_client.py, increase timeout
 response = requests.post(..., timeout=60) # 60 seconds
 
@@ -255,16 +242,15 @@ session = requests.Session()
 retry = Retry(total=3, backoff_factor=1)
 adapter = HTTPAdapter(max_retries=retry)
 session.mount('https://', adapter)
-`
 
 ### Issue 3: JSON parsing failures
 **Solution:**
-`python
+python
 # Add more reliable cleaning
 def clean_json(response):
  # Remove markdown
- response = re.sub(r'`json\s*', '', response)
- response = re.sub(r'`\s*$', '', response)
+ response = re.sub(r'json\s*', '', response)
+ response = re.sub(r'\s*$', '', response)
  
  # Remove any leading text
  json_start = response.find('{')
@@ -272,7 +258,6 @@ def clean_json(response):
  response = response[json_start:]
  
  return response.strip()
-`
 
 ### Issue 4: Missing keywords in output
 **Solution:**
@@ -287,7 +272,7 @@ def clean_json(response):
 ### Before Going Live
 Run this checklist:
 
-`bash
+bash
 # 1. Test all three prompts
 python -c "
 from app.services.cv_analyzer import CVAnalyzer
@@ -314,7 +299,6 @@ print(' API connected:', response[:50])
 
 # 4. Run example optimization
 python app/services/examples.py 1
-`
 
 ### Performance Targets
 - [ ] CV analysis completes in < 5 seconds
@@ -328,7 +312,7 @@ python app/services/examples.py 1
 ## Deployment Options
 
 ### Option 1: Docker Container
-`dockerfile
+dockerfile
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -339,16 +323,14 @@ COPY app/./app/
 COPY.env.
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
-`
 
 Build and run:
-`bash
+bash
 docker build -t powercv.
 docker run -p 8080:8080 --env-file.env powercv
-`
 
 ### Option 2: Heroku
-`bash
+bash
 # Add Procfile
 echo "web: uvicorn app.main:app --host 0.0.0.0 --port \$PORT" > Procfile
 
@@ -356,15 +338,13 @@ echo "web: uvicorn app.main:app --host 0.0.0.0 --port \$PORT" > Procfile
 heroku create powercv-app
 git push heroku main
 heroku config:set CEREBRAS_API_KEY=your_key
-`
 
 ### Option 3: AWS Lambda (Serverless)
-`bash
+bash
 # Use Zappa or AWS SAM
 pip install zappa
 zappa init
 zappa deploy production
-`
 
 ---
 
@@ -378,7 +358,7 @@ zappa deploy production
 5. **User Satisfaction** (collect feedback)
 
 ### Implementation
-`python
+python
 # Add to workflow_orchestrator.py
 import time
 from datetime import datetime
@@ -396,14 +376,13 @@ class MetricsCollector:
  
  # Save to database or logging service
  self.save_metrics(metrics)
-`
 
 ---
 
 ## Advanced Optimizations
 
 ### 1. Prompt Versioning
-`python
+python
 # app/prompts/versions/
 # cv_analyzer_v1.md
 # cv_analyzer_v2.md
@@ -415,10 +394,9 @@ class PromptLoader:
  
  filepath = f"{name}_v{version}.md"
  #... load file
-`
 
 ### 2. A/B Testing
-`python
+python
 import random
 
 def get_prompt_variant(user_id):
@@ -427,17 +405,15 @@ def get_prompt_variant(user_id):
  return 'cv_analyzer_v1'
  else:
  return 'cv_analyzer_v2'
-`
 
 ### 3. User Feedback Loop
-`python
+python
 @app.post("/api/feedback")
 async def submit_feedback(optimization_id: str, rating: int, comments: str):
  # Store feedback
  # Use to improve prompts
  # Track which prompt version performed best
  pass
-`
 
 ---
 
@@ -466,7 +442,7 @@ You'll know implementation is successful when:
 5. **Ask for help**: Create GitHub issue with logs
 
 ### Useful Commands
-`bash
+bash
 # View logs in real-time
 tail -f powercv.log | grep ERROR
 
@@ -479,7 +455,6 @@ curl -H "Authorization: Bearer $CEREBRAS_API_KEY" \
 
 # Validate prompt syntax
 python -c "from app.prompts.prompt_loader import PromptLoader; p = PromptLoader(); print('' if p.load_prompt('cv_analyzer') else '')"
-``
 
 ---
 

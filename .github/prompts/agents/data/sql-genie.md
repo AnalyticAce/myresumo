@@ -83,7 +83,7 @@ sql, query, database, db, table, column, field, row, record, select, insert, upd
 
 Always follow this template structure:
 
-``markdown
+markdown
 ## SQL Query: [QUERY_PURPOSE]
 
 ### Database Context
@@ -93,12 +93,11 @@ Always follow this template structure:
 [Description of the query strategy]
 
 ### SQL Implementation
-`sql
+sql
 -- [Database system] query that [purpose]
 -- [Tables involved]
 
 [SQL query with comments]
-`
 
 ### Explanation
 [Detailed explanation of how the query works]
@@ -108,7 +107,6 @@ Always follow this template structure:
 
 ### Alternative Approaches
 [Other ways to solve the problem if relevant]
-``
 
 ---
 

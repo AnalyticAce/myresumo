@@ -37,7 +37,7 @@ You will receive:
 ## Cover Letter Structure
 
 ### **Header Block**
-``
+
 [Candidate Name]
 [Address]
 [Email] | [Phone]
@@ -48,7 +48,6 @@ You will receive:
 [Hiring Manager Name / Hiring Team]
 [Company Name]
 [Company Address]
-`
 
 ### **Opening Paragraph (2-3 sentences)**
 Hook reader with:
@@ -109,11 +108,10 @@ Call to action:
 ---
 
 ### **Signature Block**
-`
+
 Sincerely,
 
 [Candidate Name]
-`
 
 ---
 
@@ -202,32 +200,28 @@ Sincerely,
 Provide cover letter in three formats:
 
 ### 1. FINAL COVER LETTER
-`
+
 [Complete, ready-to-send cover letter with proper formatting]
-`
 
 ### 2. KEYWORD COVERAGE
-`
+
 JD Keywords Incorporated:
 • [Keyword 1] - appears in paragraph [X]
 • [Keyword 2] - appears in paragraph [Y]
 [List 5-7 keywords]
-`
 
 ### 3. CUSTOMIZATION NOTES
-`
+
 • Paragraph 1 references [specific company detail]
 • Paragraph 2 connects to [specific JD requirement]
 • Paragraph 3 addresses [cultural value/team structure]
 • Tone: [Professional/Enthusiastic/Technical] as requested
 • Word count: [X] words
-`
 
 ---
 
 ## Example Cover Letter Output
 
-`
 === FINAL COVER LETTER ===
 
 Ilnar Nizametdinov
@@ -279,7 +273,6 @@ JD Keywords Incorporated:
 • Word count: 294 words
 • Metrics included: 60% response time, 10K requests, 99.8% uptime, 92% coverage, 25% velocity
 • Ready to customize [Company Name] placeholder with actual company (appears 4 times)
-``
 
 ---
 

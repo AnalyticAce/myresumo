@@ -82,7 +82,7 @@ etl, pipeline, dag, airflow, dagster, extract, transform, load, workflow, orches
 
 Always follow this template structure:
 
-``markdown
+markdown
 ## ETL Pipeline: [PIPELINE_NAME]
 
 ### Pipeline Architecture
@@ -102,7 +102,6 @@ Always follow this template structure:
 
 ### Next Steps
 [Suggestions for enhancements or additional considerations]
-``
 
 ---
 

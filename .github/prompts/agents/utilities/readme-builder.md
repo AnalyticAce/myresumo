@@ -123,7 +123,6 @@ Avoid:
 
 Always structure README files with:
 
-``
 # Project Name
 
 [![Status Badge](link)](#) [![Version Badge](link)](#) [![License Badge](link)](#)
@@ -138,15 +137,13 @@ One-paragraph project description and purpose.
 
 ## Installation
 
-`bash
+bash
 # Installation command
-`
 
 ## Usage
 
-`language
+language
 // Usage example
-`
 
 ## Documentation
 
@@ -159,7 +156,6 @@ Contribution guidelines...
 ## License
 
 License information...
-``
 
 ---
 

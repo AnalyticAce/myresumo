@@ -43,7 +43,7 @@ def test_cv_analysis(sample_cv_text, sample_jd_text, mock_ai_response):
         # Use custom assertion
         assert_ats_score_in_range(result['ats_score'])
 
-        print(f"✓ Analysis test passed. ATS Score: {result['ats_score']}")
+        print(f" Analysis test passed. ATS Score: {result['ats_score']}")
 
 
 def test_full_workflow(sample_cv_text, sample_jd_text, mock_ai_response):
@@ -76,7 +76,7 @@ def test_full_workflow(sample_cv_text, sample_jd_text, mock_ai_response):
         assert 'optimized_cv' in result
         assert result['ats_score'] > 0
 
-        print(f"✓ Workflow test passed. ATS Score: {result['ats_score']}")
+        print(f" Workflow test passed. ATS Score: {result['ats_score']}")
 
 
 def test_cover_letter_generation(mock_cover_letter_response):
@@ -112,7 +112,7 @@ def test_cover_letter_generation(mock_cover_letter_response):
         assert result['word_count'] > 0
 
         print(
-            f"✓ Cover letter test passed. Word count: {result['word_count']}")
+            f" Cover letter test passed. Word count: {result['word_count']}")
 
 
 def test_scraper_integration(mock_scraper_response):
@@ -138,7 +138,7 @@ def test_scraper_integration(mock_scraper_response):
 
     result = asyncio.run(test_scraper())
     assert result is True
-    print("✓ Scraper test passed.")
+    print(" Scraper test passed.")
 
 
 def test_master_cv_operations(sample_resume_data):
@@ -163,7 +163,7 @@ def test_master_cv_operations(sample_resume_data):
     assert 'John Doe' in markdown
     assert '## Work Experience' in markdown
 
-    print("✓ Master CV test passed.")
+    print(" Master CV test passed.")
 
 
 def test_api_endpoints(test_client):
@@ -177,7 +177,7 @@ def test_api_endpoints(test_client):
     response = test_client.get('/docs')
     assert response.status_code == 200
 
-    print("✓ API endpoints test passed.")
+    print(" API endpoints test passed.")
 
 
 def test_file_operations(temp_cv_file, temp_jd_file, temp_output_dir, sample_cv_text, sample_jd_text):
@@ -191,7 +191,7 @@ def test_file_operations(temp_cv_file, temp_jd_file, temp_output_dir, sample_cv_
     assert temp_cv_file.read_text() == sample_cv_text
     assert temp_jd_file.read_text() == sample_jd_text
 
-    print("✓ File operations test passed.")
+    print(" File operations test passed.")
 
 
 # Import fixtures and helpers from conftest

@@ -67,7 +67,7 @@ You must:
 
 ### 5. **Response Format**
 
-``markdown
+markdown
 ## Error Analysis
 
 ### Error Type
@@ -82,14 +82,12 @@ You must:
 ## Solution
 
 ### Primary Fix
-`python
+python
 # Example code fix with comments explaining changes
-`
 
 ### Alternative Approach (if applicable)
-`python
+python
 # Alternative solution with pros/cons
-`
 
 ## Prevention
 
@@ -98,7 +96,6 @@ You must:
 ## Verification
 
 [Steps to verify the issue is resolved]
-``
 
 ---
 

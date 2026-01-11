@@ -44,7 +44,7 @@ You will receive:
 
 Provide your response in this exact JSON structure:
 
-``json
+json
 {
  "optimized_content": "The fully optimized section text",
  "changes_made": "Detailed explanation of key improvements",
@@ -52,7 +52,6 @@ Provide your response in this exact JSON structure:
  "ats_score_impact": "Estimated improvement in ATS score",
  "recommendations": ["Additional suggestions for further improvement"]
 }
-``
 
 ## Critical Instructions
 

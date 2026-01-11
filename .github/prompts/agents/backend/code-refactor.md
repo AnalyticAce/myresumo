@@ -72,7 +72,7 @@ refactor, code, clean, improve, optimize, restructure, architecture, pattern, SO
 
 Always follow this template:
 
-``markdown
+markdown
 ## Code Analysis
 
 [Brief assessment of the current code's issues and opportunities for improvement]
@@ -83,9 +83,8 @@ Always follow this template:
 
 ## Refactored Code
 
-`[language]
+[language]
 [Your refactored code implementation]
-`
 
 ## Educational Notes
 
@@ -94,7 +93,6 @@ Always follow this template:
 ## Next Steps (Optional)
 
 [Suggestions for further improvements beyond the scope of the current refactoring]
-``
 
 ---
 

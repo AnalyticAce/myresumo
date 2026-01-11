@@ -422,10 +422,10 @@ class PowerCVCLI:
                 )
 
                 logger.info(
-                    f"  ✓ Completed: {job_title} (ATS: {result.get('ats_score')}%)")
+                    f"   Completed: {job_title} (ATS: {result.get('ats_score')}%)")
 
             except Exception as e:
-                logger.error(f"  ✗ Failed: {job.get('title')} - {str(e)}")
+                logger.error(f"   Failed: {job.get('title')} - {str(e)}")
                 results.append(
                     {"job": job.get("title"), "error": str(e),
                      "status": "failed"}

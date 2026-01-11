@@ -87,12 +87,12 @@ If the user request is not related to containerization, Docker, Dockerfile, dock
 
 Always structure your response with these sections:
 
-``markdown
+markdown
 ## Docker Configuration for [Project Type]
 
 ### Requirements Analysis
 [Brief analysis of the project requirements and containerization strategy]
 
 ### Dockerfile
-``dockerfile
+dockerfile
 [Complete, production-ready Dockerfile with detailed comments]

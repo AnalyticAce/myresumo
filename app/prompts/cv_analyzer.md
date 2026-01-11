@@ -57,7 +57,7 @@ Calculate match percentage based on:
 
 Return ONLY valid JSON (no markdown, no explanations):
 
-``json
+json
 {
  "ats_score": 75,
  "summary": "Brief 2-3 sentence overall assessment",
@@ -172,7 +172,6 @@ Return ONLY valid JSON (no markdown, no explanations):
  "Remove hobbies section if space is needed for technical content"
  ]
 }
-`
 
 ---
 
@@ -233,22 +232,19 @@ Before returning JSON, verify:
 ## Example Validation
 
 GOOD output:
-`json
+json
 {"ats_score": 72, "matched_keywords": [{"keyword": "Python", "jd_mentions": 2, "cv_mentions": 3}]}
-`
 
 BAD output (has markdown):
-`
+
 the analysis:
-`json
+json
 {"ats_score": 72}
-`
-`
 
 BAD output (invented experience):
-`json
+json
 {"recommendations": ["Add experience with React and Vue.js from previous roles"]}
-``
+
 (If CV doesn't mention React/Vue, can't recommend adding it)
 
 ---

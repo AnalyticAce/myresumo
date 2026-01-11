@@ -71,68 +71,67 @@ Output the EXACT list of languages from the original CV with EXACT proficiency l
 
 # CRITICAL: JSON OUTPUT FORMAT
 
-**Return ONLY the raw JSON object. NO markdown code fences. NO ```json blocks. NO preamble. NO explanation.**
+**Return ONLY the raw JSON object. NO markdown code fences. NO `json blocks. NO preamble. NO explanation.**
 
-The FIRST character of your response MUST be `{` and the LAST character MUST be `}`.
+The FIRST character of your response MUST be { and the LAST character MUST be }.
 
 Return ONLY valid JSON in this exact structure:
 
-```json
+json
 {
-  "user_information": {
-    "name": "[Exact name from original]",
-    "birthdate": "[Exact birthdate if provided]",
-    "age": "[Exact age if provided]",
-    "address": "[Complete address]",
-    "email": "[Exact email]",
-    "phone": "[Exact phone with country code]",
-    "driver_license": "[Exact license info if provided]",
-    "main_job_title": "[Tailored to target job]",
-    "profile_description": "[3-4 sentences in FIRST PERSON (using I, my, me) using ONLY factual experience from original CV]",
-    "linkedin": "[Exact LinkedIn URL]",
-    "github": "[Exact GitHub URL]",
-    "languages": ["[Exact language 1 (Proficiency)]", "[Exact language 2 (Proficiency)]"],
-    "experiences": [
-      {
-        "job_title": "[Exact job title from original]",
-        "company": "[Exact company name]",
-        "location": "[Exact location]",
-        "start_date": "[Exact start date]",
-        "end_date": "[Exact end date or Present]",
-        "four_tasks": [
-          "[Tailored bullet using keywords but factual]",
-          "[Tailored bullet using keywords but factual]",
-          "[Tailored bullet using keywords but factual]",
-          "[Tailored bullet using keywords but factual]"
-        ]
-      }
-    ],
-    "education": [
-      {
-        "institution": "[Exact institution name]",
-        "degree": "[Exact degree and major]",
-        "location": "[Exact location]",
-        "start_date": "[Exact date]",
-        "end_date": "[Exact date]"
-      }
-    ],
-    "skills": {
-      "hard_skills": ["[All technical skills from original, ordered by relevance]"],
-      "soft_skills": ["[All soft skills from original]"]
-    },
-    "certifications": ["[ALL certifications from original or summary]"],
-    "hobbies": ["[Hobbies if provided and space allows]"]
-  },
-  "projects": [
-    {
-      "project_name": "[Exact project name if from original]",
-      "two_goals_of_the_project": ["[Goal 1]", "[Goal 2]"],
-      "project_end_result": "[Quantitative result]",
-      "tech_stack": ["[Only tech from original]"]
-    }
-  ]
+ "user_information": {
+ "name": "[Exact name from original]",
+ "birthdate": "[Exact birthdate if provided]",
+ "age": "[Exact age if provided]",
+ "address": "[Complete address]",
+ "email": "[Exact email]",
+ "phone": "[Exact phone with country code]",
+ "driver_license": "[Exact license info if provided]",
+ "main_job_title": "[Tailored to target job]",
+ "profile_description": "[3-4 sentences in FIRST PERSON (using I, my, me) using ONLY factual experience from original CV]",
+ "linkedin": "[Exact LinkedIn URL]",
+ "github": "[Exact GitHub URL]",
+ "languages": ["[Exact language 1 (Proficiency)]", "[Exact language 2 (Proficiency)]"],
+ "experiences": [
+ {
+ "job_title": "[Exact job title from original]",
+ "company": "[Exact company name]",
+ "location": "[Exact location]",
+ "start_date": "[Exact start date]",
+ "end_date": "[Exact end date or Present]",
+ "four_tasks": [
+ "[Tailored bullet using keywords but factual]",
+ "[Tailored bullet using keywords but factual]",
+ "[Tailored bullet using keywords but factual]",
+ "[Tailored bullet using keywords but factual]"
+ ]
+ }
+ ],
+ "education": [
+ {
+ "institution": "[Exact institution name]",
+ "degree": "[Exact degree and major]",
+ "location": "[Exact location]",
+ "start_date": "[Exact date]",
+ "end_date": "[Exact date]"
+ }
+ ],
+ "skills": {
+ "hard_skills": ["[All technical skills from original, ordered by relevance]"],
+ "soft_skills": ["[All soft skills from original]"]
+ },
+ "certifications": ["[ALL certifications from original or summary]"],
+ "hobbies": ["[Hobbies if provided and space allows]"]
+ },
+ "projects": [
+ {
+ "project_name": "[Exact project name if from original]",
+ "two_goals_of_the_project": ["[Goal 1]", "[Goal 2]"],
+ "project_end_result": "[Quantitative result]",
+ "tech_stack": ["[Only tech from original]"]
+ }
+ ]
 }
-```
 
 # OPTIMIZATION RULES
 
@@ -163,4 +162,4 @@ Before outputting, verify:
 - [ ] No invented certifications
 - [ ] No invented skills
 
-**REMINDER: Return ONLY the JSON object starting with { and ending with }. NO markdown. NO ```json. NO text before or after.**
+**REMINDER: Return ONLY the JSON object starting with { and ending with }. NO markdown. NO `json. NO text before or after.**

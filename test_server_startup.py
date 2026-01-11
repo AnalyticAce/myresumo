@@ -15,26 +15,26 @@ def test_imports():
         # Test settings
         from app.config.settings import get_settings
         settings = get_settings()
-        print(f"✅ Settings loaded: {settings.app_name} v{settings.version}")
+        print(f" Settings loaded: {settings.app_name} v{settings.version}")
         
         # Test database connector
         from app.database.connector import (
             get_secure_mongodb_config,
         )
         config = get_secure_mongodb_config()
-        print(f"✅ MongoDB config: {config['database']}")
+        print(f" MongoDB config: {config['database']}")
         
         # Test main app import
-        print("✅ Main app imported successfully")
+        print(" Main app imported successfully")
         
         # Test debugging middleware
-        print("✅ Debugging middleware imported")
+        print(" Debugging middleware imported")
         
-        print("\n🎉 All critical imports successful!")
+        print("\n All critical imports successful!")
         return True
         
     except Exception as e:
-        print(f"❌ Import failed: {e}")
+        print(f" Import failed: {e}")
         import traceback
         traceback.print_exc()
         return False

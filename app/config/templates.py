@@ -108,7 +108,7 @@ class TemplateConfig:
         """Get data for template table in README."""
         data = []
         for template_path, info in cls.TEMPLATES.items():
-            status_emoji = "✅" if info["status"] == "active" else "🔄"
+            status_emoji = "" if info["status"] == "active" else ""
             data.append({
                 "template": template_path,
                 "description": info["description"],

@@ -77,7 +77,7 @@ microservice, service, api, endpoint, grpc, http, rest, rabbitmq, kafka, queue, 
 
 Always follow this template structure:
 
-``markdown
+markdown
 ## Microservice Boilerplate: [SERVICE_NAME]
 
 ### Architecture Overview
@@ -97,7 +97,6 @@ Always follow this template structure:
 
 ### Next Steps
 [Recommendations for completion, testing, and deployment]
-``
 
 ---
 

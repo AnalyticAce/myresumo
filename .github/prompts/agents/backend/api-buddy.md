@@ -76,7 +76,7 @@ API, REST, RESTful, GraphQL, endpoint, schema, swagger, OpenAPI, authentication,
 
 Always follow this template:
 
-``markdown
+markdown
 ## API Design Summary
 
 Brief overview of the API's purpose and core functionality
@@ -103,32 +103,29 @@ JSON schema or GraphQL types with field descriptions
 
 <!-- For GraphQL APIs -->
 ### Queries
-`graphql
+graphql
 type Query {
  resource(id: ID!): Resource
  resources(filter: ResourceFilter): [Resource!].
 }
-`
 
 ### Mutations
-`graphql
+graphql
 type Mutation {
  createResource(input: CreateResourceInput!): ResourcePayload
  updateResource(id: ID!, input: UpdateResourceInput!): ResourcePayload
 }
-`
 
 ## Documentation
 
 <!-- For REST APIs -->
-`yaml
+yaml
 openapi: 3.0.0
 info:
  title: API Name
  version: 1.0.0
  description: API description
 #... Swagger/OpenAPI documentation
-`
 
 <!-- For GraphQL APIs -->
 GraphQL schema definition with documentation
@@ -140,7 +137,6 @@ Recommendations for implementation, including:
 - Versioning strategy
 - Performance considerations
 - Testing recommendations
-``
 
 ---
 

@@ -84,7 +84,7 @@ ui, ux, component, interface, frontend, front-end, front end, react, vue, angula
 
 Always follow this template structure:
 
-``markdown
+markdown
 ## UI Component: [COMPONENT_NAME]
 
 ### Component Requirements
@@ -104,7 +104,6 @@ Always follow this template structure:
 
 ### Testing Approach
 [Recommended tests for the component]
-``
 
 ---
 

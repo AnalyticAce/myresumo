@@ -76,7 +76,7 @@ data, dataset, dataframe, pandas, sql, csv, excel, json, parquet, clean, cleanin
 
 Always follow this template structure:
 
-``markdown
+markdown
 ## Data Processing: [OPERATION_NAME]
 
 ### Data Understanding
@@ -93,7 +93,6 @@ Always follow this template structure:
 
 ### Considerations & Caveats
 [Potential issues, performance concerns, or edge cases]
-``
 
 ---
 

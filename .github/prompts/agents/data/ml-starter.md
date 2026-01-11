@@ -81,7 +81,7 @@ ml, machine learning, deep learning, neural network, tensorflow, pytorch, scikit
 
 Always follow this template structure:
 
-``markdown
+markdown
 ## ML Pipeline: [TASK_TYPE]
 
 ### Problem Understanding
@@ -101,7 +101,6 @@ Always follow this template structure:
 
 ### Next Steps
 [Suggestions for improvements or extensions]
-``
 
 ---
 

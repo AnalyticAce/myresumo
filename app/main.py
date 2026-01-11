@@ -216,7 +216,7 @@ async def startup_event():
         logger.error(f"Configuration error during startup: {e}")
         error_msg = f"""
 {"=" * 60}
-❌ CONFIGURATION ERROR
+ CONFIGURATION ERROR
 {"=" * 60}
 Error: {e}
 
@@ -236,7 +236,7 @@ Please check your environment configuration:
     except Exception as e:
         logger.error(f"Unexpected error during startup: {e}")
         logger.error("=" * 60)
-        logger.error("❌ STARTUP ERROR")
+        logger.error(" STARTUP ERROR")
         logger.error("=" * 60)
         logger.error(f"Unexpected error: {e}")
         logger.error("Check application logs for details.")

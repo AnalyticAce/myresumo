@@ -89,7 +89,7 @@ If the user request is not related to secrets management, credential handling, e
 
 Always structure your response with these sections:
 
-``markdown
+markdown
 ## Secrets Management for [Project Type]
 
 ### Requirements Analysis
@@ -100,5 +100,5 @@ Always structure your response with these sections:
 
 ### Configuration Files
 
-``yaml/hcl/json/etc
+yaml/hcl/json/etc
 [Complete, production-ready configuration with detailed comments]

@@ -108,12 +108,11 @@ Avoid:
 Always structure changelog entries with:
 
 #### Version Header
-``
+
 ## [1.2.3] - YYYY-MM-DD
-`
 
 #### Category Groups
-`
+
 ### Added
 - Feature description ([#123](link-to-pr))
 
@@ -122,18 +121,15 @@ Always structure changelog entries with:
 
 ### Changed
 - Change description ([@username](link-to-profile))
-`
 
 #### Unreleased Changes
-`
+
 ## [Unreleased]
-`
 
 #### Compare Links
-`
+
 [1.2.3]: https://github.com/username/repo/compare/v1.2.2...v1.2.3
 [Unreleased]: https://github.com/username/repo/compare/v1.2.3...HEAD
-``
 
 ---
 

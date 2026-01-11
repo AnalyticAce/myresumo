@@ -9,27 +9,27 @@ This document provides instructions for setting up the PowerCV project locally.
 
 ## Steps
 1. Clone the repository:
- ``bash
+ bash
  git clone https://github.com/AnalyticAce/PowerCV.git
  cd PowerCV
- `
+ 
 
 2. Create and activate a virtual environment:
- `bash
+ bash
  python -m venv venv
  source venv/bin/activate # On Windows: venv\Scripts\activate
- `
+ 
 
 3. Install dependencies:
- `bash
+ bash
  pip install -r requirements.txt
- `
+ 
 
 4. Run the development server:
- `bash
+ bash
  python app/main.py
- `
+ 
 
 5. Access the application at http://127.0.0.1:8000.
 
-For Docker setup, refer to the Dockerfile and docker-compose` documentation.
+For Docker setup, refer to the Dockerfile and docker-compose documentation.

@@ -153,7 +153,6 @@ response = cerebras_api.call(
 
 print(f"Response length: {len(response)}")
 print(f"Contains all sections: {all(x in response for x in ['KEYWORD EXTRACTION', 'SOAR', 'SUMMARY'])}")
-``
 
 ### **Step 2: Simplify for Immediate Fix**
 **Quick win:** Strip your master prompt down to tasks 2, 3, and 5:
@@ -163,7 +162,7 @@ print(f"Contains all sections: {all(x in response for x in ['KEYWORD EXTRACTION'
 
 ### **Step 3: Implement Modular Architecture**
 Update your app structure:
-``
+
 app/
  prompts/
  analyzer.py → CV analysis prompt

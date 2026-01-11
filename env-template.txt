@@ -1,6 +1,6 @@
 # PowerCV Environment Configuration Template
-# Copy this file to .env and fill in your actual values
-# IMPORTANT: Never commit .env to version control
+# Copy this file to.env and fill in your actual values
+# IMPORTANT: Never commit.env to version control
 
 # =============================================================================
 # APPLICATION SETTINGS
