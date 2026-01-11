@@ -9,9 +9,10 @@ import { useDownloadMasterCV, useDeleteMasterCV } from '@/hooks/useMasterCV'
 interface MasterCVCardProps {
   masterCV: MasterCV
   className?: string
+  onPreview?: (masterCV: MasterCV) => void
 }
 
-export function MasterCVCard({ masterCV, className = '' }: MasterCVCardProps) {
+export function MasterCVCard({ masterCV, className = '', onPreview }: MasterCVCardProps) {
   const downloadMasterCV = useDownloadMasterCV()
   const deleteMasterCV = useDeleteMasterCV()
 
@@ -26,8 +27,9 @@ export function MasterCVCard({ masterCV, className = '' }: MasterCVCardProps) {
   }
 
   const handlePreview = (): void => {
-    // TODO: Implement preview functionality
-    window.open(masterCV.fileUrl, '_blank')
+    if (onPreview) {
+      onPreview(masterCV)
+    }
   }
 
   return (

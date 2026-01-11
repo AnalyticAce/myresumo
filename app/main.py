@@ -5,10 +5,11 @@ and handles application startup and shutdown events. It serves as the central
 coordination point for the entire application.
 """
 
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 from dotenv import load_dotenv
-from fastapi import Body, FastAPI, HTTPException, Query, Request, status
+from fastapi import Body, Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -19,13 +20,14 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.routers.comprehensive_optimizer import comprehensive_router
 from app.api.routers.cover_letter import cover_letter_router
-from app.api.routers.resume import resume_router
+from app.api.routers.resume import resume_router, ResumeRepository
 from app.api.routers.token_usage import router as token_usage_router
 from app.config.logging_config import logger
 from app.config.settings import get_settings
 from app.config.templates import TemplateConfig
 from app.core.exceptions import ConfigurationError, MissingApiKeyError
 from app.database.connector import MongoConnectionManager
+from app.database.models.resume import Resume
 from app.middleware.debugging import setup_debugging_middleware
 from app.middleware.rate_limit import init_rate_limiting
 from app.routes.n8n_integration import router as n8n_router
@@ -33,8 +35,9 @@ from app.services.master_cv import MasterCV
 from app.services.scraper import extract_keywords_from_jd
 from app.services.workflow_orchestrator import CVWorkflowOrchestrator
 from app.utils.error_handler import ErrorContext, ErrorHandler, debug_endpoint
-from app.web.core import core_web_router
-from app.web.dashboard import web_router
+# Legacy web routes removed - frontend is now React + Vite
+# from app.web.core import core_web_router
+# from app.web.dashboard import web_router
 
 # Load environment variables from .env file
 load_dotenv(override=True)
@@ -329,6 +332,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     logger.warning(
         f"Validation error on {request.url.path}: {len(exc.errors())} errors")
 
+    # Log detailed validation errors for debugging (but don't expose to client)
+    for error in exc.errors():
+        field_path = '.'.join(str(x) for x in error['loc'])
+        logger.warning(f"Validation error in {field_path}: {error['msg']}")
+
     # For API routes, return sanitized error
     if request.url.path.startswith("/api"):
         # Don't expose detailed validation errors that might contain sensitive data
@@ -374,10 +382,18 @@ async def add_response_headers(request: Request, call_next):
 # Add middleware and static file mounts
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8080",
-                   "http://127.0.0.1:3000", "http://127.0.0.1:8080"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:5173",
+        "http://localhost:8080",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:8080",
+    ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -443,10 +459,25 @@ def get_orchestrator():
     return _orchestrator
 
 
+async def get_resume_repository(request: Request) -> ResumeRepository:
+    """Dependency for getting the resume repository instance.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+    -------
+        ResumeRepository: An instance of the resume repository
+    """
+    from app.database.repositories.resume_repository import ResumeRepository
+    return ResumeRepository()
+
+
 @app.post("/api/v2/optimize", tags=["CV Optimization v2"], summary="Complete CV optimization workflow")
 @debug_endpoint
-async def optimize_cv_v2(request: OptimizationRequest):
+async def optimize_cv_v2(request: OptimizationRequest, repo: ResumeRepository = Depends(get_resume_repository)):
     """CV optimization endpoint utilizing modular prompts.
+    Saves the optimized result and returns a resume ID for download.
     """
     try:
         with ErrorContext("cv_optimization_v2", {
@@ -461,6 +492,32 @@ async def optimize_cv_v2(request: OptimizationRequest):
                 jd_text=request.jd_text,
                 generate_cover_letter=request.generate_cover_letter
             )
+
+            # Save the optimized result to database for PDF generation
+            optimized_data = result.get("optimized_cv", {})
+            if optimized_data:
+                # Create a new resume entry with the optimized data
+                resume_data = Resume(
+                    user_id="local-user",
+                    title=f"Optimized Resume - {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                    original_content=request.cv_text,
+                    job_description=request.jd_text,
+                    optimized_data=optimized_data,
+                    target_company="",  # Could be extracted from request if available
+                    target_role="",    # Could be extracted from request if available
+                    ats_score=result.get("ats_score", 0),
+                    matching_skills=result.get("matching_skills", []),
+                    missing_skills=result.get("missing_skills", []),
+                    recommendation=result.get("recommendation", ""),
+                    optimized_content="",  # Could be generated from optimized_data
+                )
+
+                resume_id = await repo.create_resume(resume_data)
+                if resume_id:
+                    # Add resume_id to the result
+                    result["resume_id"] = resume_id
+                    logger.info(f"Created optimized resume with ID: {resume_id}")
+
             return result
     except Exception as e:
         logger.error(f"Optimization error: {str(e)}", exc_info=True)
@@ -704,8 +761,9 @@ app.include_router(token_usage_router)
 app.include_router(comprehensive_router)
 # Add n8n integration endpoints
 app.include_router(n8n_router)
-app.include_router(core_web_router)
-app.include_router(web_router)
+# Legacy web routers removed - frontend is now React + Vite
+# app.include_router(core_web_router)
+# app.include_router(web_router)
 
 
 # Catch-all for not found pages - IMPORTANT: This must come AFTER including all routers
@@ -713,7 +771,7 @@ app.include_router(web_router)
 async def catch_all(request: Request, path: str):
     """Catch-all route handler for undefined paths.
 
-    This must be defined AFTER all other routes to avoid intercepting valid routes.
+    Backend is API-only; frontend is served by Vite dev server.
 
     Args:
         request: The incoming request
@@ -721,12 +779,9 @@ async def catch_all(request: Request, path: str):
 
     Returns:
     -------
-        Template response with 404 page
+        JSON 404 response
     """
-    # Skip handling for paths that should be handled by other middleware/routers
-    if path.startswith(("api/", "static/", "templates/", "docs")):
-        # Let the normal routing handle these paths
-        raise StarletteHTTPException(status_code=404)
-
-    # For truly non-existent routes, render the 404 page
-    return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    return JSONResponse(
+        status_code=404,
+        content={"detail": f"Path '/{path}' not found. API endpoints are under /api/"}
+    )

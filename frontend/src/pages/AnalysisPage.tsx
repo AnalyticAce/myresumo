@@ -54,29 +54,10 @@ export function AnalysisPage() {
 
   // Use analysis from store or fallback to mock data
   const analysisData = analysis || {
-    atsScore: 87,
-    matchedSkills: ['React', 'TypeScript', 'Node.js', 'Python', 'AWS', 'Docker'],
-    missingSkills: ['Kubernetes', 'GraphQL', 'MongoDB'],
-    recommendations: [
-      {
-        category: 'skills' as const,
-        severity: 'high' as const,
-        message: 'Add Kubernetes experience to match job requirements',
-        suggestion: 'Include any container orchestration experience or certifications'
-      },
-      {
-        category: 'experience' as const,
-        severity: 'medium' as const,
-        message: 'Quantify your achievements with specific metrics',
-        suggestion: 'Add numbers like "increased performance by 40%" or "reduced costs by $50k"'
-      },
-      {
-        category: 'format' as const,
-        severity: 'low' as const,
-        message: 'Consider using bullet points for better readability',
-        suggestion: 'Break down long paragraphs into concise bullet points'
-      }
-    ]
+    atsScore: 0,
+    matchedSkills: [],
+    missingSkills: [],
+    recommendations: []
   }
 
   return (

@@ -8,6 +8,7 @@ export interface Resume {
   position?: string
   status: ResumeStatus
   atsScore?: number
+  isOptimized?: boolean
   format?: ResumeFormat
   sourceType?: 'master_cv' | 'upload'
   sourceId?: string

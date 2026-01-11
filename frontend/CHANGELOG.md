@@ -181,7 +181,7 @@ Successfully migrated the entire PowerCV frontend from Alpine.js/Jinja2 to a mod
 ## **Complete File Structure & Changes**
 
 ### **New Files Created:**
-`
+
 frontend/
  src/
  api/
@@ -1270,7 +1270,7 @@ bash
 cd /home/illnar/Projects/PowerCV/frontend
 npm run dev
 # Visit http://localhost:3000
-``
+`
 
 ### Next Steps:
 1. Start development server

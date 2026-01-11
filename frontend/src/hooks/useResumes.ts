@@ -56,13 +56,31 @@ export function useDownloadResume() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `resume_${id}.pdf`
+      a.download = `resume_optimized_${id}.pdf`
       a.click()
       window.URL.revokeObjectURL(url)
-      toast.success('Resume downloaded successfully')
+      toast.success('Optimized resume downloaded successfully')
     },
     onError: () => {
-      toast.error('Failed to download resume')
+      toast.error('Failed to download optimized resume')
+    },
+  })
+}
+
+export function useDownloadOriginalResume() {
+  return useMutation({
+    mutationFn: (id: string) => resumesAPI.downloadOriginalResume(id),
+    onSuccess: (blob, id) => {
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `resume_original_${id}`
+      a.click()
+      window.URL.revokeObjectURL(url)
+      toast.success('Original resume downloaded successfully')
+    },
+    onError: () => {
+      toast.error('Failed to download original resume')
     },
   })
 }

@@ -23,7 +23,7 @@ This workflow provides a streamlined CV optimization pipeline that accepts CV te
 - Returns structured optimization feedback
 
 **Webhook Payload Example:**
-`json
+json
 {
  "cv_text": "Experienced Python developer with Django and FastAPI expertise...",
  "jd_text": "Looking for a Senior Python Developer with FastAPI experience...",
@@ -282,7 +282,6 @@ health_check:
  interval: 30s
  timeout: 5s
  retries: 3
-`
 
 ### Logging
 

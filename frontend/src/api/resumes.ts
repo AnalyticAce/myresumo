@@ -4,7 +4,7 @@ import { PaginatedResponse } from '@/types/api'
 
 export const resumesAPI = {
   getResumes: async (_filters: DashboardFilters, page = 1, pageSize = 20) => {
-    const { data } = await apiClient.get<PaginatedResponse<Resume>>('/resume/user/demo-user', {
+    const { data } = await apiClient.get<PaginatedResponse<Resume>>('/resume/user/local-user', {
       params: { page, pageSize },
     })
     return data
@@ -16,8 +16,9 @@ export const resumesAPI = {
   },
 
   updateStatus: async (id: string, status: string) => {
-    const { data } = await apiClient.put<Record<string, unknown>>(
-      `/resume/${id}/status/${status}`
+    const { data } = await apiClient.patch<Record<string, unknown>>(
+      `/resume/${id}/status`,
+      { application_status: status }
     )
     return data
   },
@@ -28,6 +29,13 @@ export const resumesAPI = {
 
   downloadResume: async (id: string) => {
     const { data } = await apiClient.get<Blob>(`/resume/${id}/download`, {
+      responseType: 'blob',
+    })
+    return data
+  },
+
+  downloadOriginalResume: async (id: string) => {
+    const { data } = await apiClient.get<Blob>(`/resume/${id}/download-original`, {
       responseType: 'blob',
     })
     return data

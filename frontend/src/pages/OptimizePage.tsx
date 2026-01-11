@@ -1,23 +1,41 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { FileUpload } from '@/components/optimization/FileUpload'
 import { TemplateSelector } from '@/components/optimization/TemplateSelector'
 import { ArrowLeft, ArrowRight, FileText, Upload } from 'lucide-react'
 import { useOptimizationStore } from '@/stores/optimizationStore'
 import { optimizationAPI } from '@/api/optimization'
 import { OptimizationRequest } from '@/types/optimization'
+import { apiClient } from '@/api/client'
 import { toast } from 'sonner'
+
+interface MasterCVFromAPI {
+  id: string
+  title: string
+  master_filename?: string
+}
 
 export function OptimizePage() {
   const navigate = useNavigate()
   const { request, setRequest, setCurrentStep, step, setAnalysis } = useOptimizationStore()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+
+  // Fetch master CVs from API
+  const { data: masterCVs = [] } = useQuery({
+    queryKey: ['master-cvs'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<MasterCVFromAPI[]>('/resume/master-cvs')
+      return data
+    },
+  })
 
   const handleNext = () => {
     if (step < 4) {
@@ -142,9 +160,15 @@ export function OptimizePage() {
                       <SelectValue placeholder="Choose a Master CV" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">My Master CV 2024</SelectItem>
-                      <SelectItem value="2">Technical Resume</SelectItem>
-                      <SelectItem value="3">Management Resume</SelectItem>
+                      {masterCVs.length === 0 ? (
+                        <SelectItem value="" disabled>No Master CVs found - upload one first</SelectItem>
+                      ) : (
+                        masterCVs.map((cv) => (
+                          <SelectItem key={cv.id} value={cv.id}>
+                            {cv.title || cv.master_filename || 'Untitled CV'}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -188,12 +212,28 @@ export function OptimizePage() {
           )}
 
           {step === 3 && (
-            <div className="space-y-4">
-              <Label>Choose Template</Label>
-              <TemplateSelector
-                selectedTemplate={request.template}
-                onTemplateSelect={(template) => setRequest({ ...request, template })}
-              />
+            <div className="space-y-6">
+              <div>
+                <Label>Choose Template</Label>
+                <TemplateSelector
+                  selectedTemplate={request.template}
+                  onTemplateSelect={(template) => setRequest({ ...request, template })}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="space-y-0.5">
+                  <Label htmlFor="cover-letter-toggle" className="text-base">Generate Cover Letter</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Create a tailored cover letter alongside your optimized resume
+                  </p>
+                </div>
+                <Switch
+                  id="cover-letter-toggle"
+                  checked={request.generateCoverLetter ?? false}
+                  onCheckedChange={(checked) => setRequest({ ...request, generateCoverLetter: checked })}
+                />
+              </div>
             </div>
           )}
 

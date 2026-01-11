@@ -4,40 +4,65 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Download, Eye, Share, FileText, Mail } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-
-// Mock result data
-const mockResult = {
-  resumeId: 'res_123',
-  improvements: [
-    'Added Kubernetes experience to match job requirements',
-    'Quantified achievements with specific metrics',
-    'Improved formatting for better ATS readability',
-    'Optimized keyword density for better matching'
-  ],
-  optimizedResumeUrl: '/api/resumes/res_123/download',
-  coverLetterUrl: '/api/resumes/res_123/cover-letter',
-  analysisResult: {
-    atsScore: 94,
-    matchedSkills: ['React', 'TypeScript', 'Node.js', 'Python', 'AWS', 'Docker', 'Kubernetes'],
-    missingSkills: [],
-    recommendations: []
-  }
-}
+import { useOptimizationStore } from '@/stores/optimizationStore'
 
 export function ResultsPage() {
   const navigate = useNavigate()
   const [isDownloading, setIsDownloading] = useState<'resume' | 'cover' | null>(null)
+  const { result, request } = useOptimizationStore()
+
+  // Debug logging
+  console.log('ResultsPage result:', result)
+  console.log('ResultsPage result.resumeId:', result?.resumeId)
+  console.log('ResultsPage result.resume_id:', result?.resume_id)
+
+  // Fallback to mock data if no result
+  const resultData = result || {
+    resumeId: 'res_123',
+    resume_id: 'res_123',
+    ats_score: 94,
+    matching_skills: ['React', 'TypeScript', 'Node.js', 'Python', 'AWS', 'Docker', 'Kubernetes'],
+    missing_skills: [],
+    improvements: [
+      'Added Kubernetes experience to match job requirements',
+      'Quantified achievements with specific metrics',
+      'Improved formatting for better ATS readability',
+      'Optimized keyword density for better matching'
+    ],
+    optimizedResumeUrl: '/api/resume/res_123/download',
+    coverLetterUrl: '/api/resume/res_123/cover-letter',
+    analysis: {
+      ats_score: 94,
+      matchedSkills: ['React', 'TypeScript', 'Node.js', 'Python', 'AWS', 'Docker', 'Kubernetes'],
+      missingSkills: [],
+      recommendations: []
+    }
+  }
+
+  // Normalize the data structure for consistent access
+  const atsScore = resultData.ats_score || resultData.analysis?.ats_score || 0
+  const matchedSkills = resultData.matching_skills || resultData.analysis?.matchedSkills || []
+  const improvements = resultData.improvements || []
 
   const handleDownloadResume = async () => {
     setIsDownloading('resume')
     try {
-      // TODO: Implement actual download
-      const response = await fetch(mockResult.optimizedResumeUrl)
+      // Map template enum to actual template path for download
+      const templateMap: Record<string, string> = {
+        'modern': 'modern.typ',
+        'classic': 'resume.typ',
+        'professional': 'brilliant-cv/cv.typ',
+        'creative': 'awesome-cv/cv.tex',
+        'minimal': 'simple-xd-resume/cv.typ'
+      }
+      const templatePath = templateMap[request.template || 'classic'] || 'resume.typ'
+
+      const response = await fetch(`/api/resume/${resultData.resumeId}/download?template=${encodeURIComponent(templatePath)}`)
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'optimized_resume.pdf'
+      a.download = `cv_I.Nizametdinov_${request.company || 'Company'}_${request.position || 'Position'}_${new Date().toLocaleDateString('en-GB').replace(/\//g, '.')}_v_1.pdf`
       a.click()
       window.URL.revokeObjectURL(url)
     } catch (error) {
@@ -50,13 +75,13 @@ export function ResultsPage() {
   const handleDownloadCoverLetter = async () => {
     setIsDownloading('cover')
     try {
-      // TODO: Implement actual download
-      const response = await fetch(mockResult.coverLetterUrl)
-      const blob = await response.blob()
+      // For now, download as text file since there's no dedicated endpoint
+      const coverLetterContent = result?.coverLetter || 'Cover letter not available'
+      const blob = new Blob([coverLetterContent], { type: 'text/plain' })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'cover_letter.pdf'
+      a.download = `cl_I.Nizametdinov_${request.company || 'Company'}_${request.position || 'Position'}_${new Date().toLocaleDateString('en-GB').replace(/\//g, '.')}_v_1.txt`
       a.click()
       window.URL.revokeObjectURL(url)
     } catch (error) {
@@ -67,8 +92,16 @@ export function ResultsPage() {
   }
 
   const handlePreview = () => {
-    // TODO: Implement preview functionality
-    window.open(mockResult.optimizedResumeUrl, '_blank')
+    // Map template enum to actual template path for preview
+    const templateMap: Record<string, string> = {
+      'modern': 'modern.typ',
+      'classic': 'resume.typ',
+      'professional': 'brilliant-cv/cv.typ',
+      'creative': 'awesome-cv/cv.tex',
+      'minimal': 'simple-xd-resume/cv.typ'
+    }
+    const templatePath = templateMap[request.template || 'classic'] || 'resume.typ'
+    window.open(`/api/resume/${resultData.resumeId}/download?template=${encodeURIComponent(templatePath)}`, '_blank')
   }
 
   const handleShare = () => {
@@ -115,22 +148,40 @@ export function ResultsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className={`flex items-center justify-between p-4 rounded-lg ${
+                atsScore >= 76 ? 'bg-green-50 border border-green-200' :
+                atsScore >= 60 ? 'bg-yellow-50 border border-yellow-200' :
+                'bg-red-50 border border-red-200'
+              }`}>
                 <div>
-                  <div className="text-sm font-medium text-green-800">ATS Score</div>
-                  <div className="text-2xl font-bold text-green-900">
-                    {mockResult.analysisResult.atsScore}%
+                  <div className={`text-sm font-medium ${
+                    atsScore >= 76 ? 'text-green-800' :
+                    atsScore >= 60 ? 'text-yellow-800' :
+                    'text-red-800'
+                  }`}>ATS Score</div>
+                  <div className={`text-2xl font-bold ${
+                    atsScore >= 76 ? 'text-green-900' :
+                    atsScore >= 60 ? 'text-yellow-900' :
+                    'text-red-900'
+                  }`}>
+                    {atsScore}%
                   </div>
                 </div>
-                <Badge variant="default" className="bg-green-500">
-                  Excellent
+                <Badge variant="default" className={
+                  atsScore >= 76 ? 'bg-green-500' :
+                  atsScore >= 60 ? 'bg-yellow-500' :
+                  'bg-red-500'
+                }>
+                  {atsScore >= 76 ? 'Excellent' :
+                   atsScore >= 60 ? 'Good' :
+                   'Poor'}
                 </Badge>
               </div>
 
               <div className="space-y-3">
                 <h3 className="font-semibold">Improvements Made:</h3>
                 <ul className="space-y-2">
-                  {mockResult.improvements.map((improvement, index) => (
+                  {improvements.map((improvement: string, index: number) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
                       <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
                       {improvement}
@@ -210,11 +261,11 @@ export function ResultsPage() {
                 <div className="flex justify-between mb-2">
                   <span>Matched Skills</span>
                   <Badge variant="default">
-                    {mockResult.analysisResult.matchedSkills.length}
+                    {matchedSkills.length}
                   </Badge>
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  {mockResult.analysisResult.matchedSkills.map((skill) => (
+                  {matchedSkills.map((skill: string) => (
                     <Badge key={skill} variant="secondary" className="text-xs">
                       {skill}
                     </Badge>

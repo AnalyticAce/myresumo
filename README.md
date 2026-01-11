@@ -18,6 +18,8 @@
 
 PowerCV is a platform for resume customization that adapts professional profiles to specific job descriptions. Using natural language processing, it analyzes job requirements and highlights relevant skills and experiences to improve ATS compatibility and recruiter visibility.
 
+**🎉 Latest Update (v3.0.0-beta)**: All critical application-breaking bugs have been resolved! The application now provides a complete, production-ready resume optimization experience with proper template selection, PDF generation, and professional file downloads.
+
 ## Key Features
 
 - ** Resume Customization**: Tailors resume content to match job requirements using AI-powered analysis
@@ -71,7 +73,7 @@ PowerCV features a comprehensive dashboard for resume management, detailed optim
 
 ### 1. Start the Backend API
 
-`bash
+bash
 # Navigate to project root
 cd /home/illnar/Projects/PowerCV
 
@@ -403,7 +405,7 @@ GitHub Actions runs Ruff on all Python files.
 4. Auto-format code:
  bash
  ruff format.
- `
+ 
 
 ## Contributing
 

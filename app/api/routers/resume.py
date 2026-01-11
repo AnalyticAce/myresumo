@@ -686,6 +686,69 @@ async def get_master_cv_by_id(
 
 
 @resume_router.get(
+    "/{resume_id}/download-original",
+    summary="Download original resume file",
+    response_description="Original resume file downloaded successfully",
+)
+async def download_original_resume(
+    resume_id: str,
+    request: Request = None,
+    repo: ResumeRepository = Depends(get_resume_repository),
+):
+    """Download the original uploaded resume file.
+
+    This endpoint returns the original file that was uploaded (PDF, DOCX, MD, TXT).
+
+    Args:
+        resume_id: ID of the resume to download
+        request: The incoming request
+        repo: Resume repository instance
+
+    Returns:
+    -------
+        FileResponse: Original file download
+
+    Raises:
+    ------
+        HTTPException: If the resume is not found or file is not available
+    """
+    # Validate resume_id format
+    validated_resume_id = validate_object_id(resume_id)
+
+    resume = await repo.get_resume_by_id(str(validated_resume_id))
+    if not resume:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Resume with ID {resume_id} not found",
+        )
+
+    # Check if original file path exists
+    file_path = resume.get("master_file_path")
+    if not file_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Original file not available for this resume",
+        )
+
+    # Verify file exists on disk
+    if not os.path.exists(file_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Original file has been removed from storage",
+        )
+
+    # Get original filename and content type
+    original_filename = resume.get("original_filename") or resume.get("master_filename") or "resume"
+    content_type = resume.get("master_file_type") or "application/octet-stream"
+
+    return FileResponse(
+        path=file_path,
+        filename=original_filename,
+        media_type=content_type,
+    )
+
+
+@resume_router.get(
     "/test-master-cv",
     response_model=Dict[str, str],
     summary="Test master CV endpoint",

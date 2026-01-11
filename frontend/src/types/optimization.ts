@@ -26,11 +26,17 @@ export interface Recommendation {
 }
 
 export interface OptimizationResult {
-  resumeId: string
-  improvements: string[]
+  resumeId?: string
+  resume_id?: string
+  improvements?: string[]
   optimizedResumeUrl: string
   coverLetterUrl?: string
-  analysisResult: AnalysisResult
+  coverLetter?: string
+  ats_score?: number
+  matching_skills?: string[]
+  missing_skills?: string[]
+  analysisResult?: AnalysisResult
+  analysis?: any
 }
 
 export interface OptimizationState {

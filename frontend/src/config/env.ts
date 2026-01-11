@@ -2,7 +2,8 @@ import { z } from 'zod'
 
 // Environment variable schema for validation
 const envSchema = z.object({
-  VITE_API_BASE_URL: z.string().url().default('http://localhost:8000'),
+  // Allow relative paths like /api or full URLs
+  VITE_API_BASE_URL: z.string().default('/api'),
   VITE_API_TIMEOUT: z.string().default('60000').transform(val => Number(val)),
   VITE_APP_TITLE: z.string().default('PowerCV'),
   VITE_APP_VERSION: z.string().default('1.0.0'),

@@ -34,8 +34,8 @@ const statusConfig = {
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const config = statusConfig[status]
-  
+  const config = statusConfig[status] || statusConfig[ResumeStatus.NOT_APPLIED]
+
   return (
     <Badge variant={config.variant} className={config.className}>
       {config.label}

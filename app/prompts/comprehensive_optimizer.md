@@ -71,7 +71,7 @@ Output the EXACT list of languages from the original CV with EXACT proficiency l
 
 # CRITICAL: JSON OUTPUT FORMAT
 
-**Return ONLY the raw JSON object. NO markdown code fences. NO `json blocks. NO preamble. NO explanation.**
+**Return ONLY the raw JSON object. NO markdown code fences. NO json blocks. NO preamble. NO explanation.**
 
 The FIRST character of your response MUST be { and the LAST character MUST be }.
 
@@ -162,4 +162,4 @@ Before outputting, verify:
 - [ ] No invented certifications
 - [ ] No invented skills
 
-**REMINDER: Return ONLY the JSON object starting with { and ending with }. NO markdown. NO `json. NO text before or after.**
+**REMINDER: Return ONLY the JSON object starting with { and ending with }. NO markdown. NO json. NO text before or after.**

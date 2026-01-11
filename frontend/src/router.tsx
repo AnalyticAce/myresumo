@@ -6,15 +6,14 @@ import { AnalysisPage } from '@/pages/AnalysisPage'
 import { ResultsPage } from '@/pages/ResultsPage'
 import { MasterCVPage } from '@/pages/MasterCVPage'
 import { CoverLetterPage } from '@/pages/CoverLetterPage'
+import { ResumePreviewPage } from '@/pages/ResumePreviewPage'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <div>Welcome to PowerCV</div>,
-  },
-  {
-    path: '/app',
     element: <AppLayout />,
+    errorElement: <ErrorBoundary />,
     children: [
       {
         index: true,
@@ -43,6 +42,10 @@ export const router = createBrowserRouter([
       {
         path: 'cover-letter',
         element: <CoverLetterPage />,
+      },
+      {
+        path: 'resume/:id',
+        element: <ResumePreviewPage />,
       },
     ],
   },
