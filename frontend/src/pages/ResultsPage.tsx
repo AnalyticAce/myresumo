@@ -62,7 +62,7 @@ export function ResultsPage() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `cv_I.Nizametdinov_${request.company || 'Company'}_${request.position || 'Position'}_${new Date().toLocaleDateString('en-GB').replace(/\//g, '.')}_v_1.pdf`
+      a.download = `cv_${request.company || 'Company'}_${request.position || 'Position'}_${new Date().toLocaleDateString('en-GB').replace(/\//g, '.')}_v_1.pdf`
       a.click()
       window.URL.revokeObjectURL(url)
     } catch (error) {
@@ -81,7 +81,7 @@ export function ResultsPage() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `cl_I.Nizametdinov_${request.company || 'Company'}_${request.position || 'Position'}_${new Date().toLocaleDateString('en-GB').replace(/\//g, '.')}_v_1.txt`
+      a.download = `cl_${request.company || 'Company'}_${request.position || 'Position'}_${new Date().toLocaleDateString('en-GB').replace(/\//g, '.')}_v_1.txt`
       a.click()
       window.URL.revokeObjectURL(url)
     } catch (error) {
