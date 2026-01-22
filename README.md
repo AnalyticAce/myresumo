@@ -297,16 +297,6 @@ Contributions are welcome! Please check the [contribution guidelines](CONTRIBUTI
 4. Push to the branch: `git push origin feature/amazing-feature`
 5. Open a pull request
 
-## 🗺️ Roadmap
-
-- [ ] Multi-language support
-- [ ] Resume analytics dashboard
-- [ ] Get personalized resume advice through conversational AI
-- [ ] Interview preparation suggestions
-- [ ] Cover letter generation
-- [ ] Integration with job search platforms
-- [ ] Enhanced PDF parsing and extraction
-
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
