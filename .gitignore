@@ -160,7 +160,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-.vscode/
 Backend/app/credentials/.env
 Backend/app/credentials/client_secret.json
 node_modules
@@ -171,3 +170,6 @@ node_modules
 
 myresumo-prd.md
 .ruff_cache/
+temp_auto_push.bat
+temp_interactive_push.bat
+branch_structure.json
