@@ -313,6 +313,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👤 Contact
 
-**DOSSEH Shalom** - [LinkedIn](https://www.linkedin.com/in/shalom-dosseh-4a484a262) - [GitHub](https://github.com/AnalyticAce)
-
-Project Link: [https://github.com/AnalyticAce/MyResumo](https://github.com/AnalyticAce/MyResumo)
+**DOSSEH Shalom** - [LinkedIn](https://www.linkedin.com/in/shalom-dosseh-4a484a262)
